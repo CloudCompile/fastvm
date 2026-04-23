@@ -1,0 +1,94 @@
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
+
+# =============================================================================
+# Build Arguments and Labels
+# =============================================================================
+ARG BUILD_DATE
+ARG VERSION
+LABEL build_version="FastVM Optimized Version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="fastvm"
+
+# =============================================================================
+# Environment Setup
+# =============================================================================
+ARG DEBIAN_FRONTEND="noninteractive"
+ENV FASTVM_DE=${FASTVM_DE:-XFCE4}
+
+# =============================================================================
+# Layer 1: Base Configuration Files
+# =============================================================================
+# Copy configuration files and root overlay
+COPY options.json /
+COPY root/ /
+
+# =============================================================================
+# Layer 2: System Dependencies (changes infrequently)
+# =============================================================================
+RUN set -eu && \
+    echo "**** Installing base dependencies ****" && \
+    # Remove problematic NodeSource repository that doesn't have a Release file for jammy
+    rm -f /etc/apt/sources.list.d/nodesource.list || true && \
+    # Add Mozilla PPA for Firefox
+    add-apt-repository -y ppa:mozillateam/ppa && \
+    # Single apt update for all operations
+    apt-get update && \
+    # Install all base packages in one operation
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        firefox \
+        jq \
+        wget \
+        curl \
+        ca-certificates \
+        software-properties-common \
+        apt-transport-https && \
+    # Clean up apt cache to reduce layer size
+    rm -rf /var/lib/apt/lists/*
+
+# =============================================================================
+# Layer 3: Desktop Environment (depends on DE choice)
+# =============================================================================
+COPY fastvm-setup.sh /fastvm-setup.sh
+RUN chmod +x /fastvm-setup.sh && \
+    /fastvm-setup.sh && \
+    rm /fastvm-setup.sh
+
+# =============================================================================
+# Layer 4: Applications (parallel installation)
+# =============================================================================
+COPY installapps-parallel.sh /installapps-parallel.sh
+RUN chmod +x /installapps-parallel.sh && \
+    /installapps-parallel.sh && \
+    rm /installapps-parallel.sh /installable-apps -rf
+
+# =============================================================================
+# Layer 5: Final Cleanup and Configuration
+# =============================================================================
+RUN set -eu && \
+    echo "**** Final cleanup ****" && \
+    apt-get autoclean && \
+    apt-get autoremove -y && \
+    rm -rf \
+        /config/.cache \
+        /var/lib/apt/lists/* \
+        /var/tmp/* \
+        /tmp/* \
+        /var/log/* \
+        /usr/share/doc/* \
+        /usr/share/man/* && \
+    # Create necessary directories
+    mkdir -p /var/log/fastvm /config /var/log/nginx && \
+    # Set proper permissions
+    chown -R 1000:1000 /config && \
+    chown -R www-data:www-data /var/log/nginx
+
+# =============================================================================
+# Runtime Configuration
+# =============================================================================
+EXPOSE 3000
+VOLUME /config
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1
+
+# No CMD needed - base image handles this

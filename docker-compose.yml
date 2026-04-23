@@ -1,0 +1,83 @@
+version: "3.8"
+
+services:
+  fastvm:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      # Use cache for faster builds
+      cache_from:
+        - fastvm:latest
+    container_name: ${FASTVM_NAME:-FastVM}
+    image: fastvm:latest
+    
+    # Environment variables
+    environment:
+      - PUID=${FASTVM_PUID:-1000}
+      - PGID=${FASTVM_PGID:-1000}
+      - TZ=${FASTVM_TZ:-Etc/UTC}
+      - SUBFOLDER=${FASTVM_SUBFOLDER:-/}
+      - TITLE=${FASTVM_TITLE:-FastVM}
+      - FASTVM_DE=${FASTVM_DE:-XFCE4}
+      - FASTVM_LOG_LEVEL=${FASTVM_LOG_LEVEL:-info}
+    
+    # Ports
+    ports:
+      - "${FASTVM_PORT:-3000}:3000"
+    
+    # Volumes
+    volumes:
+      - ./data:/config
+      - ./logs:/var/log/fastvm
+    
+    # Shared memory size
+    shm_size: ${FASTVM_SHM_SIZE:-2gb}
+    
+    # Privileged mode required for proper init system operation
+    privileged: true
+    
+    # Security options
+    security_opt:
+      - seccomp:unconfined
+    
+    # Device access (KVM)
+    # To enable KVM, uncomment the following line and ensure /dev/kvm exists on host
+    # devices:
+    #   - /dev/kvm:/dev/kvm
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '${FASTVM_CPU_LIMIT:-0}'
+          memory: ${FASTVM_MEMORY_LIMIT:-0}
+    
+    # Restart policy (disabled for debugging)
+    restart: "no"
+    
+    # Health check (disabled for debugging)
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+    #   interval: ${FASTVM_HEALTH_INTERVAL:-30s}
+    #   timeout: ${FASTVM_HEALTH_TIMEOUT:-10s}
+    #   retries: 3
+    #   start_period: 60s
+    #   disable: ${FASTVM_HEALTHCHECK_DISABLE:-false}
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Networks
+    networks:
+      - fastvm-network
+
+networks:
+  fastvm-network:
+    driver: bridge
