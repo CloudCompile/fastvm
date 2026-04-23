@@ -23,4 +23,14 @@
       </metadata>
     </info>
   </bookmark>
+  <bookmark href="file:///config/Downloads/1621002-High20resolution20High20visual20best20quiali-animaOfficial_preview3Base.webp" added="2026-04-23T23:05:33.382213Z" modified="2026-04-23T23:05:34.106356Z" visited="2026-04-23T23:05:33.382214Z">
+    <info>
+      <metadata owner="http://freedesktop.org">
+        <mime:mime-type type="image/webp"/>
+        <bookmark:applications>
+          <bookmark:application name="Firefox" exec="&apos;firefox %u&apos;" modified="2026-04-23T23:05:34.106352Z" count="2"/>
+        </bookmark:applications>
+      </metadata>
+    </info>
+  </bookmark>
 </xbel>

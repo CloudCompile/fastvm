@@ -30,8 +30,8 @@ An optimized, faster version of BlobeVM - a Virtual Machine that runs entirely i
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/FastVM.git
-cd FastVM
+git clone https://github.com/Hexlang-OFFICIAL/fastvm.git
+cd fastvm
 ```
 
 ### 2. Configure (Optional)
