@@ -25,3 +25,6 @@ Thumbs.db
 *.tar.gz
 data/.cache/mozilla/firefox/
 data/.XDG/
+data/.config/mozilla/
+data/.cache/
+data/.XDG/
