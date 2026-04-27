@@ -1,260 +1,355 @@
 # FastVM
 
-An optimized, faster version of BlobeVM - a Virtual Machine that runs entirely in your web browser with improved performance, better error handling, and flexible configuration.
+**FastVM gives you a full Linux desktop — right inside your web browser.** It runs entirely inside a Docker container, so nothing gets installed on your computer. Just open a tab and you have a working desktop.
 
-## 🚀 Key Improvements Over BlobeVM
+> **New to Docker or Linux?** Don't worry — this guide walks you through every step.
 
-| Feature | BlobeVM | FastVM |
-|---------|---------|--------|
-| Docker Cache | `--no-cache` (slow) | ✅ Cache enabled (fast) |
-| Error Handling | Basic | ✅ `set -euo pipefail` |
-| Sleep Delays | Multiple delays | ✅ No unnecessary delays |
-| Management | Raw docker commands | ✅ Docker Compose |
-| APT Operations | Multiple updates | ✅ Single consolidated update |
-| JSON Parsing | `jq \| grep` | ✅ jq exit codes |
-| Configuration | Hardcoded | ✅ Environment variables |
-| App Installation | Sequential | ✅ Parallel processing |
-| Health Checks | None | ✅ Built-in health checks |
-| Resource Limits | None | ✅ Configurable limits |
+---
 
-## 📋 Requirements
+## 📖 Table of Contents
 
-- Docker (with daemon running)
-- Docker Compose (v1 or v2)
-- Git
-- jq (will be auto-installed if missing)
-- Linux/macOS/WSL2
+1. [What You Need](#-what-you-need)
+2. [Quick Start (5 steps)](#-quick-start-5-steps)
+3. [What You'll See After Installing](#-what-youll-see-after-installing)
+4. [Customizing FastVM](#️-customizing-fastvm)
+5. [Managing FastVM](#-managing-fastvm)
+6. [Troubleshooting](#-troubleshooting)
+7. [Advanced Usage](#-advanced-usage)
+8. [Contributing](#-contributing)
 
-## 🚀 Quick Start
+---
 
-### 1. Clone the Repository
+## ✅ What You Need
+
+Before you start, make sure you have these installed:
+
+| Tool | What it does | Install guide |
+|------|-------------|---------------|
+| **Docker** | Runs FastVM in an isolated container | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/) |
+| **Docker Compose** | Manages the container easily | Included with Docker Desktop; for Linux: [docs.docker.com/compose/install](https://docs.docker.com/compose/install/) |
+| **Git** | Downloads this repository | [git-scm.com/downloads](https://git-scm.com/downloads) |
+
+> **Windows users:** Install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/) and use it inside WSL2 (Windows Subsystem for Linux). [Here's a guide.](https://docs.docker.com/desktop/wsl/)
+
+Once Docker is installed, make sure it's **running** before you continue (you should see the Docker icon in your system tray, or `docker info` should work without errors).
+
+---
+
+## 🚀 Quick Start (5 steps)
+
+### Step 1 — Download FastVM
+
+Open a terminal and run:
 
 ```bash
-git clone https://github.com/Hexlang-OFFICIAL/fastvm.git
+git clone https://github.com/CloudCompile/fastvm.git
 cd fastvm
 ```
 
-### 2. Configure (Optional)
+This downloads all the files into a folder called `fastvm` and moves you into it.
 
-Edit `config.env` to customize your setup:
+---
+
+### Step 2 — (Optional) Customize before installing
+
+Open the file `config.env` in any text editor. The defaults work fine for most people, but here are the most common things to change:
 
 ```bash
-# Change the port
-FASTVM_PORT=8080
+# Which port to open in your browser (default is 3000)
+FASTVM_PORT=3000
 
-# Change desktop environment
-FASTVM_DE=KDE
+# Your timezone — makes the clock correct inside the VM
+# Examples: America/New_York, Europe/London, Asia/Tokyo
+FASTVM_TZ=Etc/UTC
 
-# Enable KVM acceleration
-FASTVM_ENABLE_KVM=true
+# Desktop environment (XFCE4 is the best starting point)
+FASTVM_DE=XFCE4
 ```
 
-### 3. Install
+Save and close the file when you're done. You can always change these later and restart.
+
+---
+
+### Step 3 — Run the installer
 
 ```bash
 chmod +x fastvm-install.sh
 ./fastvm-install.sh
 ```
 
-### 4. Access
+The installer will:
+1. Check that Docker and Git are ready
+2. Build the Docker image (this takes **5–15 minutes** the first time — normal!)
+3. Start the container
+4. Tell you the URL to open
 
-Open your browser and navigate to `http://localhost:3000` (or your configured port).
+> ☕ Grab a coffee — the first build downloads a full Linux system image.
 
-## ⚙️ Configuration
+---
 
-All configuration is done through the `config.env` file:
+### Step 4 — Open FastVM in your browser
 
-### Network Settings
+When the installer finishes, you'll see something like:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `FASTVM_PORT` | 3000 | Web interface port |
-| `FASTVM_NAME` | FastVM | Container name |
-
-### User Settings
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `FASTVM_PUID` | 1000 | User ID for file permissions |
-| `FASTVM_PGID` | 1000 | Group ID for file permissions |
-| `FASTVM_TZ` | Etc/UTC | Timezone |
-
-### Resource Limits
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `FASTVM_SHM_SIZE` | 2gb | Shared memory size |
-| `FASTVM_CPU_LIMIT` | 0 | CPU cores (0 = unlimited) |
-| `FASTVM_MEMORY_LIMIT` | 0 | Memory limit (0 = unlimited) |
-
-### Desktop Environments
-
-| Variable | Description |
-|----------|-------------|
-| `FASTVM_DE=KDE` | Full-featured, heavy |
-| `FASTVM_DE=XFCE4` | Balanced, lightweight (default) |
-| `FASTVM_DE=I3` | Tiling WM, very lightweight |
-| `FASTVM_DE=GNOME` | Modern, very heavy |
-| `FASTVM_DE=Cinnamon` | Traditional, medium |
-| `FASTVM_DE=LXQT` | Lightweight Qt-based |
-
-### Application Selection
-
-```bash
-# Default Apps
-FASTVM_APP_WINE=true
-FASTVM_APP_CHROME=true
-FASTVM_APP_DISCORD=true
-FASTVM_APP_STEAM=true
-
-# Programming
-FASTVM_PROG_VSCODIUM=true
-
-# Additional Apps
-FASTVM_APP_LIBREOFFICE=true
+```
+  - Local URL:    http://localhost:3000
 ```
 
-## 🐳 Docker Compose Commands
+Open that URL in Chrome, Firefox, or any modern browser. You should see a Linux desktop load right in the tab.
 
-FastVM uses Docker Compose for easy management:
+---
+
+### Step 5 — You're done! 🎉
+
+FastVM is now running. You can use it like a normal computer — open apps, browse the web inside the VM, run programs, etc.
+
+---
+
+## 🖥️ What You'll See After Installing
+
+After opening `http://localhost:3000` you'll see an **XFCE4 desktop** (or whichever desktop you chose). It works just like a regular Linux computer:
+
+- **Right-click** the desktop to open a menu
+- **The taskbar** at the bottom has common apps
+- **File manager, terminal, and browser** are available by default
+
+Your files are saved in the `data/` folder on your computer, so they persist between restarts.
+
+---
+
+## ⚙️ Customizing FastVM
+
+All settings live in `config.env`. Open it in any text editor, make your changes, then [restart FastVM](#-managing-fastvm) for them to take effect.
+
+### Choosing a desktop environment
+
+| Setting | Best for |
+|---------|----------|
+| `FASTVM_DE=XFCE4` | **Recommended for beginners** — fast and easy to use |
+| `FASTVM_DE=KDE` | Full-featured, looks great, needs more RAM |
+| `FASTVM_DE=GNOME` | Modern look, similar to macOS, needs the most RAM |
+| `FASTVM_DE=Cinnamon` | Feels like Windows, medium resource use |
+| `FASTVM_DE=LXQT` | Very lightweight, good for low-end machines |
+| `FASTVM_DE=I3` | Keyboard-driven tiling layout, for advanced users |
+
+### Choosing which apps to pre-install
+
+Edit these lines in `config.env` — set to `true` to install, `false` to skip:
 
 ```bash
-# Start FastVM
+FASTVM_APP_WINE=true        # Run Windows .exe files inside Linux
+FASTVM_APP_CHROME=true      # Google Chrome browser
+FASTVM_APP_DISCORD=false    # Discord chat app
+FASTVM_APP_STEAM=false      # Steam game launcher
+FASTVM_APP_MINECRAFT=false  # Minecraft launcher
+FASTVM_APP_VLC=false        # VLC media player
+FASTVM_APP_LIBREOFFICE=false # Office suite (Word/Excel alternative)
+
+# Programming tools
+FASTVM_PROG_VSCODIUM=false  # VS Code (open-source version)
+FASTVM_PROG_JAVA17=false    # Java 17
+```
+
+### Changing the port
+
+If port 3000 is already in use on your machine:
+
+```bash
+FASTVM_PORT=8080
+```
+
+Then access FastVM at `http://localhost:8080` instead.
+
+### Setting resource limits
+
+By default FastVM can use all available CPU and RAM. To limit it:
+
+```bash
+FASTVM_CPU_LIMIT=2    # Max 2 CPU cores
+FASTVM_MEMORY_LIMIT=4g  # Max 4 GB RAM
+FASTVM_SHM_SIZE=2gb   # Shared memory (increase if apps crash)
+```
+
+---
+
+## 🐳 Managing FastVM
+
+After the first install, use these commands to control FastVM:
+
+```bash
+# Start FastVM (after stopping it)
 docker-compose up -d
 
-# Stop FastVM
+# Stop FastVM (saves your data)
 docker-compose stop
 
 # Restart FastVM
 docker-compose restart
 
-# View logs
+# View live logs (useful if something is wrong)
 docker-compose logs -f
 
-# Update/rebuild
-docker-compose build
-docker-compose up -d
-
-# Remove completely
+# Remove FastVM completely (your data/ folder stays safe)
 docker-compose down
 ```
 
-## 🔧 Advanced Usage
+> **Tip:** Your files are always safe in the `data/` folder even after `docker-compose down`.
 
-### Custom Build
+### Updating FastVM
+
+To get the latest version:
 
 ```bash
-# Build with specific arguments
+git pull
+docker-compose build
+docker-compose up -d
+```
+
+---
+
+## 🛠️ Troubleshooting
+
+### "I can't open localhost:3000 — the page won't load"
+
+The container might still be starting up. Wait about 60 seconds after running the installer, then try again.
+
+Check if the container is actually running:
+
+```bash
+docker ps
+```
+
+You should see a container named `FastVM` in the list. If you don't, check the logs:
+
+```bash
+docker-compose logs
+```
+
+### "Port 3000 is already in use"
+
+Another program is using that port. Change the port in `config.env`:
+
+```bash
+FASTVM_PORT=3001
+```
+
+Then restart: `docker-compose up -d`
+
+### "The desktop is really slow"
+
+Try these fixes (edit `config.env` then restart):
+
+1. **Enable KVM** for much better performance (requires a Linux host with `/dev/kvm`):
+   ```bash
+   FASTVM_ENABLE_KVM=true
+   ```
+2. **Give it more shared memory** (helps if apps are crashing or freezing):
+   ```bash
+   FASTVM_SHM_SIZE=4gb
+   ```
+3. **Give it more RAM:**
+   ```bash
+   FASTVM_MEMORY_LIMIT=4g
+   ```
+4. **Switch to a lighter desktop:**
+   ```bash
+   FASTVM_DE=XFCE4
+   ```
+
+### "Permission denied" errors
+
+```bash
+sudo chown -R 1000:1000 ./data
+```
+
+### "The build failed"
+
+Try a clean rebuild:
+
+```bash
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### "I don't see my changes after editing config.env"
+
+You need to restart the container:
+
+```bash
+docker-compose down
+./fastvm-install.sh
+```
+
+---
+
+## 📁 File Structure
+
+Here's what each file does, in case you're curious:
+
+```
+fastvm/
+├── config.env              ← Edit this to customize FastVM
+├── docker-compose.yml      ← Defines how Docker runs the container
+├── Dockerfile.optimized    ← Instructions for building the image
+├── fastvm-install.sh       ← The installer you ran in Step 3
+├── fastvm-setup.sh         ← Sets up the desktop environment inside the container
+├── installapps-parallel.sh ← Installs your selected apps in parallel
+├── README.md               ← This file
+├── data/                   ← Your persistent files (created on first run)
+└── logs/                   ← Log files (created on first run)
+```
+
+---
+
+## 🔧 Advanced Usage
+
+### Enable KVM acceleration
+
+KVM makes the VM significantly faster, but requires a Linux host with virtualization enabled in BIOS.
+
+Check if KVM is available:
+```bash
+ls /dev/kvm
+```
+
+If that file exists, set `FASTVM_ENABLE_KVM=true` in `config.env` and restart.
+
+### Custom build arguments
+
+```bash
 export BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 export VERSION=1.0.0
 docker-compose build
 ```
 
-### Health Checks
-
-FastVM includes built-in health checks:
+### Checking container health
 
 ```bash
-# Check health status
+# Quick health status
 docker inspect --format='{{.State.Health.Status}}' FastVM
 
-# View health check logs
-docker inspect --format='{{json .State.Health}}' FastVM | jq
-```
-
-### Resource Monitoring
-
-```bash
-# View container stats
+# Live resource usage
 docker stats FastVM
-
-# View resource limits
-docker inspect --format='{{.HostConfig}}' FastVM
 ```
 
-## 🛠️ Troubleshooting
-
-### Container Won't Start
-
-```bash
-# Check logs
-docker-compose logs
-
-# Verify configuration
-docker-compose config
-
-# Check for port conflicts
-sudo lsof -i :3000
-```
-
-### Permission Issues
-
-```bash
-# Fix data directory permissions
-sudo chown -R 1000:1000 ./data
-```
-
-### Slow Performance
-
-1. Enable KVM acceleration: `FASTVM_ENABLE_KVM=true`
-2. Increase shared memory: `FASTVM_SHM_SIZE=4gb`
-3. Allocate more resources: `FASTVM_MEMORY_LIMIT=4g`
-
-### Build Failures
-
-```bash
-# Clean build (use cache but rebuild)
-docker-compose build --no-cache
-
-# Or force rebuild
-docker-compose down
-docker-compose build
-docker-compose up -d
-```
-
-## 📁 File Structure
-
-```
-FastVM/
-├── config.env              # Configuration file
-├── docker-compose.yml      # Docker Compose configuration
-├── Dockerfile.optimized    # Optimized Dockerfile
-├── fastvm-install.sh       # Main installation script
-├── fastvm-setup.sh         # Desktop environment setup
-├── installapps-parallel.sh # Parallel app installation
-├── README.md              # This file
-├── data/                  # Persistent data (created on install)
-└── logs/                  # Log files (created on install)
-```
-
-## 🔒 Security
-
-- Runs in isolated Docker container
-- Uses seccomp unconfined for compatibility
-- Optional KVM device access (configurable)
-- User namespace mapping support
-
-## 📝 Performance Tips
-
-1. **Use Cache**: Never use `--no-cache` unless debugging build issues
-2. **Enable KVM**: Set `FASTVM_ENABLE_KVM=true` for better performance
-3. **Resource Limits**: Set appropriate CPU/memory limits
-4. **SSD Storage**: Use SSD for data directory for better I/O
-5. **Network**: Use local network for faster builds
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please ensure:
+Contributions are welcome! When contributing code, please follow these conventions already used in the project:
 
-1. Code follows `set -euo pipefail` error handling
-2. No unnecessary `sleep` commands
-3. Use `jq -e` instead of `jq | grep`
-4. Consolidate APT operations
-5. Add proper logging
+- Scripts use `set -euo pipefail` for strict error handling
+- No unnecessary `sleep` delays
+- Use `jq -e` instead of `jq | grep`
+- Consolidate APT operations into a single `apt-get update`
+- Add logging with the `log_info` / `log_success` / `log_error` helpers
+
+---
 
 ## 📜 License
 
-This project is based on BlobeVM and maintains the same license terms.
+This project is based on the original BlobeVM and maintains the same license terms.
 
 ## 🙏 Acknowledgments
 
