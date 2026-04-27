@@ -241,9 +241,10 @@ wait_for_health() {
         if [[ "$health_status" == "healthy" ]]; then
             log_success "FastVM is healthy and ready!"
             return 0
-        elif [[ "$health_status" == "starting" ]]; then
-            echo -n "."
-            sleep 2
+        elif [[ "$health_status" == "unhealthy" ]]; then
+            echo ""
+            log_error "Container reported 'unhealthy' — check logs with: docker logs $container_name"
+            return 1
         else
             echo -n "."
             sleep 2

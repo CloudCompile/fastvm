@@ -1,3 +1,4 @@
+import json
 from textual.app import App, ComposeResult
 from textual.screen import Screen
 from textual.containers import Horizontal, Vertical
@@ -5,18 +6,18 @@ from textual.widgets import Footer, Header, SelectionList, Label, Button, Markdo
 
 ### JSON Exporter ###
 
-def savejson(json):
+def savejson(data):
     with open('options.json', 'w') as f:
-        f.write(str(json).replace("'", '"').replace("True", "true").replace("False", "false"))
+        json.dump(data, f)
 
 #####################
 
 Head="""
-# BlobeVM Installer
+# FastVM Installer
 
-> BlobeVM (Powered by DesktopOnCodespaces)
+> FastVM (Powered by DesktopOnCodespaces)
 
-BlobeVM is a Virtual Machine that...
+FastVM is a Virtual Machine that...
 * Runs entirely in a web browser
 * Is unblocked
 * Has Windows app support
@@ -26,8 +27,8 @@ BlobeVM is a Virtual Machine that...
 * Is very fast
 """
 InstallHead="""
-# BlobeVM Installer
-"""     
+# FastVM Installer
+"""
 
 LINES = ["KDE Plasma (Heavy)", "XFCE4 (Lightweight)", "I3 (Very Lightweight)", "GNOME 42 (Very Heavy)", "Cinnamon", "LXQT"]
 

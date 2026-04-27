@@ -9,14 +9,16 @@ set -euo pipefail
 # =============================================================================
 JSON_FILE="/options.json"
 INSTALL_DIR="/installable-apps"
-MAX_PARALLEL=3  # Maximum parallel installations
+# Use number of CPU cores, capped at 8, with a minimum of 3
+MAX_PARALLEL=$(( $(nproc) > 8 ? 8 : $(nproc) < 3 ? 3 : $(nproc) ))
 
 # =============================================================================
 # Logging Functions
 # =============================================================================
-log_info() { echo "[INFO] $*"; }
-log_error() { echo "[ERROR] $*" >&2; }
+log_info()    { echo "[INFO] $*"; }
+log_error()   { echo "[ERROR] $*" >&2; }
 log_success() { echo "[SUCCESS] $*"; }
+log_warn()    { echo "[WARN] $*" >&2; }
 
 # =============================================================================
 # Error Handler
@@ -37,26 +39,14 @@ jq_check() {
 install_app() {
     local app_name="$1"
     local script_path="$2"
-    
+
     log_info "Installing $app_name..."
-    
-    if [[ -x "$script_path" ]]; then
-        if "$script_path" 2>&1; then
-            log_success "$app_name installed successfully"
-            return 0
-        else
-            log_error "Failed to install $app_name"
-            return 1
-        fi
+    chmod +x "$script_path"
+    if "$script_path" 2>&1; then
+        log_success "$app_name installed successfully"
     else
-        chmod +x "$script_path"
-        if "$script_path" 2>&1; then
-            log_success "$app_name installed successfully"
-            return 0
-        else
-            log_error "Failed to install $app_name"
-            return 1
-        fi
+        log_error "Failed to install $app_name"
+        return 1
     fi
 }
 
@@ -166,12 +156,13 @@ run_with_job_control() {
     local script="$1"
     local name="$2"
     local job_id="$3"
-    
+
     {
-        install_app "$name" "$script" > "$JOB_DIR/job_$job_id.log" 2>&1
-        echo $? > "$JOB_DIR/job_$job_id.status"
+        install_app "$name" "$script" > "$JOB_DIR/job_$job_id.log" 2>&1; _rc=$?
+        echo $_rc > "$JOB_DIR/job_$job_id.status"
     } &
     echo $! > "$JOB_DIR/job_$job_id.pid"
+    echo "$name" > "$JOB_DIR/job_$job_id.name"
 }
 
 # Install apps with limited parallelism
@@ -181,22 +172,13 @@ FAILED_APPS=()
 
 for script in ${INSTALL_QUEUE[@]+"${INSTALL_QUEUE[@]}"}; do
     name="${APP_NAMES[$script]}"
-    
+
     # Wait if we've reached max parallel jobs
     while [[ $CURRENT_JOBS -ge $MAX_PARALLEL ]]; do
-        sleep 0.5
-        # Check for completed jobs
-        for pid_file in "$JOB_DIR"/job_*.pid; do
-            [[ -f "$pid_file" ]] || continue
-            pid=$(cat "$pid_file" 2>/dev/null) || continue
-            if ! kill -0 "$pid" 2>/dev/null; then
-                # Job completed
-                CURRENT_JOBS=$((CURRENT_JOBS - 1))
-                rm -f "$pid_file"
-            fi
-        done
+        wait -n 2>/dev/null || true
+        CURRENT_JOBS=$((CURRENT_JOBS - 1))
     done
-    
+
     # Start new job
     run_with_job_control "$script" "$name" "$JOB_ID"
     CURRENT_JOBS=$((CURRENT_JOBS + 1))
@@ -210,13 +192,20 @@ wait
 for ((i=0; i<JOB_ID; i++)); do
     status_file="$JOB_DIR/job_$i.status"
     log_file="$JOB_DIR/job_$i.log"
-    
+    name_file="$JOB_DIR/job_$i.name"
+
+    app_name=$(cat "$name_file" 2>/dev/null || echo "Job $i")
     if [[ -f "$status_file" ]]; then
         status=$(cat "$status_file")
         if [[ "$status" -ne 0 ]]; then
-            log_error "Job $i failed with status $status"
+            log_error "Installation of '$app_name' failed (exit $status)"
             [[ -f "$log_file" ]] && cat "$log_file" >&2
+            FAILED_APPS+=("$app_name")
         fi
+    else
+        log_error "Installation of '$app_name' produced no status (subshell crash)"
+        [[ -f "$log_file" ]] && cat "$log_file" >&2
+        FAILED_APPS+=("$app_name")
     fi
 done
 
