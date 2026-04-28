@@ -25,7 +25,7 @@ export FASTVM_DATA_ROOT=/config
 export FASTVM_BACKUP_DIR=/config/backups
 export FASTVM_RECORDINGS_DIR=/config/recordings
 export FASTVM_SCRIPTS_DIR=/fastvm-scripts
-export FASTVM_DASHBOARD_PORT="${FASTVM_DASHBOARD_PORT:-3001}"
+export FASTVM_DASHBOARD_PORT="${FASTVM_DASHBOARD_PORT:-3099}"
 
 echo "[dashboard] starting on :${FASTVM_DASHBOARD_PORT}"
 exec s6-setuidgid abc node server.js
