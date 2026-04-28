@@ -38,8 +38,8 @@ services:
       - FASTVM_RECORDING_BITRATE=${FASTVM_RECORDING_BITRATE:-5M}
       - FASTVM_RECORDING_FRAMERATE=${FASTVM_RECORDING_FRAMERATE:-30}
       - FASTVM_RECORDING_CODEC=${FASTVM_RECORDING_CODEC:-h264}
-      # Dashboard (internal port; nginx proxies from 3001 to this)
-      - FASTVM_DASHBOARD_PORT=${FASTVM_DASHBOARD_PORT:-3099}
+      # Dashboard (direct port — bypasses base-image nginx)
+      - FASTVM_DASHBOARD_PORT=${FASTVM_DASHBOARD_PORT:-8099}
       # Preset
       - FASTVM_PRESET=${FASTVM_PRESET:-none}
       # Version
@@ -47,7 +47,7 @@ services:
 
     ports:
       - "${FASTVM_PORT:-3000}:3000"
-      - "3001:3001"
+      - "${FASTVM_DASHBOARD_HOST_PORT:-3001}:8099"
 
     volumes:
       - ./data:/config
