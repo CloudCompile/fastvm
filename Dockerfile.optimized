@@ -49,7 +49,7 @@ RUN set -eu && \
         libpulse0 \
         # Screen recording
         ffmpeg \
-        xdpyinfo \
+        x11-utils \
         # Clipboard sync
         xclip \
         xsel \
@@ -58,7 +58,6 @@ RUN set -eu && \
         # Compression extras
         zstd \
         # Misc runtime
-        ionice \
         procps \
         net-tools && \
     rm -rf /var/lib/apt/lists/*
