@@ -181,7 +181,16 @@ case "$DE_SELECTION" in
         install_packages lxqt
         cp /startwm-lxqt.sh /defaults/startwm.sh
         ;;
-        
+
+    "Budgie"|"Budgie Desktop")
+        log_info "Installing Budgie Desktop..."
+        install_packages \
+            ubuntu-budgie-desktop \
+            budgie-desktop \
+            budgie-indicator-applet
+        cp /startwm-budgie.sh /defaults/startwm.sh
+        ;;
+
     *)
         log_error "Unknown desktop environment: $DE_SELECTION"
         log_info "Falling back to XFCE4"
@@ -203,6 +212,6 @@ esac
 chmod +x /defaults/startwm.sh
 
 # Clean up start scripts
-rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh /startwm-cinnamon.sh /startwm-lxqt.sh 2>/dev/null || true
+rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh /startwm-cinnamon.sh /startwm-lxqt.sh /startwm-budgie.sh 2>/dev/null || true
 
 log_info "Desktop Environment setup complete!"

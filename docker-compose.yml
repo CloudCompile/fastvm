@@ -6,13 +6,11 @@ services:
       args:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
-      # Use cache for faster builds
       cache_from:
         - fastvm:latest
     container_name: ${FASTVM_NAME:-FastVM}
     image: fastvm:latest
-    
-    # Environment variables
+
     environment:
       - PUID=${FASTVM_PUID:-1000}
       - PGID=${FASTVM_PGID:-1000}
@@ -21,42 +19,64 @@ services:
       - TITLE=${FASTVM_TITLE:-FastVM}
       - FASTVM_DE=${FASTVM_DE:-XFCE4}
       - FASTVM_LOG_LEVEL=${FASTVM_LOG_LEVEL:-info}
-    
-    # Ports
+      # Backup
+      - FASTVM_BACKUP_ENABLED=${FASTVM_BACKUP_ENABLED:-true}
+      - FASTVM_BACKUP_DIR=/config/backups
+      - FASTVM_BACKUP_AUTO_SCHEDULE=${FASTVM_BACKUP_AUTO_SCHEDULE:-daily}
+      - FASTVM_BACKUP_RETENTION_DAYS=${FASTVM_BACKUP_RETENTION_DAYS:-30}
+      - FASTVM_BACKUP_COMPRESSION=${FASTVM_BACKUP_COMPRESSION:-gzip}
+      # Autoscale (informational; actual enforcement via host-side adjust.sh)
+      - FASTVM_AUTOSCALE_ENABLED=${FASTVM_AUTOSCALE_ENABLED:-false}
+      - FASTVM_AUTOSCALE_CPU_THRESHOLD=${FASTVM_AUTOSCALE_CPU_THRESHOLD:-80}
+      - FASTVM_AUTOSCALE_MEMORY_THRESHOLD=${FASTVM_AUTOSCALE_MEMORY_THRESHOLD:-80}
+      - FASTVM_AUTOSCALE_INTERVAL=${FASTVM_AUTOSCALE_INTERVAL:-30}
+      # Audio / clipboard / recording
+      - FASTVM_AUDIO_ENABLED=${FASTVM_AUDIO_ENABLED:-true}
+      - FASTVM_CLIPBOARD_ENABLED=${FASTVM_CLIPBOARD_ENABLED:-true}
+      - FASTVM_RECORDING_ENABLED=${FASTVM_RECORDING_ENABLED:-true}
+      - FASTVM_RECORDING_FORMAT=${FASTVM_RECORDING_FORMAT:-mp4}
+      - FASTVM_RECORDING_BITRATE=${FASTVM_RECORDING_BITRATE:-5M}
+      - FASTVM_RECORDING_FRAMERATE=${FASTVM_RECORDING_FRAMERATE:-30}
+      - FASTVM_RECORDING_CODEC=${FASTVM_RECORDING_CODEC:-h264}
+      # Dashboard
+      - FASTVM_DASHBOARD_PORT=${FASTVM_DASHBOARD_PORT:-3001}
+      # Preset
+      - FASTVM_PRESET=${FASTVM_PRESET:-none}
+      # Version
+      - FASTVM_VERSION=${VERSION:-1.0.0}
+
     ports:
       - "${FASTVM_PORT:-3000}:3000"
-    
-    # Volumes
+      - "${FASTVM_DASHBOARD_PORT:-3001}:3001"
+
     volumes:
       - ./data:/config
+      - ./backups:/config/backups
+      - ./recordings:/config/recordings
       - ./logs:/var/log/fastvm
-    
-    # Shared memory size
+
+    # Audio device passthrough (best-effort; silently ignored if missing)
+    devices:
+      - /dev/snd:/dev/snd
+
     shm_size: ${FASTVM_SHM_SIZE:-2gb}
-    
-    # Privileged mode required for proper init system operation
+
     privileged: true
-    
-    # Security options
     security_opt:
       - seccomp:unconfined
-    
-    # Device access (KVM)
-    # To enable KVM, uncomment the following line and ensure /dev/kvm exists on host
+
+    # Uncomment to enable KVM acceleration
     # devices:
     #   - /dev/kvm:/dev/kvm
-    
-    # Resource limits
+
     deploy:
       resources:
         limits:
           cpus: '${FASTVM_CPU_LIMIT:-0}'
           memory: ${FASTVM_MEMORY_LIMIT:-0}
-    
-    # Restart policy - auto-start on system boot/codespace restart
+
     restart: unless-stopped
-    
-    # Health check
+
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: ${FASTVM_HEALTH_INTERVAL:-30s}
@@ -64,15 +84,13 @@ services:
       retries: 3
       start_period: 60s
       disable: ${FASTVM_HEALTHCHECK_DISABLE:-false}
-    
-    # Logging
+
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    
-    # Networks
+
     networks:
       - fastvm-network
 

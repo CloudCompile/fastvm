@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FastVM Control</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div id="app">
+    <!-- Login overlay shown until token is accepted. -->
+    <div id="login" class="login-overlay">
+        <div class="login-card">
+            <div class="logo">
+                <span class="logo-bracket">[</span>
+                <span class="logo-text">FAST<b>VM</b></span>
+                <span class="logo-bracket">]</span>
+            </div>
+            <p class="tagline">linux desktop, in a tab.</p>
+            <input id="token-input" type="password" placeholder="dashboard token" autocomplete="off" />
+            <button id="login-btn">Unlock</button>
+            <p class="hint">
+                Token lives in <code>/config/dashboard.token</code><br />
+                inside your container.
+            </p>
+        </div>
+    </div>
+
+    <header class="topbar">
+        <div class="brand">
+            <span class="logo-bracket">[</span>
+            <span class="logo-text">FAST<b>VM</b></span>
+            <span class="logo-bracket">]</span>
+            <span class="version">v1.0</span>
+        </div>
+        <nav>
+            <button class="nav active" data-view="overview">Overview</button>
+            <button class="nav" data-view="snapshots">Snapshots</button>
+            <button class="nav" data-view="recording">Recording</button>
+            <button class="nav" data-view="tasks">Tasks</button>
+            <button class="nav" data-view="clipboard">Clipboard</button>
+        </nav>
+        <div class="status">
+            <span class="dot" id="ws-dot"></span>
+            <span id="ws-state">connecting...</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- ============================================================ -->
+        <section class="view active" id="view-overview">
+            <div class="grid">
+                <div class="card metric">
+                    <div class="metric-label">CPU</div>
+                    <div class="metric-value"><span id="m-cpu">0</span><span class="unit">%</span></div>
+                    <div class="bar"><div class="bar-fill" id="bar-cpu"></div></div>
+                </div>
+                <div class="card metric">
+                    <div class="metric-label">Memory</div>
+                    <div class="metric-value"><span id="m-mem">0</span><span class="unit">%</span></div>
+                    <div class="metric-sub" id="m-mem-detail">— / —</div>
+                    <div class="bar"><div class="bar-fill" id="bar-mem"></div></div>
+                </div>
+                <div class="card metric">
+                    <div class="metric-label">Disk (/config)</div>
+                    <div class="metric-value"><span id="m-disk">0</span><span class="unit">%</span></div>
+                    <div class="metric-sub" id="m-disk-detail">— / —</div>
+                    <div class="bar"><div class="bar-fill" id="bar-disk"></div></div>
+                </div>
+                <div class="card metric">
+                    <div class="metric-label">Network</div>
+                    <div class="metric-value"><span id="m-net-rx">0</span> <small>kb/s &darr;</small></div>
+                    <div class="metric-sub"><span id="m-net-tx">0</span> kb/s &uarr;</div>
+                </div>
+            </div>
+
+            <div class="card chart-card">
+                <div class="card-title">CPU &amp; Memory (last hour)</div>
+                <canvas id="chart-perf" width="1200" height="240"></canvas>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="view" id="view-snapshots">
+            <div class="card">
+                <div class="card-title">Snapshots</div>
+                <div class="row gap">
+                    <input id="snap-label" type="text" placeholder="label (optional)" />
+                    <button id="snap-create" class="primary">Create snapshot</button>
+                    <button id="snap-refresh">Refresh</button>
+                </div>
+                <table id="snap-table">
+                    <thead><tr>
+                        <th>Archive</th><th>Label</th><th>Size</th><th>Created</th><th></th>
+                    </tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="view" id="view-recording">
+            <div class="card">
+                <div class="card-title">Screen recording</div>
+                <div class="row gap">
+                    <input id="rec-label" type="text" placeholder="recording label" />
+                    <button id="rec-start" class="primary">Start</button>
+                    <button id="rec-stop">Stop</button>
+                    <span class="status-pill" id="rec-status">idle</span>
+                </div>
+                <table id="rec-table">
+                    <thead><tr><th>File</th><th>Size</th><th>Created</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="view" id="view-tasks">
+            <div class="card">
+                <div class="card-title">Scheduled tasks</div>
+                <div class="row gap">
+                    <input id="task-id" type="text" placeholder="task-id" />
+                    <input id="task-schedule" type="text" placeholder="0 2 * * *" />
+                    <input id="task-command" type="text" placeholder="command" />
+                    <button id="task-create" class="primary">Add</button>
+                </div>
+                <table id="task-table">
+                    <thead><tr><th>ID</th><th>Schedule</th><th>Command</th><th>Status</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="view" id="view-clipboard">
+            <div class="card">
+                <div class="card-title">Clipboard</div>
+                <textarea id="clip-text" rows="10" placeholder="paste here to send to the desktop..."></textarea>
+                <div class="row gap">
+                    <button id="clip-pull">Pull from desktop</button>
+                    <button id="clip-push" class="primary">Push to desktop</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="js/client.js"></script>
+</body>
+</html>

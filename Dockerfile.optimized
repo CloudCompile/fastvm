@@ -5,7 +5,7 @@ FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 # =============================================================================
 ARG BUILD_DATE
 ARG VERSION
-LABEL build_version="FastVM Optimized Version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL build_version="FastVM Version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="fastvm"
 
 # =============================================================================
@@ -13,39 +13,58 @@ LABEL maintainer="fastvm"
 # =============================================================================
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV FASTVM_DE=${FASTVM_DE:-XFCE4}
+ENV NODE_ENV=production
 
 # =============================================================================
 # Layer 1: Base Configuration Files
 # =============================================================================
-# Copy configuration files and root overlay
 COPY options.json /
 COPY root/ /
 
 # =============================================================================
-# Layer 2: System Dependencies (changes infrequently)
+# Layer 2: System Dependencies
 # =============================================================================
 RUN set -eu && \
     echo "**** Installing base dependencies ****" && \
-    # Remove problematic NodeSource repository that doesn't have a Release file for jammy
     rm -f /etc/apt/sources.list.d/nodesource.list || true && \
     # Add Mozilla PPA for Firefox
     add-apt-repository -y ppa:mozillateam/ppa && \
-    # Single apt update for all operations
+    # Add NodeSource for Node.js 20 LTS
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get update && \
-    # Install all base packages in one operation
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        # Core utils
         firefox \
         jq \
         wget \
         curl \
         ca-certificates \
         software-properties-common \
-        apt-transport-https && \
-    # Clean up apt cache to reduce layer size
+        apt-transport-https \
+        # Node.js (dashboard)
+        nodejs \
+        # Audio
+        pulseaudio \
+        pulseaudio-utils \
+        libpulse0 \
+        # Screen recording
+        ffmpeg \
+        xdpyinfo \
+        # Clipboard sync
+        xclip \
+        xsel \
+        # Cron
+        cron \
+        # Compression extras
+        zstd \
+        # Misc runtime
+        ionice \
+        procps \
+        net-tools && \
     rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
-# Layer 3: Desktop Environment (depends on DE choice)
+# Layer 3: Desktop Environment
 # =============================================================================
 COPY fastvm-setup.sh /fastvm-setup.sh
 RUN chmod +x /fastvm-setup.sh && \
@@ -61,7 +80,26 @@ RUN chmod +x /installapps-parallel.sh && \
     rm /installapps-parallel.sh /installable-apps -rf
 
 # =============================================================================
-# Layer 5: Final Cleanup and Configuration
+# Layer 5: FastVM Scripts
+# =============================================================================
+COPY scripts/ /opt/fastvm-scripts/
+RUN chmod +x /opt/fastvm-scripts/*.sh
+
+# =============================================================================
+# Layer 6: Management Dashboard
+# =============================================================================
+COPY dashboard/ /opt/fastvm-dashboard/
+RUN cd /opt/fastvm-dashboard && \
+    npm ci --omit=dev && \
+    npm cache clean --force
+
+# =============================================================================
+# Layer 7: Preset hooks
+# =============================================================================
+COPY presets/ /opt/fastvm-presets/
+
+# =============================================================================
+# Layer 8: Final Cleanup
 # =============================================================================
 RUN set -eu && \
     echo "**** Final cleanup ****" && \
@@ -75,20 +113,20 @@ RUN set -eu && \
         /var/log/* \
         /usr/share/doc/* \
         /usr/share/man/* && \
-    # Create necessary directories
-    mkdir -p /var/log/fastvm /config /var/log/nginx && \
-    # Set proper permissions
+    # Runtime directories
+    mkdir -p /var/log/fastvm /config /config/backups /config/recordings \
+             /config/.fastvm /var/log/nginx && \
     chown -R 1000:1000 /config && \
-    chown -R www-data:www-data /var/log/nginx
+    chown -R www-data:www-data /var/log/nginx && \
+    # Make service scripts executable
+    chmod +x /etc/cont-init.d/99-fastvm-init \
+             /etc/services.d/fastvm-dashboard/run 2>/dev/null || true
 
 # =============================================================================
 # Runtime Configuration
 # =============================================================================
-EXPOSE 3000
+EXPOSE 3000 3001
 VOLUME /config
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:3000/ || exit 1
-
-# No CMD needed - base image handles this
+    CMD curl -f http://localhost:3000/ && curl -f http://localhost:3001/api/health || exit 1

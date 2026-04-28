@@ -1,6 +1,15 @@
 # Runtime data
 data/
 logs/
+backups/
+recordings/
+
+# Dashboard secrets
+dashboard.token
+
+# Node
+dashboard/node_modules/
+dashboard/package-lock.json
 
 # Docker
 .dockerignore

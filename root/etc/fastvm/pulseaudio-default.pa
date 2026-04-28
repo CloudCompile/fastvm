@@ -1,0 +1,44 @@
+# FastVM PulseAudio configuration
+# Loaded by audio-init.sh on session start. KasmVNC uses the native socket
+# for WebRTC-style streaming; we also enable a TCP socket on localhost for
+# debugging.
+
+.fail
+
+### Standard module setup
+load-module module-device-restore
+load-module module-stream-restore
+load-module module-card-restore
+load-module module-augment-properties
+load-module module-switch-on-port-available
+load-module module-switch-on-connect
+
+### Hardware (best effort; ignored if /dev/snd is unavailable)
+.ifexists module-udev-detect.so
+load-module module-udev-detect
+.endif
+.ifexists module-alsa-card.so
+.nofail
+load-module module-alsa-card
+.fail
+.endif
+
+### Native protocol (used by KasmVNC's audio bridge)
+load-module module-native-protocol-unix auth-anonymous=1 socket=/tmp/pulse-socket
+load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 port=4713
+
+### Default sink: an always-available virtual device so apps never fail with
+### "no audio output" even if hardware is missing.
+load-module module-null-sink sink_name=fastvm_sink \
+    sink_properties=device.description=FastVM_Speakers
+set-default-sink fastvm_sink
+
+### Default source: virtual mic (browser fills it via the dashboard bridge).
+load-module module-null-source source_name=fastvm_mic \
+    source_properties=device.description=FastVM_Microphone
+set-default-source fastvm_mic
+
+### Volume sanity
+load-module module-position-event-sounds
+load-module module-role-cork
+load-module module-suspend-on-idle

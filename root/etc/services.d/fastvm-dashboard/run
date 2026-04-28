@@ -1,0 +1,16 @@
+#!/usr/bin/with-contenv bash
+# s6 service: FastVM management dashboard (Node.js, port 3001).
+
+cd /opt/fastvm-dashboard || exec sleep 30
+
+# Make sure the recordings + backups + logs dirs exist.
+mkdir -p /config/backups /config/recordings /config/.fastvm /var/log/fastvm
+
+export NODE_ENV=production
+export FASTVM_DATA_ROOT=/config
+export FASTVM_BACKUP_DIR=/config/backups
+export FASTVM_RECORDINGS_DIR=/config/recordings
+export FASTVM_SCRIPTS_DIR=/fastvm-scripts
+export FASTVM_DASHBOARD_PORT="${FASTVM_DASHBOARD_PORT:-3001}"
+
+exec s6-setuidgid abc node server.js

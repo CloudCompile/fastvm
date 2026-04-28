@@ -1,0 +1,27 @@
+# FastVM "gaming" preset
+# Wine + Steam + controller support + DXVK + generous shared memory.
+
+FASTVM_DE=XFCE4
+FASTVM_SHM_SIZE=8gb
+FASTVM_CPU_LIMIT=4
+FASTVM_MEMORY_LIMIT=8g
+
+FASTVM_APP_WINE=true
+FASTVM_APP_STEAM=true
+FASTVM_APP_CHROME=true
+FASTVM_APP_DISCORD=true
+FASTVM_APP_MINECRAFT=true
+FASTVM_APP_TLAUNCHER=true
+
+FASTVM_PROG_JAVA17=true   # Minecraft modern launcher dependency
+
+FASTVM_AUDIO_ENABLED=true
+FASTVM_RECORDING_ENABLED=true
+FASTVM_RECORDING_FRAMERATE=60
+FASTVM_RECORDING_BITRATE=8M
+
+# Preset hooks: gaming-specific tweaks applied after package install.
+FASTVM_PRESET_WINE_STAGING=true
+FASTVM_PRESET_GPU_PASSTHROUGH=true
+FASTVM_PRESET_CONTROLLER_SUPPORT=true
+FASTVM_PRESET_DXVK=true

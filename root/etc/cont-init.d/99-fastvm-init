@@ -1,0 +1,37 @@
+#!/usr/bin/with-contenv bash
+# Container init: install FastVM scripts into /fastvm-scripts and
+# configure cron-based backups based on config.env values.
+
+set -euo pipefail
+
+# Copy scripts to a stable location the services.d units can reference.
+mkdir -p /fastvm-scripts
+cp /opt/fastvm-scripts/*.sh /fastvm-scripts/ 2>/dev/null || true
+chmod +x /fastvm-scripts/*.sh 2>/dev/null || true
+
+# Ensure runtime dirs exist with right ownership.
+mkdir -p /config/backups /config/recordings /config/.fastvm \
+         /var/log/fastvm
+chown -R abc:abc /config /var/log/fastvm 2>/dev/null || true
+
+# Install default scheduled tasks if the task list is empty.
+if [[ "${FASTVM_BACKUP_ENABLED:-true}" == "true" ]] && \
+   [[ ! -s /config/.fastvm/tasks.json ]]; then
+    FASTVM_DATA_ROOT=/config /fastvm-scripts/task-manager.sh init >/dev/null 2>&1 || true
+fi
+
+# Override crontab schedule based on FASTVM_BACKUP_AUTO_SCHEDULE.
+schedule_map() {
+    case "$1" in
+        daily)  echo "0 2 * * *" ;;
+        weekly) echo "0 2 * * 0" ;;
+        hourly) echo "0 * * * *" ;;
+        *)      echo "" ;;
+    esac
+}
+
+sched=$(schedule_map "${FASTVM_BACKUP_AUTO_SCHEDULE:-daily}")
+if [[ -n "$sched" ]] && [[ "${FASTVM_BACKUP_ENABLED:-true}" == "true" ]]; then
+    FASTVM_DATA_ROOT=/config /fastvm-scripts/task-manager.sh add \
+        daily-backup "$sched" "/fastvm-scripts/backup-scheduler.sh" >/dev/null 2>&1 || true
+fi
