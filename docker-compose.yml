@@ -78,7 +78,7 @@ services:
     restart: unless-stopped
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8099/api/health"]
       interval: ${FASTVM_HEALTH_INTERVAL:-30s}
       timeout: ${FASTVM_HEALTH_TIMEOUT:-10s}
       retries: 3
