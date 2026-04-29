@@ -26,9 +26,11 @@ fi
 # Kill any stale daemon, then restart.
 pulseaudio --kill 2>/dev/null || true
 sleep 0.5
-pulseaudio --start --exit-idle-time=-1 --log-target=syslog --daemonize=yes \
+# PULSE_RUNTIME_PATH=/defaults matches what the XFCE panel plugin expects.
+mkdir -p /defaults && chown "${USER:-abc}:${USER:-abc}" /defaults 2>/dev/null || true
+PULSE_RUNTIME_PATH=/defaults pulseaudio --start --exit-idle-time=-1 --log-target=syslog --daemonize=yes \
     --file="${PULSE_CONFIG_DIR}/default.pa" 2>/dev/null || \
-    pulseaudio --start --exit-idle-time=-1 --log-target=syslog --daemonize=yes
+    PULSE_RUNTIME_PATH=/defaults pulseaudio --start --exit-idle-time=-1 --log-target=syslog --daemonize=yes
 
 # Pre-create a virtual sink so apps that bind to a fixed device still work.
 pactl load-module module-null-sink \
