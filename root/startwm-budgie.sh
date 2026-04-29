@@ -9,6 +9,9 @@ export XDG_CURRENT_DESKTOP=Budgie:GNOME
 mkdir -p "${HOME:-/config}/.config/dconf"
 
 # Audio + clipboard helpers ride along with the session if they're present.
+export PULSE_RUNTIME_PATH=/defaults
+export PULSE_SERVER=unix:/tmp/pulse-socket
+export XDG_RUNTIME_DIR=/defaults
 if [[ -x /fastvm-scripts/audio-init.sh ]]; then
     /fastvm-scripts/audio-init.sh >/dev/null 2>&1 || true
 fi

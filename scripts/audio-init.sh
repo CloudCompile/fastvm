@@ -23,11 +23,19 @@ if [[ ! -f "${PULSE_CONFIG_DIR}/default.pa" ]] && [[ -f /etc/fastvm/pulseaudio-d
     cp /etc/fastvm/pulseaudio-default.pa "${PULSE_CONFIG_DIR}/default.pa"
 fi
 
+# If the existing config is missing the KasmVNC audio bridge socket setup,
+# replace it with our default to ensure the native socket is available.
+if [[ -f "${PULSE_CONFIG_DIR}/default.pa" ]] && [[ -f /etc/fastvm/pulseaudio-default.pa ]]; then
+    if ! grep -q 'module-native-protocol-unix.*socket=/tmp/pulse-socket' "${PULSE_CONFIG_DIR}/default.pa" 2>/dev/null; then
+        cp /etc/fastvm/pulseaudio-default.pa "${PULSE_CONFIG_DIR}/default.pa"
+    fi
+fi
+
 # Kill any stale daemon, then restart.
 pulseaudio --kill 2>/dev/null || true
 sleep 0.5
 # PULSE_RUNTIME_PATH=/defaults matches what the XFCE panel plugin expects.
-mkdir -p /defaults && chown "${USER:-abc}:${USER:-abc}" /defaults 2>/dev/null || true
+mkdir -p /defaults && chown abc:abc /defaults 2>/dev/null || true
 PULSE_RUNTIME_PATH=/defaults pulseaudio --start --exit-idle-time=-1 --log-target=syslog --daemonize=yes \
     --file="${PULSE_CONFIG_DIR}/default.pa" 2>/dev/null || \
     PULSE_RUNTIME_PATH=/defaults pulseaudio --start --exit-idle-time=-1 --log-target=syslog --daemonize=yes
