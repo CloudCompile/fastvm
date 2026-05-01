@@ -10,7 +10,9 @@ set -euo pipefail
 JSON_FILE="/options.json"
 INSTALL_DIR="/installable-apps"
 # Use number of CPU cores, capped at 8, with a minimum of 3
-MAX_PARALLEL=$(( $(nproc) > 8 ? 8 : $(nproc) < 3 ? 3 : $(nproc) ))
+MAX_PARALLEL=$(nproc)
+[[ $MAX_PARALLEL -gt 8 ]] && MAX_PARALLEL=8
+[[ $MAX_PARALLEL -lt 3 ]] && MAX_PARALLEL=3
 
 # =============================================================================
 # Logging Functions
@@ -149,7 +151,7 @@ log_info "Installing $TOTAL_APPS applications (max parallel: $MAX_PARALLEL)..."
 
 # Create temporary directory for job management
 JOB_DIR=$(mktemp -d)
-trap "rm -rf $JOB_DIR" EXIT
+trap 'rm -rf "$JOB_DIR"' EXIT
 
 # Function to run installation with job control
 run_with_job_control() {
@@ -158,8 +160,8 @@ run_with_job_control() {
     local job_id="$3"
 
     {
-        install_app "$name" "$script" > "$JOB_DIR/job_$job_id.log" 2>&1; _rc=$?
-        echo $_rc > "$JOB_DIR/job_$job_id.status"
+        install_app "$name" "$script" > "$JOB_DIR/job_$job_id.log" 2>&1; rc=$?
+        echo "$rc" > "$JOB_DIR/job_$job_id.status"
     } &
     echo $! > "$JOB_DIR/job_$job_id.pid"
     echo "$name" > "$JOB_DIR/job_$job_id.name"

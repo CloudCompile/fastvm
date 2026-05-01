@@ -1,1 +1,13 @@
-404: Not Found
+{
+  "defaultapps": [0, 1],
+  "programming": [],
+  "apps": [],
+  "enablekvm": true,
+  "DE": "XFCE4 (Lightweight)",
+  "preset": "none",
+  "audio": true,
+  "clipboard": true,
+  "recording": true,
+  "backup": true,
+  "dashboard": true
+}

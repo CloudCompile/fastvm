@@ -121,7 +121,7 @@ load_configuration() {
     log_step "Loading configuration"
 
     if [[ -f "$CONFIG_FILE" ]]; then
-        set -a; source "$CONFIG_FILE"; set +a
+        set -a; source "$CONFIG_FILE"; set +a  # shellcheck disable=SC1090
         log_success "Loaded $CONFIG_FILE"
     else
         log_warn "config.env not found — using defaults"
@@ -132,7 +132,7 @@ load_configuration() {
         local preset_file="${SCRIPT_DIR}/presets/${FASTVM_PRESET}.preset"
         if [[ -f "$preset_file" ]]; then
             log_info "Applying preset: ${FASTVM_PRESET}"
-            set -a; source "$preset_file"; set +a
+            set -a; source "$preset_file"; set +a  # shellcheck disable=SC1090
             log_success "Preset '${FASTVM_PRESET}' applied"
         else
             log_warn "Preset file not found: $preset_file"
@@ -141,7 +141,7 @@ load_configuration() {
 
     # Export every FASTVM_* variable for docker-compose.
     for var in $(compgen -v FASTVM_ 2>/dev/null || true); do
-        export "$var"
+        declare -x "$var"
     done
 
     echo ""
@@ -186,7 +186,8 @@ build_image() {
     log_step "Building FastVM Docker image"
     log_info "This may take a few minutes on first build…"
 
-    export BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+    BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+    export BUILD_DATE
     export VERSION="${VERSION}"
 
     if ! $DOCKER_COMPOSE -f "${SCRIPT_DIR}/docker-compose.yml" build --parallel; then
@@ -222,7 +223,9 @@ wait_for_health() {
     while (( attempt < max )); do
         attempt=$(( attempt + 1 ))
 
-        if ! docker ps -q -f "name=$container" | grep -q .; then
+        local container_id
+        container_id=$(docker ps -q -f "name=$container" 2>/dev/null)
+        if [[ -z "$container_id" ]]; then
             echo -n "."; sleep 2; continue
         fi
 
@@ -248,7 +251,6 @@ wait_for_health() {
 show_status() {
     local port="${FASTVM_PORT:-3000}"
     local dport="${FASTVM_DASHBOARD_PORT:-3001}"
-    local name="${FASTVM_NAME:-FastVM}"
 
     echo ""
     echo -e "${CYAN}${BOLD}  ┌─────────────────────────────────────────────────────┐${NC}"

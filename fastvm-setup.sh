@@ -19,7 +19,6 @@ trap 'log_error "Script failed at line $LINENO"' ERR
 # =============================================================================
 # Configuration
 # =============================================================================
-JSON_FILE="/options.json"
 DE_SELECTION="${FASTVM_DE:-XFCE4}"
 
 # =============================================================================
@@ -46,10 +45,6 @@ install_packages() {
 # =============================================================================
 
 log_info "Setting up Desktop Environment: $DE_SELECTION"
-
-# Update package list once
-echo "**** Updating package list ****"
-apt-get update
 
 case "$DE_SELECTION" in
     "KDE"|"KDE Plasma"|"KDE Plasma (Heavy)")
@@ -133,16 +128,14 @@ case "$DE_SELECTION" in
         
         # Load dconf settings
         if [[ -f /jammy.dconf.conf ]]; then
-            export $(dbus-launch)
+            eval "$(dbus-launch)"
             dconf load / < /jammy.dconf.conf || log_warn "dconf load failed"
         else
             log_warn "dconf file not found"
         fi
         
         # Disable login1
-        for file in $(find /usr -type f -iname "*login1*" 2>/dev/null); do
-            mv -v "$file" "$file.back" || true
-        done
+        find /usr -type f -iname "*login1*" -exec mv {} {}.back \; 2>/dev/null
         
         # Configure bashrc
         echo "sudo chmod u+s /usr/lib/dbus-1.0/dbus-daemon-launch-helper" >> ~/.bashrc
