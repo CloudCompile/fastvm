@@ -136,7 +136,7 @@ case "$DE_SELECTION" in
         fi
         
         # Disable login1
-        find /usr -type f -iname "*login1*" 2>/dev/null -exec mv {} {}.back \;
+        find /usr -type f -iname "*login1*" -exec mv {} {}.back \; 2>/dev/null
         
         # Configure bashrc
         echo "sudo chmod u+s /usr/lib/dbus-1.0/dbus-daemon-launch-helper" >> ~/.bashrc
