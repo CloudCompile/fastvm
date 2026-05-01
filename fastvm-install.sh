@@ -141,7 +141,7 @@ load_configuration() {
 
     # Export every FASTVM_* variable for docker-compose.
     for var in $(compgen -v FASTVM_ 2>/dev/null || true); do
-        export $var
+        declare -x "$var"
     done
 
     echo ""
