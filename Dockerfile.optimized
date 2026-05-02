@@ -71,6 +71,7 @@ RUN chmod +x /fastvm-setup.sh && \
 # Layer 4: Applications (parallel installation)
 # =============================================================================
 COPY installapps-parallel.sh /installapps-parallel.sh
+COPY installable-apps/ /installable-apps/
 RUN chmod +x /installapps-parallel.sh && \
     /installapps-parallel.sh && \
     rm /installapps-parallel.sh /installable-apps -rf
