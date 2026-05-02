@@ -8,12 +8,13 @@
 
 1. [How It Works](#-how-it-works)
 2. [Quick Start](#-quick-start)
-3. [Accessing Your Desktop](#-accessing-your-desktop)
-4. [Customizing FastVM](#️-customizing-fastvm)
-5. [Managing FastVM](#-managing-fastvm)
-6. [Troubleshooting](#-troubleshooting)
-7. [File Structure](#-file-structure)
-8. [Contributing](#-contributing)
+3. [Using Prebuilt Images](#-using-prebuilt-images-fastest)
+4. [Accessing Your Desktop](#-accessing-your-desktop)
+5. [Customizing FastVM](#️-customizing-fastvm)
+6. [Managing FastVM](#-managing-fastvm)
+7. [Troubleshooting](#-troubleshooting)
+8. [File Structure](#-file-structure)
+9. [Contributing](#-contributing)
 
 ---
 
@@ -93,6 +94,56 @@ When the installer finishes you'll see:
 GitHub will show a pop-up offering to open the forwarded port — click **Open in Browser**. You can also go to the **Ports** tab in VS Code (`Ctrl+Shift+P` → "Ports: Focus on Ports View"), find port 3000, and click the globe icon.
 
 You should see a Linux desktop load in the new tab. 🎉
+
+---
+
+## ⚡ Using Prebuilt Images (Fastest)
+
+Don't want to wait 5–15 minutes for the image to build? Use prebuilt images instead — **instant startup in 30-60 seconds**:
+
+```bash
+# Fastest: XFCE4 + Minimal (30 seconds)
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-fast-latest
+
+# Lightweight: LXQT + Minimal (40 seconds)
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:lxqt-fast-latest
+
+# Full-featured: KDE Desktop (60 seconds)
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:kde-latest
+```
+
+### Available Prebuilt Variants
+
+| Desktop | Standard | Fast ⚡ |
+|---------|----------|--------|
+| **XFCE4** (lightweight) | `xfce4-latest` | `xfce4-fast-latest` |
+| **KDE** (full-featured) | `kde-latest` | `kde-fast-latest` |
+| **GNOME** (modern) | `gnome-latest` | `gnome-fast-latest` |
+| **Cinnamon** | `cinnamon-latest` | `cinnamon-fast-latest` |
+| **LXQT** (ultra-light) | `lxqt-latest` | `lxqt-fast-latest` |
+| **i3** (keyboard-driven) | `i3-latest` | `i3-fast-latest` |
+| **Budgie** | `budgie-latest` | `budgie-fast-latest` |
+
+### What's the Difference?
+
+**Standard images** include:
+- Full preset (Wine, Chrome, and other apps)
+- Audio, screen recording, backups enabled
+- Everything optimized for features
+
+**Fast images** (⚡) optimize for speed:
+- Minimal preset (terminal + browser only)
+- Audio, recording, and backups disabled
+- ~30% smaller, ~20% faster startup
+
+### Build Your Own
+
+If you need a custom combination or latest changes:
+
+```bash
+# Still use the installer for total control
+./fastvm-install.sh
+```
 
 ---
 
