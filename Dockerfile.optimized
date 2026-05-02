@@ -28,13 +28,16 @@ RUN set -eu && \
     echo "**** Installing base dependencies ****" && \
     rm -f /etc/apt/sources.list.d/nodesource.list || true && \
     apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        software-properties-common && \
+    add-apt-repository -y universe multiverse && \
+    apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
         # Core utils
         jq \
         wget \
         curl \
         ca-certificates \
-        software-properties-common \
         apt-transport-https \
         # Note: nodejs + npm already provided by base image (NodeSource Node 18)
         # Audio
