@@ -22,6 +22,7 @@ const performance = require('./api/performance');
 const tasks = require('./api/tasks');
 const recording = require('./api/recording');
 const clipboard = require('./api/clipboard');
+const analytics = require('./api/analytics');
 
 const PORT = parseInt(process.env.FASTVM_DASHBOARD_PORT || '3001', 10);
 const DATA_ROOT = process.env.FASTVM_DATA_ROOT || '/config';
@@ -71,11 +72,15 @@ app.use('/api', (req, res, next) => {
     next();
 });
 
+// Track activity for all authenticated requests
+app.use('/api', analytics.trackActivity);
+
 app.use('/api/snapshots', snapshots.router);
 app.use('/api/performance', performance.router);
 app.use('/api/tasks', tasks.router);
 app.use('/api/recording', recording.router);
 app.use('/api/clipboard', clipboard.router);
+app.use('/api/analytics', analytics.router);
 
 app.get('/api/whoami', (_req, res) => res.json({ ok: true, dataRoot: DATA_ROOT }));
 
@@ -104,6 +109,7 @@ wss.on('connection', (ws) => {
 // ---------------------------------------------------------------- shutdown
 function shutdown() {
     console.log('[dashboard] shutting down');
+    analytics.trackSessionEnd();
     broadcasters.forEach((stop) => { try { stop(); } catch {} });
     server.close(() => process.exit(0));
     setTimeout(() => process.exit(1), 5000).unref();
@@ -112,6 +118,8 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 server.listen(PORT, () => {
+    analytics.trackSessionStart();
     console.log(`[dashboard] listening on :${PORT}`);
     console.log(`[dashboard] token: ${AUTH_TOKEN}`);
+    console.log(`[dashboard] analytics tracking enabled`);
 });
