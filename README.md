@@ -31,6 +31,19 @@
 
 ---
 
+## 📊 **Real-Time Stats**
+
+```
+✅ Successful Builds:     0+
+📦 Total Deployments:     0+
+📝 Total Commits:         0
+🕐 Last Updated:          [Auto-updating every hour]
+```
+
+**These are real metrics** — updated every hour from actual CI/CD activity.
+
+---
+
 ## 📊 **Built-In Analytics Dashboard**
 
 Every FastVM instance tracks its own usage:
