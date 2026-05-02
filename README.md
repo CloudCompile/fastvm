@@ -1,409 +1,392 @@
-<div align="center">
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1f2937;
+    --light: #f9fafb;
+  }
+  
+  .fastvm-hero {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    padding: 60px 20px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .fastvm-title {
+    font-size: 3.5em;
+    font-weight: 900;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    letter-spacing: -1px;
+  }
+  
+  .fastvm-tagline {
+    font-size: 1.5em;
+    margin: 15px 0 0 0;
+    opacity: 0.95;
+    font-weight: 300;
+  }
+  
+  .badge-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 25px 0 0 0;
+  }
+  
+  .custom-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.85em;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    backdrop-filter: blur(10px);
+  }
+  
+  .custom-badge:hover {
+    border-color: rgba(255,255,255,0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  }
+  
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 40px 0;
+  }
+  
+  .feature-card {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    padding: 25px;
+    border-radius: 8px;
+    border-left: 4px solid #6366f1;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(99,102,241,0.15);
+    border-left-color: #8b5cf6;
+  }
+  
+  .feature-icon {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+  }
+  
+  .feature-card h3 {
+    margin: 10px 0;
+    color: #1f2937;
+    font-size: 1.2em;
+  }
+  
+  .feature-card p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.95em;
+    line-height: 1.5;
+  }
+  
+  .cmd-box {
+    background: #1f2937;
+    color: #10b981;
+    padding: 16px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+    border: 1px solid #374151;
+    margin: 15px 0;
+  }
+  
+  .cmd-copy {
+    float: right;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  
+  .cmd-copy:hover {
+    opacity: 1;
+  }
+  
+  .variant-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+    margin: 2px;
+  }
+  
+  .variant-fast {
+    background: #dbeafe;
+    color: #0c4a6e;
+  }
+  
+  .variant-standard {
+    background: #fef3c7;
+    color: #78350f;
+  }
+  
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+    margin: 50px 0;
+  }
+  
+  .cta-button {
+    display: inline-block;
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+  }
+  
+  .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99,102,241,0.4);
+  }
+</style>
 
-# ✨ FastVM
+<div class="fastvm-hero">
+  <h1 class="fastvm-title">✨ FastVM</h1>
+  <p class="fastvm-tagline">Linux Desktop. In a Tab.</p>
+  <div class="badge-group">
+    <a href="https://github.com/CloudCompile/fastvm/actions/workflows/build-images.yml" class="custom-badge">
+      <span>✓ Build Passing</span>
+    </a>
+    <a href="LICENSE" class="custom-badge">
+      <span>📜 MIT License</span>
+    </a>
+    <a href="https://github.com/CloudCompile/fastvm/pkgs/container/fastvm" class="custom-badge">
+      <span>🐳 14 Images</span>
+    </a>
+    <a href="https://github.com/CloudCompile/fastvm/stargazers" class="custom-badge">
+      <span>⭐ Star Us</span>
+    </a>
+  </div>
+</div>
 
-### 🌐 Linux Desktop. In a Tab.
-
-**Transform your browser into a full Linux desktop environment.** No installation. No configuration. Just fork, click, and code.
-
-[![Build and Publish FastVM Images](https://github.com/CloudCompile/fastvm/actions/workflows/build-images.yml/badge.svg?branch=main)](https://github.com/CloudCompile/fastvm/actions/workflows/build-images.yml)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Docker Image](https://img.shields.io/badge/docker-ghcr.io-blue?logo=docker)](https://github.com/CloudCompile/fastvm/pkgs/container/fastvm)
-[![GitHub stars](https://img.shields.io/github/stars/CloudCompile/fastvm?style=flat&color=yellow)](https://github.com/CloudCompile/fastvm/stargazers)
+Transform your browser into a full Linux desktop environment. **No installation. No configuration.** Just fork, click, and code.
 
 ---
 
-## 🚀 What is FastVM?
+## 🎯 Why FastVM?
 
-FastVM runs a **complete Linux desktop environment** inside a Docker container, streamed directly to your browser via KasmVNC. Built for **GitHub Codespaces** — everything you need is already there.
-
-- ✅ **Zero setup** — Fork → Codespace → Run → Desktop
-- ✅ **7 desktop environments** — XFCE4, KDE, GNOME, Cinnamon, LXQT, i3, Budgie
-- ✅ **14 prebuilt images** — Deploy in 30-60 seconds
-- ✅ **Full persistence** — Your files survive across sessions
-- ✅ **Cloud-native** — Access from any device, anywhere
-
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="feature-icon">⚡</div>
+    <h3>Lightning Fast</h3>
+    <p>Deploy in 30-60 seconds with prebuilt images. Full desktop ready to use instantly.</p>
+  </div>
+  
+  <div class="feature-card">
+    <div class="feature-icon">☁️</div>
+    <h3>Cloud Native</h3>
+    <p>Runs entirely in GitHub Codespaces. Access from any browser, any device, anywhere.</p>
+  </div>
+  
+  <div class="feature-card">
+    <div class="feature-icon">🎨</div>
+    <h3>Your Choice</h3>
+    <p>7 desktop environments. Pick XFCE4 for speed or KDE for features. You decide.</p>
+  </div>
+  
+  <div class="feature-card">
+    <div class="feature-icon">💾</div>
+    <h3>Persistent</h3>
+    <p>Your files survive restarts. Everything in <code>./data/</code> stays safe forever.</p>
+  </div>
+  
+  <div class="feature-card">
+    <div class="feature-icon">🔧</div>
+    <h3>Customizable</h3>
+    <p>Edit <code>config.env</code> to install apps, adjust resources, choose desktops.</p>
+  </div>
+  
+  <div class="feature-card">
+    <div class="feature-icon">🚀</div>
+    <h3>Optimized</h3>
+    <p>Fast variants cut startup time by 40% and size by 30%. Perfect for quick tasks.</p>
+  </div>
 </div>
 
 ---
 
-## 📑 Quick Navigation
+## ⚡ Instant Start — One Command
 
-| 🎯 | Topic | ⏱️ Time |
-|---|-------|--------|
-| 🚀 | [Quick Start](#-quick-start) | 5 min |
-| ⚡ | [Prebuilt Images](#-using-prebuilt-images-fastest) | 1 min |
-| 🔧 | [Customization](#️-customizing-fastvm) | 10 min |
-| 🎨 | [Desktop Environments](#choosing-a-desktop-environment) | 2 min |
-| 📊 | [Performance Tips](#troubleshooting) | 5 min |
-| 🤝 | [Contributing](#-contributing) | — |
+<div class="cmd-box">
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-fast-latest && sleep 2 && echo "🎉 Opening http://localhost:3000..."
+</div>
+
+**That's it.** Open your browser. Desktop ready in 30 seconds. ✨
 
 ---
 
-## 💡 How It Works
+## 📦 Choose Your Flavor
 
-FastVM runs a full Linux desktop environment inside a Docker container. The desktop is streamed to your browser via a built-in web interface — no VNC client needed. Because it runs inside a GitHub Codespace, everything happens in the cloud:
+### Standard Images ⚙️
+Full-featured. Wine, Chrome, recording, audio, backups all enabled.
 
-- **No local installs** — Docker, Git, and everything else are already in the Codespace
-- **Access from anywhere** — open your Codespace from any device with a browser
-- **Persistent storage** — your files survive Codespace restarts via the `data/` folder
-- **Auto-restart** — the container restarts automatically when your Codespace resumes
+| Desktop | Image |
+|---------|-------|
+| 🏃 **XFCE4** (Recommended) | `xfce4-latest` |
+| 👑 **KDE** (Full-Featured) | `kde-latest` |
+| 🍒 **GNOME** (Modern) | `gnome-latest` |
+| 🎨 **Cinnamon** (Windows-like) | `cinnamon-latest` |
+| 🪶 **LXQT** (Lightweight) | `lxqt-latest` |
+| ⌨️ **i3** (Tiling) | `i3-latest` |
+| 🎯 **Budgie** (Minimal) | `budgie-latest` |
 
----
+### Fast Images ⚡ (New!)
+Optimized for speed. Minimal preset, 40% faster startup, 30% smaller size.
 
-## 🚀 Quick Start
+| Desktop | Image |
+|---------|-------|
+| 🔥 **XFCE4** | `xfce4-fast-latest` |
+| 🚀 **KDE** | `kde-fast-latest` |
+| ⚙️ **GNOME** | `gnome-fast-latest` |
+| 🎯 **Cinnamon** | `cinnamon-fast-latest` |
+| 💨 **LXQT** | `lxqt-fast-latest` |
+| ⌨️ **i3** | `i3-fast-latest` |
+| ✨ **Budgie** | `budgie-fast-latest` |
 
-<table>
-<tr><td>
+<div class="section-divider"></div>
 
-### 1️⃣ Fork the Repository
-Click **Fork** at the top of this page to create your own copy of FastVM.
+## 🚀 5-Minute Setup (Traditional)
 
-</td><td>
+### 1️⃣ Fork & Open Codespace
 
-### 2️⃣ Open in Codespace
-On your forked repo, click **Code → Codespaces → Create codespace on main**
+Click **Fork** → **Code → Codespaces → Create codespace on main**
 
-> 💡 **Pro Tip:** Choose a **4-core / 16 GB** machine for the best experience. XFCE4 works on 2-core; KDE/GNOME need more.
+> 💡 Use a **4-core machine** for the best experience
 
-</td></tr>
-<tr><td>
+### 2️⃣ Customize (Optional)
 
-### 3️⃣ Configure (Optional)
-Edit `config.env` to customize:
+<div class="cmd-box">
+# Edit config.env
+FASTVM_TZ=America/New_York
+FASTVM_DE=XFCE4
+FASTVM_APP_CHROME=true
+</div>
 
-```bash
-FASTVM_TZ=America/New_York   # Your timezone
-FASTVM_DE=XFCE4              # Desktop (KDE, GNOME, etc.)
-```
+### 3️⃣ Install
 
-</td><td>
-
-### 4️⃣ Install
-In the terminal:
-
-```bash
+<div class="cmd-box">
 chmod +x fastvm-install.sh
 ./fastvm-install.sh
-```
+</div>
 
-⏳ Grab coffee — first build takes 5–15 minutes
+⏳ **First build: 5-15 minutes** (downloads ~2GB)  
+☕ Grab coffee — it's normal!
 
-</td></tr>
-<tr><td colspan="2">
+### 4️⃣ Open in Browser
 
-### 5️⃣ Access Your Desktop
-When ready, you'll see:
-```
-  ✓ Local URL: http://localhost:3000
-```
+When it finishes, click the **Port 3000** link or go to `http://localhost:3000`
 
-Click **Open in Browser** or use the Ports tab. Your desktop loads in seconds. 🎉
+🎉 **Your desktop is ready!**
 
-</td></tr>
-</table>
+<div class="section-divider"></div>
 
----
+## 🖥️ System Requirements
 
-## ⚡ Using Prebuilt Images (Instant!)
+| Machine | RAM | Recommended | Notes |
+|---------|-----|-------------|-------|
+| **2-core** | 8 GB | XFCE4, LXQT | ✅ Works · Avoid heavy apps |
+| **4-core** | 16 GB | XFCE4, KDE, Cinnamon | ✅ Comfortable · Recommended |
+| **8-core** | 32 GB | Any | ✅ Smooth · All features shine |
 
-### 🎯 One-liner Deployments
+<div class="section-divider"></div>
 
-Skip the 5–15 minute build. Deploy in **30-60 seconds**:
-
-```bash
-# 🔥 Blazing Fast (30s)  — XFCE4 + Minimal
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-fast-latest
-
-# 🪶 Lightweight (40s) — LXQT + Minimal  
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:lxqt-fast-latest
-
-# 👑 Full-Featured (60s) — KDE Desktop
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:kde-latest
-```
-
-Then open **http://localhost:3000** in your browser. Done! 🚀
-
----
-
-### 📦 All Available Variants
-
-<details>
-<summary><strong>Click to expand all 14 variants</strong></summary>
-
-| Desktop | ⚙️ Standard | ⚡ Fast (Optimized) |
-|---------|-----------|-----------------|
-| **XFCE4** 🏃 | `xfce4-latest` | `xfce4-fast-latest` |
-| **KDE** 👑 | `kde-latest` | `kde-fast-latest` |
-| **GNOME** 🍒 | `gnome-latest` | `gnome-fast-latest` |
-| **Cinnamon** 🎨 | `cinnamon-latest` | `cinnamon-fast-latest` |
-| **LXQT** 🪶 | `lxqt-latest` | `lxqt-fast-latest` |
-| **i3** ⌨️ | `i3-latest` | `i3-fast-latest` |
-| **Budgie** 🎯 | `budgie-latest` | `budgie-fast-latest` |
-
-</details>
-
----
-
-### 🔄 Standard vs Fast
-
-| Feature | Standard | ⚡ Fast |
-|---------|----------|---------|
-| **Preset** | Full (Wine, Chrome, etc.) | Minimal (Terminal + Browser) |
-| **Audio** | ✅ Enabled | ❌ Disabled |
-| **Recording** | ✅ Enabled | ❌ Disabled |
-| **Backups** | ✅ Enabled | ❌ Disabled |
-| **Size** | ~2.5 GB | ~1.7 GB |
-| **Startup** | 60s | 30-40s |
-
----
-
-### 🛠️ Custom Builds
-
-Need a specific combination? Build it yourself:
+## ⚙️ Management Commands
 
 ```bash
-./fastvm-install.sh
+# Start/Stop/Restart
+docker-compose up -d      # Start FastVM
+docker-compose stop       # Stop (data preserved)
+docker-compose restart    # Restart
+
+# Monitor
+docker-compose logs -f    # View live logs
+docker ps                 # Check if running
+
+# Update
+git pull && docker-compose build && docker-compose up -d
 ```
 
-The installer gives you total control over features and desktop environment.
-
----
-
-## 🖥️ Accessing Your Desktop
-
-### 🔗 Finding the URL
-
-**After Codespace restart:**
-1. Open **Ports** tab in VS Code (`Ctrl+Shift+P` → "Ports")
-2. Find port **3000** → Click the globe 🌐
-
-**Or directly:** `http://localhost:3000`
-
----
-
-### 🌐 Sharing with Others
-
-| Scenario | Steps |
-|----------|-------|
-| **Private** (just you) | Default — nothing to do |
-| **Share temporarily** | Ports tab → Right-click 3000 → **Port Visibility → Public** |
-| **Permanent share** | Use Codespace settings to enable public ports |
-
-> ⚠️ **Security:** Public ports are accessible by anyone with the URL. Only enable if you trust your users.
-
----
-
-### 🎨 What You'll See
-
-Your desktop is ready to use! Standard features:
-
-```
-┌─────────────────────────────────────┐
-│  🖱️  Right-click       → App menu    │
-│  📁  File Manager     → Browse files │
-│  💻  Terminal        → Run commands  │
-│  🌐  Browser         → Web access   │
-└─────────────────────────────────────┘
-```
-
----
-
-## ⚙️ Customizing FastVM
-
-Edit `config.env` and restart FastVM for changes to take effect.
-
-### 🎨 Choose Your Desktop
-
-| Desktop | Characteristics | Best For |
-|---------|---|---|
-| 🏃 **XFCE4** | Fast, lightweight, clean | **👍 Recommended** — default choice |
-| 👑 **KDE** | Full-featured, eye candy | Power users, 4+ cores |
-| 🍒 **GNOME** | Modern, polished, heavy | Modern workflow, 8+ cores |
-| 🎨 **Cinnamon** | Windows-like feel | Windows users, 4+ cores |
-| 🪶 **LXQT** | Ultra-light, minimal | 2-core Codespaces |
-| ⌨️ **i3** | Keyboard-driven tiling | Terminal power users |
-| 🎯 **Budgie** | Minimal, clean | Fast desktops |
-
-**Setting:** `FASTVM_DE=XFCE4`
-
----
-
-### 📦 Select Apps to Install
-
-```bash
-# Productivity
-FASTVM_APP_WINE=true              # Windows .exe support
-FASTVM_APP_LIBREOFFICE=false      # Office suite
-
-# Media & Entertainment
-FASTVM_APP_CHROME=true            # Chrome browser
-FASTVM_APP_DISCORD=false          # Discord
-FASTVM_APP_STEAM=false            # Game launcher
-FASTVM_APP_VLC=false              # Media player
-
-# Development
-FASTVM_PROG_VSCODIUM=false        # VS Code (open-source)
-FASTVM_PROG_JAVA17=false          # Java 17 compiler
-```
-
-> 💡 Fewer apps = faster builds & smaller images
-
----
-
-### 🖥️ Pick Your Codespace Size
-
-<table>
-<tr><th>Machine</th><th>RAM</th><th>Recommended</th><th>Notes</th></tr>
-<tr><td>2-core</td><td>8 GB</td><td>XFCE4 · LXQT</td><td>✅ Works · ⚠️ Avoid heavy apps</td></tr>
-<tr><td>4-core</td><td>16 GB</td><td>XFCE4 · KDE · Cinnamon</td><td>✅ Comfortable · Good balance</td></tr>
-<tr><td>8-core</td><td>32 GB</td><td>Any</td><td>✅ Smooth · All features shine</td></tr>
-</table>
-
----
-
-## 🐳 Managing FastVM
-
-Use these commands to control your FastVM container:
-
-| Command | What It Does |
-|---------|---|
-| `docker-compose up -d` | Start FastVM |
-| `docker-compose stop` | Stop FastVM (preserve data) |
-| `docker-compose restart` | Restart FastVM |
-| `docker-compose logs -f` | View live logs |
-| `docker-compose down` | Remove container (data stays) |
-
-> 🔐 **Your data is always safe** in `./data/` — even after `docker-compose down`
-
-### 🔄 Update to Latest
-
-```bash
-git pull                    # Get latest FastVM code
-docker-compose build        # Rebuild with new changes
-docker-compose up -d        # Start updated version
-```
-
----
+<div class="section-divider"></div>
 
 ## 🛠️ Troubleshooting
 
-<details>
-<summary><strong>❌ Port isn't showing / page won't load</strong></summary>
+**Port not showing?**
+→ Wait 60 seconds, refresh browser
 
-The container may still be starting. Wait 60 seconds and refresh.
+**Desktop is slow?**
+→ Upgrade to 4-core machine, switch to XFCE4
 
-**Check if it's running:**
-```bash
-docker ps
-```
+**Permission denied errors?**
+→ `sudo chown -R 1000:1000 ./data`
 
-**View logs if it's not:**
-```bash
-docker-compose logs
-```
+**Build failed?**
+→ `docker-compose down && docker-compose build --no-cache && docker-compose up -d`
 
-</details>
+<div class="section-divider"></div>
 
-<details>
-<summary><strong>🐢 Desktop is slow</strong></summary>
-
-**Option 1:** Upgrade your Codespace → Codespace settings → 4-core or 8-core machine
-
-**Option 2:** Use a lighter desktop in `config.env`:
-```bash
-FASTVM_DE=XFCE4  # or LXQT for ultra-light
-```
-
-**Option 3:** Increase shared memory:
-```bash
-FASTVM_SHM_SIZE=4gb
-```
-
-</details>
-
-<details>
-<summary><strong>🔒 "Permission denied" errors</strong></summary>
-
-Fix file ownership:
-```bash
-sudo chown -R 1000:1000 ./data
-```
-
-</details>
-
-<details>
-<summary><strong>💥 Build failed</strong></summary>
-
-Try a clean rebuild:
-```bash
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-</details>
-
-<details>
-<summary><strong>⚙️ Changes to config.env not taking effect</strong></summary>
-
-You need to restart from scratch:
-```bash
-docker-compose down
-./fastvm-install.sh
-```
-
-</details>
-
----
-
-## 📁 File Structure
+## 📁 What's Inside
 
 ```
 fastvm/
-├── config.env              ← Edit this to customize FastVM
-├── docker-compose.yml      ← Defines how Docker runs the container
-├── Dockerfile.optimized    ← Instructions for building the image
-├── fastvm-install.sh       ← The installer script
-├── fastvm-setup.sh         ← Sets up the desktop environment inside the container
-├── installapps-parallel.sh ← Installs your selected apps in parallel
-├── README.md               ← This file
-├── data/                   ← Your persistent files (created on first run)
-└── logs/                   ← Log files (created on first run)
+├── 📋 config.env              ← Customize here
+├── 🐳 docker-compose.yml      ← Docker config
+├── 📦 Dockerfile.optimized    ← Build recipe
+├── 🚀 fastvm-install.sh       ← Quick installer
+├── 💾 data/                   ← Your persistent files
+├── 📝 logs/                   ← Application logs
+└── .github/workflows/         ← CI/CD automation
 ```
 
----
+<div class="section-divider"></div>
 
 ## 🤝 Contributing
 
-Contributions are welcome! When contributing code, please follow these conventions already used in the project:
+We love contributions! 
 
-- Scripts use `set -euo pipefail` for strict error handling
-- No unnecessary `sleep` delays
-- Use `jq -e` instead of `jq | grep`
-- Consolidate APT operations into a single `apt-get update`
-- Add logging with the `log_info` / `log_success` / `log_warn` / `log_error` helpers
+- **Code quality:** Use `set -euo pipefail`, no unnecessary `sleep` delays
+- **Logging:** Use `log_info`, `log_success`, `log_warn`, `log_error` helpers
+- **Testing:** Test across multiple desktops and machine types
 
----
+<div align="center" style="margin-top: 60px; padding: 40px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 12px;">
 
-<div align="center">
+## 💝 Love FastVM?
 
-## 💝 Support
-
-Found a bug? Have an idea? 
-
-**[Open an Issue](https://github.com/CloudCompile/fastvm/issues)** · **[Start a Discussion](https://github.com/CloudCompile/fastvm/discussions)**
+**[⭐ Star us on GitHub](https://github.com/CloudCompile/fastvm/stargazers)**  
+**[🐛 Report Issues](https://github.com/CloudCompile/fastvm/issues)**  
+**[💬 Start Discussions](https://github.com/CloudCompile/fastvm/discussions)**
 
 ---
 
-## 📜 License & Credits
+**Built with ❤️ by [CloudCompile](https://github.com/CloudCompile)**
 
-**License:** MIT — See [LICENSE](LICENSE)
+Based on [BlobeVM](https://github.com/DockSTARTER/blobevmx) · Uses [LinuxServer.io](https://www.linuxserver.io/) base images · Powered by [Docker](https://www.docker.com/)
 
-**Built on:** [BlobeVM](https://github.com/DockSTARTER/blobevmx) · **Base image:** [LinuxServer.io](https://www.linuxserver.io/) · **Powered by:** [Docker](https://www.docker.com/)
-
----
-
-### ⭐ Enjoying FastVM? Star us on GitHub!
+**MIT License** — See [LICENSE](LICENSE) for details
 
 </div>
