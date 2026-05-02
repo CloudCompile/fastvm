@@ -46,6 +46,8 @@ install_packages() {
 
 log_info "Setting up Desktop Environment: $DE_SELECTION"
 
+apt-get update -qq
+
 case "$DE_SELECTION" in
     "KDE"|"KDE Plasma"|"KDE Plasma (Heavy)")
         log_info "Installing KDE Plasma..."

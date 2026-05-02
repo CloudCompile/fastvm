@@ -121,7 +121,8 @@ load_configuration() {
     log_step "Loading configuration"
 
     if [[ -f "$CONFIG_FILE" ]]; then
-        set -a; source "$CONFIG_FILE"; set +a  # shellcheck disable=SC1090
+        # shellcheck disable=SC1090
+        set -a; source "$CONFIG_FILE"; set +a
         log_success "Loaded $CONFIG_FILE"
     else
         log_warn "config.env not found — using defaults"
@@ -132,7 +133,8 @@ load_configuration() {
         local preset_file="${SCRIPT_DIR}/presets/${FASTVM_PRESET}.preset"
         if [[ -f "$preset_file" ]]; then
             log_info "Applying preset: ${FASTVM_PRESET}"
-            set -a; source "$preset_file"; set +a  # shellcheck disable=SC1090
+            # shellcheck disable=SC1090
+            set -a; source "$preset_file"; set +a
             log_success "Preset '${FASTVM_PRESET}' applied"
         else
             log_warn "Preset file not found: $preset_file"
