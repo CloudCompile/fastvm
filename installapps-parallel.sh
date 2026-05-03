@@ -53,6 +53,21 @@ install_app() {
 }
 
 # =============================================================================
+# Single-App Mode: skip the queue, just install the one script and exit
+# =============================================================================
+if [[ -n "${FASTVM_SINGLEAPP_SCRIPT:-}" ]]; then
+    script_path="$INSTALL_DIR/$FASTVM_SINGLEAPP_SCRIPT"
+    if [[ -f "$script_path" ]]; then
+        log_info "Single-app mode: installing $FASTVM_SINGLEAPP_SCRIPT"
+        install_app "$FASTVM_SINGLEAPP_SCRIPT" "$script_path"
+        log_success "Single-app install complete"
+    else
+        log_warn "Single-app script not found: $script_path"
+    fi
+    exit 0
+fi
+
+# =============================================================================
 # Build Installation Queue
 # =============================================================================
 
