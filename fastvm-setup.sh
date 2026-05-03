@@ -186,6 +186,14 @@ case "$DE_SELECTION" in
         cp /startwm-budgie.sh /defaults/startwm.sh
         ;;
 
+    singleapp|SINGLEAPP)
+        # Single-app mode: minimal openbox, no full desktop environment
+        # The specific app is installed later via installapps-parallel.sh
+        log_info "Single-app mode — installing openbox..."
+        install_packages openbox
+        cp /startwm-singleapp.sh /defaults/startwm.sh
+        ;;
+
     *)
         log_error "Unknown desktop environment: $DE_SELECTION"
         log_info "Falling back to XFCE4"
@@ -207,6 +215,7 @@ esac
 chmod +x /defaults/startwm.sh
 
 # Clean up start scripts
-rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh /startwm-cinnamon.sh /startwm-lxqt.sh /startwm-budgie.sh 2>/dev/null || true
+rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh \
+      /startwm-cinnamon.sh /startwm-lxqt.sh /startwm-budgie.sh /startwm-singleapp.sh 2>/dev/null || true
 
 log_info "Desktop Environment setup complete!"

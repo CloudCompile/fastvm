@@ -90,28 +90,46 @@ docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-fast-latest
 
 ### **Pick Your Flavor**
 
-| Variant | Speed ⚡ | Size 💾 | Startup ⏱️ | Best For |
-|:---:|:---:|:---:|:---:|:---|
-| **xfce4-fast** | ⚡⚡⚡⚡⚡ | 1.5 GB | 30s | ⭐ **Recommended** |
-| **lxqt-fast** | ⚡⚡⚡⚡⚡ | 1.2 GB | 25s | 2-core machines |
-| **i3-fast** | ⚡⚡⚡⚡⚡ | 1.1 GB | 20s | Keyboard warriors |
-| **kde-latest** | ⚡⚡⚡ | 2.8 GB | 75s | Max features |
-| **gnome-latest** | ⚡⚡⚡ | 2.6 GB | 70s | Modern UI |
+### Single-App Variants (Ultra-Minimal)
 
-### 🚀 **Try These Commands**
+| Variant | What You Get | Size | Startup |
+|:---|:---|:---:|:---:|
+| **browser-latest** 🌐 | Just Chrome. Nothing else. | ~900 MB | **15s** |
+| **discord-latest** 💬 | Just Discord. Nothing else. | ~850 MB | **15s** |
+| **vscode-latest** 💻 | Just VSCodium. Nothing else. | ~1.1 GB | **15s** |
+| **terminal-latest** ⌨️ | Just terminal + tmux + vim | ~500 MB | **10s** |
+
+### Desktop + Preset Combinations
+
+| Variant | Speed ⚡ | Size 💾 | Startup ⏱️ | Best For |
+|:---|:---:|:---:|:---:|:---|
+| **xfce4-minimal** | ⚡⚡⚡⚡⚡ | 1.5 GB | 30s | ⭐ Recommended |
+| **lxqt-minimal** | ⚡⚡⚡⚡⚡ | 1.2 GB | 25s | 2-core machines |
+| **i3-minimal** | ⚡⚡⚡⚡⚡ | 1.1 GB | 20s | Keyboard users |
+| **kde-gaming** | ⚡⚡⚡ | 2.8 GB | 90s | Gaming |
+| **xfce4-development** | ⚡⚡⚡⚡ | 2.0 GB | 60s | Coding |
+| **gnome-office** | ⚡⚡⚡ | 2.4 GB | 70s | Office work |
+
+### 🚀 **Quick Start**
 
 ```bash
-# ⚡ ULTRAFAST
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-fast-latest
+# ⚡ Just a browser (fastest possible — 15s startup)
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:browser-latest
 
-# 🪶 ULTRALIGHT (best for 2-core)
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:lxqt-fast-latest
+# 💬 Just Discord
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:discord-latest
 
-# ⌨️ MINIMALIST (tiling/keyboard)
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:i3-fast-latest
+# 💻 Just VSCodium
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:vscode-latest
 
-# 👑 FULL POWER (all features)
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:kde-latest
+# 🏃 Full XFCE4 minimal desktop
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-minimal-latest
+
+# 🎮 Gaming (KDE + Steam + Wine, CPU-rendered)
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:kde-gaming-latest
+
+# 🖥️ Local Docker with GPU (NOT available in Codespaces)
+docker run -d -p 3000:3000 --device /dev/dri ghcr.io/cloudcompile/fastvm:kde-gaming-latest
 ```
 
 </div>
@@ -132,13 +150,13 @@ docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:kde-latest
 
 ---
 
-## 🎮 **GAMING-READY**
+## 🎮 **GAMING**
 
-✅ **Wine support** (x86-64 + i386)  
-✅ **Steam integration** with Proton  
-✅ **GPU passthrough** via /dev/dri  
-✅ **Full performance** — no emulation overhead  
-✅ **14+ games tested** and running smoothly  
+✅ **Wine support** (x86-64 + i386)
+✅ **Steam integration** with Proton
+✅ **CPU-rendered** — Codespaces is CPU-only (no GPU)
+✅ **Local Docker:** optional GPU via `--device /dev/dri`
+✅ **Games run** — just no hardware acceleration in Codespaces
 
 ---
 
