@@ -33,30 +33,12 @@ RUN set -eu && \
     add-apt-repository -y universe multiverse && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-        # Core utils
-        jq \
-        wget \
-        curl \
-        ca-certificates \
-        apt-transport-https \
-        # Note: nodejs + npm already provided by base image (NodeSource Node 18)
-        # Audio
-        pulseaudio \
-        pulseaudio-utils \
-        libpulse0 \
-        # Screen recording
-        ffmpeg \
-        x11-utils \
-        # Clipboard sync
-        xclip \
-        xsel \
-        # Cron
-        cron \
-        # Compression extras
-        zstd \
-        # Misc runtime
-        procps \
-        net-tools && \
+        jq wget curl ca-certificates apt-transport-https \
+        pulseaudio pulseaudio-utils libpulse0 \
+        ffmpeg x11-utils \
+        xclip xsel \
+        cron zstd \
+        procps net-tools && \
     rm -rf /var/lib/apt/lists/*
 
 # =============================================================================

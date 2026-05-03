@@ -1,0 +1,3 @@
+ignore:
+  - DL3008  # apt-get version pinning — impractical for desktop packages
+  - DL3009  # apt-get lists deletion — already done per layer
