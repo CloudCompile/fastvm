@@ -78,11 +78,6 @@ jobs:
         run: |
           mkdir -p /tmp/build-context
           cp -r . /tmp/build-context/
-          cd /tmp/build-context
-
-          # Modify config.env for this build
-          sed -i "s/FASTVM_DE=.*/FASTVM_DE=${{ matrix.desktop }}/" config.env
-          sed -i "s/FASTVM_PRESET=.*/FASTVM_PRESET=${{ matrix.preset }}/" config.env
 
       - name: Build and push ${{ matrix.desktop }}-${{ matrix.preset }}
         uses: docker/build-push-action@v5
@@ -101,6 +96,8 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_DE=${{ matrix.desktop }}
+            FASTVM_PRESET=${{ matrix.preset }}
 
   build-specials:
     runs-on: ubuntu-latest
@@ -163,13 +160,6 @@ jobs:
         run: |
           mkdir -p /tmp/build-context
           cp -r . /tmp/build-context/
-          cd /tmp/build-context
-
-          # Point to the single-app startwm and set the app command via env
-          sed -i "s/FASTVM_DE=.*/FASTVM_DE=singleapp/" config.env
-          sed -i "s/FASTVM_PRESET=.*/FASTVM_PRESET=none/" config.env
-          echo "FASTVM_SINGLEAPP_CMD=${{ matrix.autostart_cmd }}" >> config.env
-          echo "FASTVM_SINGLEAPP_SCRIPT=${{ matrix.app_script }}" >> config.env
 
       - name: Build and push ${{ matrix.name }}
         uses: docker/build-push-action@v5
@@ -187,6 +177,10 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_DE=singleapp
+            FASTVM_PRESET=none
+            FASTVM_SINGLEAPP_CMD=${{ matrix.autostart_cmd }}
+            FASTVM_SINGLEAPP_SCRIPT=${{ matrix.app_script }}
 
   build-summary:
     runs-on: ubuntu-latest

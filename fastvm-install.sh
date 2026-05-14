@@ -153,7 +153,7 @@ load_configuration() {
     printf  "  %-30s %s\n" "Desktop:"        "${FASTVM_DE:-XFCE4}"
     printf  "  %-30s %s\n" "Preset:"         "${FASTVM_PRESET:-none}"
     printf  "  %-30s %s\n" "VNC port:"       "${FASTVM_PORT:-3000}"
-    printf  "  %-30s %s\n" "Dashboard port:" "${FASTVM_DASHBOARD_PORT:-3001}"
+    printf  "  %-30s %s\n" "Dashboard port:" "${FASTVM_DASHBOARD_HOST_PORT:-3001}"
     printf  "  %-30s %s\n" "CPU limit:"      "${FASTVM_CPU_LIMIT:-unlimited}"
     printf  "  %-30s %s\n" "Memory limit:"   "${FASTVM_MEMORY_LIMIT:-unlimited}"
     printf  "  %-30s %s\n" "Audio:"          "${FASTVM_AUDIO_ENABLED:-true}"
@@ -252,7 +252,7 @@ wait_for_health() {
 # =============================================================================
 show_status() {
     local port="${FASTVM_PORT:-3000}"
-    local dport="${FASTVM_DASHBOARD_PORT:-3001}"
+    local dport="${FASTVM_DASHBOARD_HOST_PORT:-3001}"
 
     echo ""
     echo -e "${CYAN}${BOLD}  ┌─────────────────────────────────────────────────────┐${NC}"

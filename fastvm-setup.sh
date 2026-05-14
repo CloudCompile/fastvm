@@ -20,6 +20,8 @@ trap 'log_error "Script failed at line $LINENO"' ERR
 # Configuration
 # =============================================================================
 DE_SELECTION="${FASTVM_DE:-XFCE4}"
+# Normalise to uppercase so CI lowercase values (xfce4, kde …) match correctly.
+DE_UPPER="${DE_SELECTION^^}"
 
 # =============================================================================
 # Helper Functions
@@ -48,8 +50,8 @@ log_info "Setting up Desktop Environment: $DE_SELECTION"
 
 apt-get update -qq
 
-case "$DE_SELECTION" in
-    "KDE"|"KDE Plasma"|"KDE Plasma (Heavy)")
+case "$DE_UPPER" in
+    "KDE"|"KDE PLASMA"|"KDE PLASMA (HEAVY)")
         log_info "Installing KDE Plasma..."
         install_packages \
             dolphin \
@@ -77,7 +79,7 @@ case "$DE_SELECTION" in
         cp /startwm-kde.sh /defaults/startwm.sh
         ;;
         
-    "XFCE4"|"XFCE4 (Lightweight)")
+    "XFCE4"|"XFCE4 (LIGHTWEIGHT)")
         log_info "Installing XFCE4..."
         install_packages \
             mousepad \
@@ -92,7 +94,7 @@ case "$DE_SELECTION" in
         cp /startwm-xfce.sh /defaults/startwm.sh
         ;;
         
-    "I3"|"I3 (Very Lightweight)")
+    "I3"|"I3 (VERY LIGHTWEIGHT)")
         log_info "Installing i3..."
         install_packages \
             i3 \
@@ -104,7 +106,7 @@ case "$DE_SELECTION" in
         cp /startwm-i3.sh /defaults/startwm.sh
         ;;
         
-    "GNOME"|"GNOME 42"|"GNOME 42 (Very Heavy)")
+    "GNOME"|"GNOME 42"|"GNOME 42 (VERY HEAVY)")
         log_info "Installing GNOME..."
         install_packages \
             gnome-shell \
@@ -165,7 +167,7 @@ case "$DE_SELECTION" in
         cp /startwm-gnome.sh /defaults/startwm.sh
         ;;
         
-    "Cinnamon")
+    "CINNAMON")
         log_info "Installing Cinnamon..."
         install_packages cinnamon
         cp /startwm-cinnamon.sh /defaults/startwm.sh
@@ -177,7 +179,7 @@ case "$DE_SELECTION" in
         cp /startwm-lxqt.sh /defaults/startwm.sh
         ;;
 
-    "Budgie"|"Budgie Desktop")
+    "BUDGIE"|"BUDGIE DESKTOP")
         log_info "Installing Budgie Desktop..."
         install_packages \
             ubuntu-budgie-desktop \
@@ -186,7 +188,7 @@ case "$DE_SELECTION" in
         cp /startwm-budgie.sh /defaults/startwm.sh
         ;;
 
-    singleapp|SINGLEAPP)
+    "SINGLEAPP")
         # Single-app mode: minimal openbox, no full desktop environment
         # The specific app is installed later via installapps-parallel.sh
         log_info "Single-app mode — installing openbox..."
@@ -195,7 +197,7 @@ case "$DE_SELECTION" in
         ;;
 
     *)
-        log_error "Unknown desktop environment: $DE_SELECTION"
+        log_error "Unknown desktop environment: $DE_SELECTION (normalised: $DE_UPPER)"
         log_info "Falling back to XFCE4"
         install_packages \
             mousepad \

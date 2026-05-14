@@ -12,7 +12,14 @@ LABEL maintainer="fastvm"
 # Environment Setup
 # =============================================================================
 ARG DEBIAN_FRONTEND="noninteractive"
-ENV FASTVM_DE=${FASTVM_DE:-XFCE4}
+ARG FASTVM_DE=XFCE4
+ARG FASTVM_PRESET=none
+ARG FASTVM_SINGLEAPP_CMD=""
+ARG FASTVM_SINGLEAPP_SCRIPT=""
+ENV FASTVM_DE=${FASTVM_DE}
+ENV FASTVM_PRESET=${FASTVM_PRESET}
+ENV FASTVM_SINGLEAPP_CMD=${FASTVM_SINGLEAPP_CMD}
+ENV FASTVM_SINGLEAPP_SCRIPT=${FASTVM_SINGLEAPP_SCRIPT}
 ENV NODE_ENV=production
 
 # =============================================================================
