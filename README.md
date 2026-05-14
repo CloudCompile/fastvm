@@ -7,7 +7,7 @@
 
 ### 🎯 One Command. Full Desktop. 30 Seconds.
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Jetbrains+Mono&size=20&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&height=100&lines=⚡+Stream+a+full+Linux+desktop+in+your+browser;🚀+14+production-ready+image+variants;🎨+7+desktop+environments+to+choose+from;💻+Zero+local+setup%2C+instant+deployment;🔥+30-second+startup%2C+pure+speed)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Jetbrains+Mono&size=20&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&height=100&lines=⚡+Stream+a+full+Linux+desktop+in+your+browser;🚀+46+production-ready+image+variants;🎨+7+desktop+environments+to+choose+from;💻+Zero+local+setup%2C+instant+deployment;🔥+30-second+startup%2C+pure+speed)](https://git.io/typing-svg)
 
 <br/>
 
@@ -62,7 +62,7 @@ Each deployment tracks its own metrics privately. No cloud services. No data col
 ## 🚀 **FASTEST DEPLOYMENT EVER**
 
 ```bash
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-fast-latest
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-none-latest
 # ↓ Open http://localhost:3000
 # ↓ BOOM 💥 Full Linux Desktop
 ```
@@ -78,7 +78,7 @@ docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-fast-latest
 | 🏃 SPEED | 🎨 CHOICE | ☁️ CLOUD | 💾 DATA |
 |:---:|:---:|:---:|:---:|
 | **30-sec startup** | **7 desktops** | **Deploy anywhere** | **Auto-backup** |
-| 14 prebuilt images | XFCE4 → KDE | Codespaces ready | Point-in-time restore |
+| 46 prebuilt images | XFCE4 → KDE | Codespaces ready | Point-in-time restore |
 | Parallel CI/CD | Pick your vibe | Infinite scaling | Persistent storage |
 | Layer caching | Lightweight+full | Zero local setup | Snapshot manager |
 
@@ -193,7 +193,7 @@ docker run -d -p 3000:3000 --device /dev/dri ghcr.io/cloudcompile/fastvm:kde-gam
 ### 🚀 Quick Start
 ```bash
 # Option 1: Docker (30 seconds)
-docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-fast-latest
+docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-none-latest
 open http://localhost:3000
 
 # Option 2: Codespaces (2 minutes)
