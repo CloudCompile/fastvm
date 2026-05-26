@@ -164,7 +164,7 @@ docker run -d -p 3000:3000 --device /dev/dri ghcr.io/cloudcompile/fastvm:kde-gam
 
 ### ⚙️ Configuration
 - **One `config.env` file** controls everything
-- **5 presets** — gaming, dev, office, media, minimal
+- **6 presets** — gaming, dev, office, media, minimal, free-vps
 - **Per-app toggles** — install exactly what you need
 - **Desktop choice** — switch with one variable
 
@@ -233,6 +233,21 @@ cat data/dashboard.token           # Get auth token
 | **development** | VSCodium, Git, Node | 120s | Coding, dev work |
 | **office** | LibreOffice suite | 90s | Documents, spreadsheets |
 | **content-creation** | GIMP, Blender, VLC | 150s | Media, design |
+| **hidencloud-free-vps** | Ultra-light non-root profile, no heavy extras | 25s | Free Pterodactyl VPS + Cloudflare |
+
+---
+
+## ☁️ **PTERODACTYL + CLOUDFLARE (FREE VPS PROFILE)**
+
+Use this for constrained plans like **2 vCPU / 3 GB RAM / 15 GB storage**:
+
+```bash
+# In config.env
+FASTVM_PRESET=hidencloud-free-vps
+FASTVM_PORT=3000
+```
+
+Then expose your panel-assigned public endpoint through Cloudflare proxy/tunnel and route it to the same FastVM port.
 
 ---
 
