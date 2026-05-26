@@ -70,12 +70,13 @@ case "$DE_UPPER" in
             plasma-desktop \
             plasma-workspace \
             qml-module-qt-labs-platform \
-            systemsettings
-        
+            systemsettings \
+            firefox
+         
         # Configure KDE
         sed -i 's/applications:org.kde.discover.desktop,/applications:org.kde.konsole.desktop,/g' \
             /usr/share/plasma/plasmoids/org.kde.plasma.taskmanager/contents/config/main.xml || true
-        
+         
         cp /startwm-kde.sh /defaults/startwm.sh
         ;;
         
@@ -86,11 +87,12 @@ case "$DE_UPPER" in
             xfce4-terminal \
             xfce4 \
             xubuntu-default-settings \
-            xubuntu-icon-theme
-        
+            xubuntu-icon-theme \
+            firefox
+         
         # Remove screensaver
         rm -f /etc/xdg/autostart/xscreensaver.desktop
-        
+         
         cp /startwm-xfce.sh /defaults/startwm.sh
         ;;
         
@@ -128,7 +130,8 @@ case "$DE_UPPER" in
             language-pack-en-base \
             mesa-utils \
             xterm \
-            yaru-*
+            yaru-* \
+            firefox
         
         # Load dconf settings
         if [[ -f /jammy.dconf.conf ]]; then
@@ -169,13 +172,13 @@ case "$DE_UPPER" in
         
     "CINNAMON")
         log_info "Installing Cinnamon..."
-        install_packages cinnamon
+        install_packages cinnamon firefox
         cp /startwm-cinnamon.sh /defaults/startwm.sh
         ;;
-        
+         
     "LXQT")
         log_info "Installing LXQT..."
-        install_packages lxqt
+        install_packages lxqt firefox
         cp /startwm-lxqt.sh /defaults/startwm.sh
         ;;
 
@@ -184,7 +187,8 @@ case "$DE_UPPER" in
         install_packages \
             ubuntu-budgie-desktop \
             budgie-desktop \
-            budgie-indicator-applet
+            budgie-indicator-applet \
+            firefox
         cp /startwm-budgie.sh /defaults/startwm.sh
         ;;
 

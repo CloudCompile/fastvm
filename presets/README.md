@@ -21,6 +21,7 @@ in `config.env`, then re-running `./fastvm-install.sh`.
 | `development`     | VSCodium + Java + Docker tools            |
 | `office`          | LibreOffice + Firefox + productivity      |
 | `content-creation`| GIMP + Audacity + screen recording        |
+| `hidencloud-free-vps` | Free non-root VPS (2 vCPU / 3 GB RAM), Cloudflare fronting |
 
 ## File format
 

@@ -1,0 +1,10 @@
+# FastVM Pterodactyl Launcher Dependencies
+# Minimal requirements for deployment on constrained VPS
+
+# Standard library is used primarily; optional packages below for enhanced functionality:
+
+# Docker SDK for Python (optional, for direct container management)
+docker>=6.0.0
+
+# psutil for resource monitoring (optional)
+psutil>=5.9.0
