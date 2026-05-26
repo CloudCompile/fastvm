@@ -38,6 +38,7 @@ RUN set -eu && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         software-properties-common && \
     add-apt-repository -y universe multiverse && \
+    add-apt-repository -y ppa:mozillateam/ppa && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
         jq wget curl ca-certificates apt-transport-https \
