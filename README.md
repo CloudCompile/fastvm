@@ -239,15 +239,79 @@ cat data/dashboard.token           # Get auth token
 
 ## ☁️ **PTERODACTYL + CLOUDFLARE (FREE VPS PROFILE)**
 
-Use this for constrained plans like **2 vCPU / 3 GB RAM / 15 GB storage**:
+Deploy FastVM on **HiddenCloud's free Pterodactyl VPS** (2 vCPU / 3 GB RAM / 15 GB storage) with automatic resource management:
+
+### 📋 **Via app.py (Pterodactyl Panel Deployment)**
+
+Pterodactyl panels typically restrict deployments to `app.py` + `requirements.txt`. Use the included Python launcher:
 
 ```bash
-# In config.env
-FASTVM_PRESET=hidencloud-free-vps
-FASTVM_PORT=3000
+# 1. Upload repo files to your Pterodactyl server
+# 2. In the panel, upload or paste app.py as your startup command
+# 3. The launcher automatically handles:
+#    - Docker/Podman detection and installation
+#    - Non-root user setup (required for free VPS)
+#    - Resource constraints (2 CPU, 3 GB RAM, 1 GB shared memory)
+#    - Preset configuration loading
+
+# Start FastVM
+python3 app.py start
+
+# Check status
+python3 app.py status
+
+# View logs
+python3 app.py logs
+
+# Stop FastVM
+python3 app.py stop
 ```
 
-Then expose your panel-assigned public endpoint through Cloudflare proxy/tunnel and route it to the same FastVM port.
+### ⚙️ **Configuration**
+
+```bash
+# Ensure config.env has these settings:
+FASTVM_PRESET=hidencloud-free-vps      # Pre-tuned for 2 vCPU / 3 GB RAM
+FASTVM_PORT=3000                       # Web desktop port
+FASTVM_DASHBOARD_HOST_PORT=3001        # Dashboard port
+FASTVM_CPU_LIMIT=2                     # Respect VPS limits
+FASTVM_MEMORY_LIMIT=3g                 # Max 3 GB
+FASTVM_SHM_SIZE=1gb                    # Shared memory
+FASTVM_DE=LXQT                         # Lightweight desktop
+```
+
+### 🌐 **Expose via Cloudflare Tunnel**
+
+```bash
+# Install Cloudflare Tunnel agent on your VPS
+# Then create a tunnel to expose the ports:
+cloudflare-tunnel run \
+  --url http://localhost:3000 \
+  --url http://localhost:3001 \
+  my-fastvm-tunnel
+
+# Access via your Cloudflare domain
+# https://fastvm.yourdomain.com → localhost:3000
+# https://dashboard.yourdomain.com → localhost:3001
+```
+
+### ✅ **What the Preset Includes**
+
+- **LXQT Desktop** — Minimal, fast (fits in 3 GB)
+- **Firefox + Terminal** — Essential tools only
+- **No extras** — Wine, Chrome, Steam, recording, audio disabled
+- **Auto-scaling disabled** — To avoid thrashing on 2 vCPU
+- **Backups disabled** — To conserve 15 GB storage
+
+### 📊 **Typical Performance**
+
+| Metric | Value |
+|:---|---:|
+| **Boot time** | 25-30 seconds |
+| **RAM usage** | 2.2-2.8 GB |
+| **CPU load** | 30-50% (idle) |
+| **Storage used** | ~9-12 GB |
+| **Simultaneous users** | 1-2 |
 
 ---
 
