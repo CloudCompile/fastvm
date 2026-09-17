@@ -74,22 +74,19 @@ jobs:
           echo "$TAGS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Prepare Dockerfile context for ${{ matrix.desktop }}-${{ matrix.preset }}
-        run: |
-          mkdir -p /tmp/build-context
-          cp -r . /tmp/build-context/
-
       - name: Build and push ${{ matrix.desktop }}-${{ matrix.preset }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: /tmp/build-context
-          file: /tmp/build-context/Dockerfile.optimized
+          context: .
+          file: Dockerfile.optimized
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
           labels: |
             org.opencontainers.image.title=FastVM ${{ matrix.desktop }}-${{ matrix.preset }}
             org.opencontainers.image.description=FastVM with ${{ matrix.desktop }} desktop + ${{ matrix.preset }} preset
             org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:buildcache-${{ matrix.desktop }}
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:buildcache-${{ matrix.desktop }},mode=max
@@ -156,22 +153,18 @@ jobs:
           echo "$TAGS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Prepare context for ${{ matrix.name }}
-        run: |
-          mkdir -p /tmp/build-context
-          cp -r . /tmp/build-context/
-
       - name: Build and push ${{ matrix.name }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: /tmp/build-context
-          file: /tmp/build-context/Dockerfile.optimized
+          context: .
+          file: Dockerfile.optimized
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
           labels: |
             org.opencontainers.image.title=FastVM ${{ matrix.name }}
             org.opencontainers.image.description=${{ matrix.description }}
             org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:buildcache-specials
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:buildcache-specials,mode=max
           build-args: |
