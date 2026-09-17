@@ -5,7 +5,7 @@
   <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=250&section=header&text=FastVM&fontSize=100&fontColor=ffffff&animation=tilt&fontAlignY=40&desc=Linux%20Desktop%20Streaming%20Platform&descAlignY=60&descSize=30&descColor=a78bfa"/>
 </picture>
 
-### 🎯 One Command. Full Desktop. 30 Seconds.
+### 🎯 One Command. Full Desktop.
 
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Jetbrains+Mono&size=20&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&height=100&lines=⚡+Stream+a+full+Linux+desktop+in+your+browser;🚀+46+production-ready+image+variants;🎨+7+desktop+environments+to+choose+from;💻+Zero+local+setup%2C+instant+deployment;🔥+30-second+startup%2C+pure+speed)](https://git.io/typing-svg)
 
@@ -14,7 +14,7 @@
 ### ⚡ STATUS
 
 <a href="https://github.com/CloudCompile/fastvm/actions"><img src="https://img.shields.io/github/actions/workflow/status/CloudCompile/fastvm/build-images.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white&label=CI%20BUILDS&color=6366f1&labelColor=1e1b4b" alt="CI Status"></a>
-<a href="https://github.com/CloudCompile/fastvm"><img src="https://img.shields.io/badge/📦%20IMAGES-42%20VARIANTS-a855f7?style=for-the-badge&labelColor=0a0e27" alt="Docker Images"></a>
+<a href="https://github.com/CloudCompile/fastvm"><img src="https://img.shields.io/badge/📦%20IMAGES-46%20VARIANTS-a855f7?style=for-the-badge&labelColor=0a0e27" alt="Docker Images"></a>
 <a href="https://github.com/CloudCompile/fastvm/stargazers"><img src="https://img.shields.io/github/stars/cloudcompile/fastvm?style=for-the-badge&logo=starship&logoColor=white&color=ffd60a&labelColor=0a0e27" alt="GitHub Stars"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-MIT-ff006e?style=for-the-badge&labelColor=0a0e27" alt="License"></a>
 
@@ -67,7 +67,19 @@ docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-none-latest
 # ↓ BOOM 💥 Full Linux Desktop
 ```
 
-**From nothing to fully working desktop in 30 seconds.** No config. No setup. No nonsense.
+Startup time depends on the host, image, and selected applications. Measure it on your deployment rather than relying on a fixed promise.
+
+## Deployment contract
+
+- Browser desktop: host port `3000` → container port `3000`.
+- Dashboard: host port `3001` → container port `8099`.
+- Runtime data is persisted under `./data`, `./backups`, `./recordings`, and `./logs`.
+- `FASTVM_DE` and `FASTVM_PRESET` are build-time selections for published images; most feature toggles are runtime settings.
+- Copy `config.env.example` to `config.env`, then run `scripts/validate-config.sh`.
+- The dashboard token is stored in `data/dashboard.token` and is never printed to logs. Prefer the `Authorization: Bearer` header; query-string tokens are disabled by default.
+- Compose uses `privileged: false` by default. Enable it only when the workload requires broad device access, and expose the service through HTTPS/authenticated proxying outside a trusted network.
+
+See `SECURITY.md`, `docs/image-catalog.md`, and `docs/benchmarks.md` for operational guidance.
 
 ---
 

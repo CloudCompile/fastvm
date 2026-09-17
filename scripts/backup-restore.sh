@@ -21,6 +21,11 @@ EOF
 
 [[ $# -eq 1 ]] || { usage; exit 1; }
 
+if [[ "${FASTVM_BACKUP_DRY_RUN:-false}" == "true" ]]; then
+    log_info "Dry run: restore will not modify ${FASTVM_DATA_ROOT}"
+    exit 0
+fi
+
 archive="$1"
 [[ -f "$archive" ]] || archive="${FASTVM_BACKUP_DIR}/${archive}"
 [[ -f "$archive" ]] || { log_error "Archive not found: $1"; exit 1; }

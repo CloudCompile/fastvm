@@ -144,3 +144,5 @@ server.listen(PORT, () => {
     console.log(`[dashboard] token stored at ${TOKEN_FILE}`);
     console.log(`[dashboard] analytics tracking enabled`);
 });
+
+module.exports = server;

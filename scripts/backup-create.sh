@@ -14,6 +14,12 @@ COMPRESSION="${FASTVM_BACKUP_COMPRESSION:-gzip}"
 ensure_dir "${FASTVM_BACKUP_DIR}"
 ensure_dir "${FASTVM_LOG_DIR}"
 
+lock_file="${FASTVM_BACKUP_DIR}/.backup.lock"
+if command -v flock >/dev/null 2>&1; then
+    exec 9>"$lock_file"
+    flock -n 9 || { log_error "Another backup is already running"; exit 2; }
+fi
+
 ts="$(date -u +'%Y%m%dT%H%M%SZ')"
 safe_label="$(printf '%s' "$LABEL" | tr -c 'A-Za-z0-9._-' '_')"
 
@@ -29,6 +35,11 @@ metafile="${archive}.json"
 log_step "Creating snapshot: $(basename "$archive")"
 log_info "Source: ${FASTVM_DATA_ROOT}"
 log_info "Compression: ${COMPRESSION}"
+
+if [[ "${FASTVM_BACKUP_DRY_RUN:-false}" == "true" ]]; then
+    log_info "Dry run: archive will not be written"
+    exit 0
+fi
 
 if [[ ! -d "${FASTVM_DATA_ROOT}" ]]; then
     log_error "Data directory not found: ${FASTVM_DATA_ROOT}"
