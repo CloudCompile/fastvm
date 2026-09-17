@@ -82,6 +82,11 @@ jobs:
           BUILD_DATE: ${{ steps.stats.outputs.build_date }}
 
       - name: Commit stats update
+        env:
+          SUCCESSFUL_BUILDS: ${{ steps.stats.outputs.successful_builds }}
+          DEPLOYMENTS: ${{ steps.stats.outputs.deployments }}
+          TOTAL_COMMITS: ${{ steps.stats.outputs.total_commits }}
+          BUILD_DATE: ${{ steps.stats.outputs.build_date }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

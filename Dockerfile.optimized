@@ -81,7 +81,8 @@ RUN chmod +x /opt/fastvm-scripts/*.sh
 # Layer 6: Management Dashboard
 # =============================================================================
 COPY dashboard/ /opt/fastvm-dashboard/
-RUN cd /opt/fastvm-dashboard && \
+WORKDIR /opt/fastvm-dashboard
+RUN \
     npm install --omit=dev --no-audit --no-fund && \
     npm cache clean --force
 
