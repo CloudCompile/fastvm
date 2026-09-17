@@ -11,7 +11,6 @@ dashboard.token
 node_modules/
 package-lock.json
 dashboard/node_modules/
-dashboard/package-lock.json
 
 # Docker
 
