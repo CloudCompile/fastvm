@@ -123,6 +123,11 @@ const broadcasters = [
     performance.startBroadcaster(wss, 5000),
 ];
 
+server.on('close', () => {
+    broadcasters.forEach((stop) => { try { stop(); } catch {} });
+    try { wss.close(); } catch {}
+});
+
 wss.on('connection', (ws) => {
     ws.send(JSON.stringify({ type: 'hello', ts: Date.now() }));
 });
