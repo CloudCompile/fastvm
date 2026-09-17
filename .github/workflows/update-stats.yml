@@ -14,20 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Calculate stats from build logs
         id: stats
         run: |
           # Get successful build count from recent workflow runs
+          set -euo pipefail
+          REPOSITORY="${GITHUB_REPOSITORY}"
           SUCCESSFUL_BUILDS=$(gh run list \
+            --repo "$REPOSITORY" \
             --workflow build-images.yml \
             --status success \
             --limit 100 \
-            --json conclusion | jq 'map(select(.conclusion=="success")) | length')
+            --json conclusion --jq 'length')
 
           # Estimate deployments (42 desktop+preset + 4 single-app per successful build)
           DEPLOYMENTS=$((SUCCESSFUL_BUILDS * 46))
@@ -69,6 +75,9 @@ jobs:
           # Replace the stats section (from heading to the closing bold line)
           pattern = r"## 📊 \*\*Real-Time Stats\*\*.*?\*\*These are real metrics\*\*[^\n]*"
           new_content = re.sub(pattern, new_block, content, flags=re.DOTALL)
+
+          if new_content == content:
+              raise SystemExit("README stats section was not found; refusing to write unchanged content")
 
           with open("README.md", "w") as f:
               f.write(new_content)
