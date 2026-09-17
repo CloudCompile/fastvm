@@ -128,6 +128,11 @@ load_configuration() {
         log_warn "config.env not found — using defaults"
     fi
 
+    # Validate before applying presets or starting Docker.
+    if [[ -x "${SCRIPT_DIR}/scripts/validate-config.sh" ]]; then
+        "${SCRIPT_DIR}/scripts/validate-config.sh"
+    fi
+
     # If a preset is set, apply it now (merges into config.env).
     if [[ -n "${FASTVM_PRESET:-}" ]] && [[ "${FASTVM_PRESET}" != "none" ]]; then
         local preset_file="${SCRIPT_DIR}/presets/${FASTVM_PRESET}.preset"

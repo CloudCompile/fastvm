@@ -40,6 +40,8 @@ services:
       - FASTVM_RECORDING_CODEC=${FASTVM_RECORDING_CODEC:-h264}
       # Dashboard internal port (container-side, bypasses base-image nginx; always 8099)
       - FASTVM_DASHBOARD_PORT=${FASTVM_DASHBOARD_PORT:-8099}
+      - FASTVM_ALLOW_QUERY_TOKEN=${FASTVM_ALLOW_QUERY_TOKEN:-false}
+      - FASTVM_PRIVILEGED=${FASTVM_PRIVILEGED:-false}
       # Preset
       - FASTVM_PRESET=${FASTVM_PRESET:-none}
       # Version
