@@ -14,7 +14,6 @@ dashboard/node_modules/
 dashboard/package-lock.json
 
 # Docker
-.dockerignore
 
 # IDE
 .vscode/
@@ -34,3 +33,7 @@ Thumbs.db
 # Build artifacts
 *.tar
 *.tar.gz
+
+# Test and benchmark output
+coverage/
+benchmarks/results/

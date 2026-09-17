@@ -42,11 +42,26 @@ function ensureToken() {
     }
 }
 const AUTH_TOKEN = ensureToken();
+const VERSION = process.env.FASTVM_VERSION || 'dev';
+const COMMIT = process.env.FASTVM_COMMIT || 'unknown';
+const allowQueryToken = process.env.FASTVM_ALLOW_QUERY_TOKEN === 'true';
+const loginAttempts = new Map();
+
+function constantTimeEqual(a, b) {
+    const left = Buffer.from(String(a || ''));
+    const right = Buffer.from(String(b || ''));
+    return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
 
 function checkToken(req) {
     const fromHeader = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     const fromQuery = req.query && req.query.token;
-    return fromHeader === AUTH_TOKEN || fromQuery === AUTH_TOKEN;
+    return constantTimeEqual(fromHeader, AUTH_TOKEN)
+        || (allowQueryToken && constantTimeEqual(fromQuery, AUTH_TOKEN));
+}
+
+function errorResponse(res, status, message, code) {
+    return res.status(status).json({ ok: false, error: message, code });
 }
 
 // ---------------------------------------------------------------- app setup
@@ -56,19 +71,25 @@ app.use(express.static(path.join(__dirname), { index: 'index.html' }));
 
 // Public: minimal status (used by the login page).
 app.get('/api/health', (_req, res) => {
-    res.json({ ok: true, version: '1.0.0', uptime: process.uptime() });
+    res.json({ ok: true, version: VERSION, commit: COMMIT, uptime: process.uptime() });
 });
 
 app.post('/api/login', (req, res) => {
     const t = (req.body && req.body.token) || '';
-    if (t === AUTH_TOKEN) return res.json({ ok: true });
-    return res.status(401).json({ ok: false, error: 'Invalid token' });
+    const address = req.ip || 'unknown';
+    const now = Date.now();
+    const attempts = (loginAttempts.get(address) || []).filter((time) => now - time < 60000);
+    if (attempts.length >= 10) return errorResponse(res, 429, 'Too many login attempts', 'RATE_LIMITED');
+    attempts.push(now);
+    loginAttempts.set(address, attempts);
+    if (constantTimeEqual(t, AUTH_TOKEN)) return res.json({ ok: true });
+    return errorResponse(res, 401, 'Invalid token', 'INVALID_TOKEN');
 });
 
 // Authenticated routes.
 app.use('/api', (req, res, next) => {
     if (req.path === '/health' || req.path === '/login') return next();
-    if (!checkToken(req)) return res.status(401).json({ error: 'unauthorized' });
+    if (!checkToken(req)) return errorResponse(res, 401, 'Unauthorized', 'UNAUTHORIZED');
     next();
 });
 
@@ -120,6 +141,6 @@ process.on('SIGTERM', shutdown);
 server.listen(PORT, () => {
     analytics.trackSessionStart();
     console.log(`[dashboard] listening on :${PORT}`);
-    console.log(`[dashboard] token: ${AUTH_TOKEN}`);
+    console.log(`[dashboard] token stored at ${TOKEN_FILE}`);
     console.log(`[dashboard] analytics tracking enabled`);
 });

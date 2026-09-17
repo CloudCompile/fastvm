@@ -61,9 +61,9 @@ services:
 
     shm_size: ${FASTVM_SHM_SIZE:-2gb}
 
-    privileged: true
-    security_opt:
-      - seccomp:unconfined
+    # Secure default. Set FASTVM_PRIVILEGED=true only for workloads that need
+    # broad device access (for example some GPU/KVM configurations).
+    privileged: ${FASTVM_PRIVILEGED:-false}
 
     # Uncomment to enable KVM acceleration
     # devices:

@@ -1,0 +1,16 @@
+.git
+.github
+.vscode
+node_modules
+dashboard/node_modules
+__pycache__
+*.pyc
+data
+backups
+recordings
+logs
+.env
+.env.*
+*.tar
+*.tar.gz
+coverage
