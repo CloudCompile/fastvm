@@ -17,17 +17,6 @@ fi
 mkdir -p /config/backups /config/recordings /config/.fastvm /var/log/fastvm /defaults 2>/dev/null || true
 chown abc:abc /config/backups /config/recordings /config/.fastvm /var/log/fastvm /defaults 2>/dev/null || true
 
-# 2a. Ensure PulseAudio uses the FastVM default config if the existing user config
-# is missing the native socket bridge needed for KasmVNC audio.
-if [[ -f /etc/fastvm/pulseaudio-default.pa ]]; then
-    mkdir -p /config/.config/pulse 2>/dev/null || true
-    if [[ ! -f /config/.config/pulse/default.pa ]] || \
-       ! grep -q 'module-native-protocol-unix.*socket=/tmp/pulse-socket' /config/.config/pulse/default.pa 2>/dev/null; then
-        cp /etc/fastvm/pulseaudio-default.pa /config/.config/pulse/default.pa 2>/dev/null || true
-        chown abc:abc /config/.config/pulse/default.pa 2>/dev/null || true
-    fi
-fi
-
 # 3. Default scheduled tasks (best-effort — never fatal)
 {
     if [[ "${FASTVM_BACKUP_ENABLED:-true}" == "true" ]] && [[ ! -s /config/.fastvm/tasks.json ]]; then

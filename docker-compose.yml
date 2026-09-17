@@ -57,10 +57,6 @@ services:
       - ./recordings:/config/recordings
       - ./logs:/var/log/fastvm
 
-    # Audio device passthrough (best-effort; silently ignored if missing)
-    devices:
-      - /dev/snd:/dev/snd
-
     shm_size: ${FASTVM_SHM_SIZE:-2gb}
 
     # Secure default. Set FASTVM_PRIVILEGED=true only for workloads that need

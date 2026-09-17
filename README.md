@@ -188,7 +188,8 @@ docker run -d -p 3000:3000 --device /dev/dri ghcr.io/cloudcompile/fastvm:kde-gam
 
 ### 🎬 Media & Recording
 - **Screen recording** with ffmpeg
-- **Audio forwarding** via PulseAudio
+- **Audio forwarding** via PulseAudio for every desktop and single-app image
+- **Audio input and output** use the PulseAudio/browser bridge provided by the KasmVNC base image; run `/fastvm-scripts/audio-self-test.sh` inside a running container to verify the active sink and source
 - **Bidirectional clipboard** sync
 - **Mic input** support
 
@@ -278,6 +279,10 @@ python3 app.py logs
 # Stop FastVM
 python3 app.py stop
 ```
+
+For Pterodactyl, upload `app.py`, `config.env`, and `docker-compose.yml` to
+the same directory. If the panel stores configuration elsewhere, use
+`FASTVM_CONFIG_FILE=/absolute/path/config.env python3 app.py`.
 
 ### ⚙️ **Configuration**
 

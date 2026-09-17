@@ -3,8 +3,13 @@
 
 # Standard library is used primarily; optional packages below for enhanced functionality:
 
-# Docker SDK for Python (optional, for direct container management)
+# Docker SDK for Python (daemon diagnostics; Compose CLI is still required)
 docker>=6.0.0
 
 # psutil for resource monitoring (optional)
 psutil>=5.9.0
+
+# Keep the launcher compatible with panel startup environments that install
+# another application before this file (for example hermes-agent).
+pydantic==2.13.4
+requests==2.33.0

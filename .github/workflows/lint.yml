@@ -36,3 +36,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check options.json is valid JSON
         run: python3 -m json.tool options.json > /dev/null
+
+  validate-audio:
+    name: Validate audio setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check every desktop starter initializes audio
+        run: |
+          set -euo pipefail
+          for starter in root/startwm-*.sh; do
+            bash -n "$starter"
+          done
+          grep -q 'baseimage-kasmvnc' Dockerfile.optimized
+          grep -q 'base image' scripts/audio-init.sh
+          bash -n scripts/audio-init.sh scripts/audio-self-test.sh

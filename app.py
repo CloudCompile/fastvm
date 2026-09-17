@@ -21,8 +21,19 @@ import json
 import subprocess
 import time
 import argparse
+import platform
+import shutil
+import tarfile
+import tempfile
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Dict, Optional, List, Tuple
+
+try:
+    import docker
+except ImportError:
+    docker = None
 
 
 class FastVMPterodactylLauncher:
@@ -30,8 +41,18 @@ class FastVMPterodactylLauncher:
 
     def __init__(self, base_dir: str = "."):
         """Initialize launcher."""
+        # Pterodactyl commonly launches the script from /home/container while
+        # the uploaded files may be referenced by their script directory.
+        # Keep --dir authoritative, but make the default independent of cwd.
+        if base_dir == ".":
+            base_dir = os.environ.get(
+                "FASTVM_BASE_DIR", str(Path(__file__).resolve().parent)
+            )
         self.base_dir = Path(base_dir).resolve()
-        self.config_file = self.base_dir / "config.env"
+        config_path = os.environ.get("FASTVM_CONFIG_FILE", "config.env")
+        self.config_file = Path(config_path)
+        if not self.config_file.is_absolute():
+            self.config_file = self.base_dir / self.config_file
         self.docker_compose_file = self.base_dir / "docker-compose.yml"
         self.data_dir = self.base_dir / "data"
         self.backups_dir = self.base_dir / "backups"
@@ -64,28 +85,35 @@ class FastVMPterodactylLauncher:
         print(f"{'='*70}\n", file=sys.stderr)
 
     def run_cmd(
-        self, cmd: List[str], check: bool = True, capture: bool = False
+        self,
+        cmd: List[str],
+        check: bool = True,
+        capture: bool = False,
+        cwd: Optional[Path] = None,
     ) -> Tuple[int, str]:
         """Run a shell command."""
         try:
             if capture:
                 result = subprocess.run(
-                    cmd, check=check, capture_output=True, text=True
+                    cmd, check=check, capture_output=True, text=True, cwd=cwd
                 )
                 return result.returncode, result.stdout.strip()
             else:
-                result = subprocess.run(cmd, check=check)
+                result = subprocess.run(cmd, check=check, cwd=cwd)
                 return result.returncode, ""
         except subprocess.CalledProcessError as e:
             if check:
                 raise
             return e.returncode, ""
         except FileNotFoundError:
-            self.log_error(f"Command not found: {cmd[0]}")
             return 127, ""
 
     def _detect_runtime(self) -> str:
         """Detect Docker or Podman."""
+        if os.environ.get("DOCKER_HOST") or os.environ.get("FASTVM_DOCKER_HOST"):
+            self.log_info(
+                "Docker daemon endpoint configured; checking the local Docker client"
+            )
         rc_docker, _ = self.run_cmd(["docker", "--version"], check=False)
         if rc_docker == 0:
             return "docker"
@@ -110,6 +138,10 @@ class FastVMPterodactylLauncher:
         self.log_step("Loading configuration")
         if not self.config_file.exists():
             self.log_error(f"Config file not found: {self.config_file}")
+            self.log_error(
+                "Upload config.env beside app.py, set FASTVM_CONFIG_FILE, "
+                "or run with --dir pointing to the FastVM project directory."
+            )
             sys.exit(1)
 
         with open(self.config_file, "r") as f:
@@ -143,10 +175,130 @@ class FastVMPterodactylLauncher:
         rc, version = self.run_cmd([self.runtime, "--version"], capture=True)
         if rc == 0:
             self.log_info(f"  ✓ Using {self.runtime}: {version}")
+            if self.runtime == "docker" and not self._compose_available():
+                self.log_warn("Docker CLI is available, but Docker Compose is missing")
+                if self._install_docker_cli():
+                    self.log_info("  ✓ Docker Compose installed for the current user")
+                else:
+                    self.log_error(
+                        "Docker Compose is required to start FastVM. Install the "
+                        "Compose plugin or provide docker-compose."
+                    )
         else:
-            self.log_error(f"  ✗ {self.runtime} not available")
+            self.log_error(f"  ✗ {self.runtime} CLI not available")
+            if self.runtime == "docker" and self._check_docker_sdk():
+                self.log_error(
+                    "The Docker SDK can reach the daemon, but this launcher still "
+                    "requires docker compose or docker-compose to start FastVM."
+                )
+            if os.environ.get("DOCKER_HOST") or os.environ.get("FASTVM_DOCKER_HOST"):
+                self.log_error(
+                    "A Docker endpoint is configured. Install the Docker CLI and "
+                    "Compose plugin in the panel image, or expose docker-compose."
+                )
             self.log_info("  Attempting to install Docker...")
-            self._install_docker()
+            if self._install_docker_cli():
+                self.runtime = "docker"
+                self.log_info("  ✓ Docker CLI installed for the current user")
+            else:
+                self._install_docker()
+
+    def _docker_platform(self) -> Optional[str]:
+        """Return Docker's static-binary architecture name."""
+        return {
+            "x86_64": "x86_64",
+            "amd64": "x86_64",
+            "aarch64": "aarch64",
+            "arm64": "aarch64",
+            "armv7l": "armv7",
+        }.get(platform.machine())
+
+    def _install_docker_cli(self) -> bool:
+        """Install Docker CLI and Compose without root privileges."""
+        if shutil.which("docker") and (
+            shutil.which("docker-compose") or self._docker_compose_plugin_path().exists()
+        ):
+            return True
+
+        architecture = self._docker_platform()
+        if not architecture:
+            self.log_warn(f"Unsupported Docker CLI architecture: {platform.machine()}")
+            return False
+
+        docker_version = os.environ.get("FASTVM_DOCKER_VERSION", "27.3.1")
+        compose_version = os.environ.get("FASTVM_COMPOSE_VERSION", "v2.29.7")
+        local_bin = Path.home() / ".local" / "bin"
+        plugin_path = self._docker_compose_plugin_path()
+        local_bin.mkdir(parents=True, exist_ok=True)
+        plugin_path.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp = Path(temp_dir)
+                docker_archive = temp / "docker.tgz"
+                docker_url = (
+                    "https://download.docker.com/linux/static/stable/"
+                    f"{architecture}/docker-{docker_version}.tgz"
+                )
+                self.log_info(f"  Downloading Docker CLI {docker_version}")
+                urllib.request.urlretrieve(docker_url, docker_archive)
+                with tarfile.open(docker_archive, "r:gz") as archive:
+                    member = next(
+                        item for item in archive.getmembers() if item.name == "docker/docker"
+                    )
+                    member.name = "docker"
+                    archive.extract(member, temp)
+                shutil.move(str(temp / "docker"), local_bin / "docker")
+
+                compose_url = (
+                    "https://github.com/docker/compose/releases/download/"
+                    f"{compose_version}/docker-compose-linux-{architecture}"
+                )
+                self.log_info(f"  Downloading Docker Compose {compose_version}")
+                urllib.request.urlretrieve(compose_url, plugin_path)
+                plugin_path.chmod(0o755)
+                (local_bin / "docker").chmod(0o755)
+            os.environ["PATH"] = f"{local_bin}:{os.environ.get('PATH', '')}"
+            return True
+        except (OSError, urllib.error.URLError, tarfile.TarError, StopIteration) as exc:
+            self.log_warn(f"Non-root Docker CLI installation failed: {exc}")
+            return False
+
+    def _docker_compose_plugin_path(self) -> Path:
+        """Return the per-user Docker Compose CLI plugin path."""
+        return Path.home() / ".docker" / "cli-plugins" / "docker-compose"
+
+    def _compose_available(self) -> bool:
+        """Check both standalone and Docker CLI plugin Compose forms."""
+        if shutil.which("docker-compose"):
+            return True
+        rc, _ = self.run_cmd(["docker", "compose", "version"], check=False, capture=True)
+        return rc == 0
+
+    def _check_docker_sdk(self) -> bool:
+        """Check an optional Docker SDK connection for useful diagnostics."""
+        if docker is None:
+            self.log_warn(
+                "Docker SDK is not installed; install dependencies with "
+                "pip install --user -r requirements.txt"
+            )
+            return False
+
+        try:
+            endpoint = os.environ.get("DOCKER_HOST") or os.environ.get(
+                "FASTVM_DOCKER_HOST"
+            )
+            client = docker.DockerClient(base_url=endpoint) if endpoint else docker.from_env()
+            client.ping()
+            version = client.version()
+            self.log_info(
+                f"  ✓ Docker SDK connected to Engine {version.get('Version', 'unknown')}"
+            )
+            client.close()
+            return True
+        except Exception as exc:  # SDK exposes several transport exceptions
+            self.log_warn(f"Docker SDK could not reach a daemon: {exc}")
+            return False
 
     def _install_docker(self) -> None:
         """Attempt to install Docker (non-root friendly)."""
@@ -199,6 +351,8 @@ class FastVMPterodactylLauncher:
         for key, value in self.config.items():
             if key.startswith("FASTVM_") or key in ["BUILD_DATE", "VERSION"]:
                 env[key] = value
+        if env.get("FASTVM_DOCKER_HOST") and not env.get("DOCKER_HOST"):
+            env["DOCKER_HOST"] = env["FASTVM_DOCKER_HOST"]
 
         try:
             cmd = [compose_cmd, "up", "-d"] if detach else [compose_cmd, "up"]
@@ -303,7 +457,9 @@ def main():
     parser.add_argument(
         "command",
         choices=["start", "stop", "status", "logs", "install"],
-        help="Command to run",
+        nargs="?",
+        default=os.environ.get("FASTVM_COMMAND", "start"),
+        help="Command to run (defaults to start for Pterodactyl startup commands)",
     )
     parser.add_argument("--lines", type=int, default=50, help="Number of log lines to show")
     parser.add_argument("--dir", default=".", help="FastVM base directory")

@@ -9,6 +9,12 @@ This guide explains how to deploy FastVM on HiddenCloud's free Pterodactyl VPS t
 - Python 3.7+ (usually included in panel environments)
 - Docker or Podman available/installable
 
+If Docker is not installed in the panel image, `app.py` downloads the official
+Docker CLI and Compose plugin into `~/.local/bin` and `~/.docker/cli-plugins`.
+This requires outbound HTTPS access and a Docker daemon endpoint such as
+`FASTVM_DOCKER_HOST=unix:///run/user/1000/docker.sock`; installing the CLI does
+not create a daemon.
+
 ## 🚀 Quick Start
 
 ### 1. Copy Files to Your Server
@@ -19,6 +25,13 @@ Upload these files to your Pterodactyl server:
 - `config.env` — Configuration (with `FASTVM_PRESET=hidencloud-free-vps`)
 - `docker-compose.yml` — Container orchestration
 - All other FastVM files (Dockerfile.optimized, scripts, presets, etc.)
+
+Keep `app.py`, `config.env`, and `docker-compose.yml` in the same directory.
+Pterodactyl normally starts processes from `/home/container`; the launcher now
+resolves its default project directory from the location of `app.py`, so the
+files do not need to be in the panel's current working directory. If the
+configuration is stored elsewhere, set `FASTVM_CONFIG_FILE` to its absolute
+path or pass `--dir /path/to/fastvm`.
 
 ### 2. Install Dependencies
 
@@ -54,6 +67,9 @@ FASTVM_TZ=America/New_York
 ```bash
 python3 app.py start
 ```
+
+When the panel startup command runs `python3 app.py` with no arguments, the
+launcher defaults to `start`.
 
 Wait 30-60 seconds for startup.
 
