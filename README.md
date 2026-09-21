@@ -110,6 +110,12 @@ Center launcher, branded welcome terminal, app launcher (`Super+Space`),
 terminal shortcut (`Super+T`), and dashboard shortcut (`Super+D`). Existing
 desktop, preset, and single-app variants remain unchanged.
 
+The FastVM OS flavor now has a modern macOS-inspired presentation: translucent
+dark surfaces, rounded window styling, a centered dock-like launcher, compact
+system controls, and a soft gradient desktop. It is an independent FastVM
+design rather than an Apple software replica and does not affect the other
+desktop variants.
+
 ### Recovery and updates
 
 The dashboard **System** view creates authenticated `recovery` and `update`

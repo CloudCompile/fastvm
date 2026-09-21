@@ -1,18 +1,18 @@
-/* FastVM dashboard styling — dark + neon, monospace-leaning. */
+/* FastVM dashboard styling — macOS-inspired glass surfaces with FastVM branding. */
 :root {
-    --bg: #06080d;
-    --bg-elev: #0d1117;
-    --bg-card: #11161f;
-    --border: #1f2733;
-    --text: #d6e1f0;
-    --text-dim: #6f7d92;
-    --accent: #5ef2c8;
-    --accent-2: #66b3ff;
+    --bg: #11131a;
+    --bg-elev: #1d2029;
+    --bg-card: rgba(35, 38, 49, .78);
+    --border: rgba(255, 255, 255, .12);
+    --text: #f5f6fa;
+    --text-dim: #a4a8b6;
+    --accent: #8bd5ff;
+    --accent-2: #b69cff;
     --warn: #ffc857;
     --danger: #ff5e7a;
-    --grid: rgba(94, 242, 200, 0.08);
-    --shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
-    --mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+    --grid: rgba(255, 255, 255, 0.04);
+    --shadow: 0 18px 45px rgba(0, 0, 0, .25);
+    --mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -21,7 +21,7 @@ html, body {
     margin: 0; padding: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
     font-size: 14px;
     height: 100%;
     overflow-x: hidden;
@@ -31,8 +31,8 @@ body::before {
     content: '';
     position: fixed; inset: 0;
     background:
-        radial-gradient(ellipse at 80% -10%, rgba(94, 242, 200, 0.08), transparent 50%),
-        radial-gradient(ellipse at 0% 100%, rgba(102, 179, 255, 0.06), transparent 60%);
+        radial-gradient(ellipse at 80% -10%, rgba(182, 156, 255, .18), transparent 50%),
+        radial-gradient(ellipse at 0% 100%, rgba(139, 213, 255, .12), transparent 60%);
     pointer-events: none;
     z-index: 0;
 }
@@ -42,10 +42,10 @@ body::before {
 /* ----- top bar ----- */
 .topbar {
     display: flex; align-items: center;
-    padding: 14px 24px;
+    padding: 12px 24px;
     border-bottom: 1px solid var(--border);
-    background: rgba(13, 17, 23, 0.85);
-    backdrop-filter: blur(8px);
+    background: rgba(29, 32, 41, .72);
+    backdrop-filter: blur(22px) saturate(140%);
     position: sticky; top: 0; z-index: 5;
 }
 .brand {
@@ -113,7 +113,7 @@ main { padding: 24px; max-width: 1400px; margin: 0 auto; }
 .card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 16px;
     padding: 18px;
     box-shadow: var(--shadow);
     margin-bottom: 16px;
@@ -260,6 +260,7 @@ tbody tr:hover { background: rgba(94, 242, 200, 0.04); }
 }
 .login-card {
     background: var(--bg-card);
+    backdrop-filter: blur(18px) saturate(130%);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 36px;
@@ -283,7 +284,7 @@ tbody tr:hover { background: rgba(94, 242, 200, 0.04); }
 .login-card button { width: 100%; }
 .hint {
     margin-top: 18px;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-dim);
     line-height: 1.5;
 }

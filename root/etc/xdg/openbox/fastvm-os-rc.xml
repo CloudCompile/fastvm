@@ -14,7 +14,7 @@
   </theme>
   <mouse><doubleClickTime>200</doubleClickTime></mouse>
   <keyboard>
-    <keybind key="W-space"><action name="Execute"><command>rofi -show drun</command></action></keybind>
+    <keybind key="W-space"><action name="Execute"><command>rofi -show drun -theme-str 'window {width: 42%;} listview {lines: 8;} element {padding: 8px;}'</command></action></keybind>
     <keybind key="W-t"><action name="Execute"><command>xterm</command></action></keybind>
     <keybind key="W-d"><action name="Execute"><command>fastvm-os-dashboard</command></action></keybind>
   </keyboard>

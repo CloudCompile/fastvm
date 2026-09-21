@@ -49,6 +49,14 @@ printf 'FastVM dashboard: %s\n' "$url"
 EOF
 chmod 0755 /usr/local/bin/fastvm-os-dashboard
 
+cat > /usr/local/bin/fastvm-os-theme <<'EOF'
+#!/bin/sh
+set -eu
+printf '%s\n' 'FastVM OS theme: macOS-inspired dark glass'
+printf '%s\n' 'Shell: Openbox + Tint2 | Launcher: Rofi | Dock: centered'
+EOF
+chmod 0755 /usr/local/bin/fastvm-os-theme
+
 cat > /usr/share/applications/fastvm-dashboard.desktop <<'EOF'
 [Desktop Entry]
 Type=Application
