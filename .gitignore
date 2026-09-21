@@ -3,6 +3,8 @@ data/
 logs/
 backups/
 recordings/
+screenshot-data/
+screenshots/
 
 # Dashboard secrets
 dashboard.token
@@ -32,6 +34,8 @@ Thumbs.db
 # Build artifacts
 *.tar
 *.tar.gz
+*.pyc
+__pycache__/
 
 # Test and benchmark output
 coverage/

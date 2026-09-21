@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config>
+  <applications>
+    <application class="*">
+      <decor>yes</decor>
+      <focus>yes</focus>
+    </application>
+  </applications>
+  <desktops><number>1</number></desktops>
+  <theme>
+    <name>Arc-Darker</name>
+    <titleLayout>NLIMC</titleLayout>
+    <font place="ActiveWindow"><name>Sans</name><size>10</size></font>
+  </theme>
+  <mouse><doubleClickTime>200</doubleClickTime></mouse>
+  <keyboard>
+    <keybind key="W-space"><action name="Execute"><command>rofi -show drun</command></action></keybind>
+    <keybind key="W-t"><action name="Execute"><command>xterm</command></action></keybind>
+  </keyboard>
+</openbox_config>

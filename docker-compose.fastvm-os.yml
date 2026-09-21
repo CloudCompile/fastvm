@@ -1,0 +1,11 @@
+# Optional FastVM OS appliance image. Existing docker-compose.yml is unchanged.
+# docker compose -f docker-compose.yml -f docker-compose.fastvm-os.yml up -d --build
+services:
+  fastvm:
+    image: fastvm:os
+    container_name: ${FASTVM_NAME:-FastVM-OS}
+    build:
+      args:
+        FASTVM_DE: fastvm-os
+        FASTVM_PRESET: development
+        FASTVM_OS_FLAVOR: fastvm-os

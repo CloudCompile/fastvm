@@ -6,7 +6,7 @@ source "${SCRIPT_DIR}/lib-common.sh"
 load_fastvm_config
 
 fail=0
-valid_de='^(XFCE4|KDE|GNOME|Cinnamon|LXQT|I3|Budgie)$'
+valid_de='^(XFCE4|KDE|GNOME|Cinnamon|LXQT|I3|Budgie|fastvm-os|FASTVM-OS)$'
 valid_preset='^(none|minimal|gaming|development|office|content-creation|hidencloud-free-vps)$'
 valid_bool='^(true|false)$'
 valid_schedule='^(disabled|daily|weekly|hourly)$'

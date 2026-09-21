@@ -6,7 +6,7 @@ FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 ARG BUILD_DATE
 ARG VERSION
 LABEL org.opencontainers.image.title="FastVM" \
-    org.opencontainers.image.description="Linux desktop streaming platform" \
+    org.opencontainers.image.description="Linux desktop streaming platform with an optional FastVM OS shell" \
     org.opencontainers.image.source="https://github.com/CloudCompile/fastvm" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.version="${VERSION}" \
@@ -21,10 +21,12 @@ ARG FASTVM_DE=XFCE4
 ARG FASTVM_PRESET=none
 ARG FASTVM_SINGLEAPP_CMD=""
 ARG FASTVM_SINGLEAPP_SCRIPT=""
+ARG FASTVM_OS_FLAVOR="standard"
 ENV FASTVM_DE=${FASTVM_DE}
 ENV FASTVM_PRESET=${FASTVM_PRESET}
 ENV FASTVM_SINGLEAPP_CMD=${FASTVM_SINGLEAPP_CMD}
 ENV FASTVM_SINGLEAPP_SCRIPT=${FASTVM_SINGLEAPP_SCRIPT}
+ENV FASTVM_OS_FLAVOR=${FASTVM_OS_FLAVOR}
 ENV NODE_ENV=production
 
 # =============================================================================
@@ -92,7 +94,14 @@ RUN \
 COPY presets/ /opt/fastvm-presets/
 
 # =============================================================================
-# Layer 8: Final Cleanup
+# Layer 8: Optional FastVM OS identity and appliance defaults
+# =============================================================================
+COPY fastvm-os/ /opt/fastvm-os/
+RUN chmod +x /opt/fastvm-os/install.sh && \
+    /opt/fastvm-os/install.sh "${FASTVM_OS_FLAVOR}"
+
+# =============================================================================
+# Layer 9: Final Cleanup
 # =============================================================================
 RUN set -eu && \
     echo "**** Final cleanup ****" && \

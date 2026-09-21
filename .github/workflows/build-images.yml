@@ -175,9 +175,46 @@ jobs:
             FASTVM_SINGLEAPP_CMD=${{ matrix.autostart_cmd }}
             FASTVM_SINGLEAPP_SCRIPT=${{ matrix.app_script }}
 
+  build-fastvm-os:
+    name: Build FastVM OS appliance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Set lowercase image name
+        id: image
+        run: echo "name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push FastVM OS
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.optimized
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:fastvm-os-latest
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:fastvm-os-${{ github.sha }}
+          build-args: |
+            BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+            VERSION=${{ github.ref_name }}
+            FASTVM_DE=fastvm-os
+            FASTVM_PRESET=development
+            FASTVM_OS_FLAVOR=fastvm-os
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:buildcache-fastvm-os
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:buildcache-fastvm-os,mode=max
+
   build-summary:
     runs-on: ubuntu-latest
-    needs: [build, build-specials]
+    needs: [build, build-specials, build-fastvm-os]
     if: always()
     steps:
       - name: Set lowercase image name
@@ -187,7 +224,7 @@ jobs:
       - name: Build Summary
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ steps.image.outputs.name }}"
-          echo "## 🎉 FastVM: 46 Production-Ready Images Built!" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎉 FastVM: 47 Production-Ready Images Built!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 42 Desktop + Preset Combinations" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -227,4 +264,7 @@ jobs:
           echo "docker run -d -p 3000:3000 $IMAGE:xfce4-development-latest" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **All 46 images built in parallel. GitHub Actions are free for public repos!**" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **All 47 images built in parallel. Existing variants remain available.**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🖥️ FastVM OS appliance" >> $GITHUB_STEP_SUMMARY
+          echo "The additive \\`fastvm-os-latest\\` image is XFCE4 + development with the FastVM OS identity layer." >> $GITHUB_STEP_SUMMARY

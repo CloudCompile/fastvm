@@ -200,6 +200,18 @@ case "$DE_UPPER" in
         cp /startwm-singleapp.sh /defaults/startwm.sh
         ;;
 
+    "FASTVM-OS"|"FASTVM OS")
+        # FastVM OS uses its own lightweight shell instead of XFCE.
+        log_info "Installing the FastVM OS desktop shell..."
+        install_packages \
+            openbox \
+            tint2 \
+            rofi \
+            xterm \
+            firefox
+        cp /startwm-fastvm-os.sh /defaults/startwm.sh
+        ;;
+
     *)
         log_error "Unknown desktop environment: $DE_SELECTION (normalised: $DE_UPPER)"
         log_info "Falling back to XFCE4"

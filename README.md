@@ -81,6 +81,30 @@ Startup time depends on the host, image, and selected applications. Measure it o
 
 See `SECURITY.md`, `docs/image-catalog.md`, and `docs/benchmarks.md` for operational guidance.
 
+## 🖥️ FastVM OS appliance
+
+FastVM now also publishes an additive `fastvm-os-latest` image. It is a
+FastVM-specific appliance flavor based on the existing XFCE4 and development
+layers, with a stable OS identity and FastVM defaults. It does **not** replace
+the existing desktop, preset, or single-app images; all prior tags continue to
+be built and published.
+
+```bash
+docker run -d -p 3000:3000 -p 3001:8099 \
+  ghcr.io/cloudcompile/fastvm:fastvm-os-latest
+```
+
+To build it locally with Compose:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.fastvm-os.yml up -d --build
+```
+
+Inside the appliance, `fastvm-os-info` reports the image identity and selected
+desktop/preset. This first version is intentionally an additive identity layer
+over the maintained Ubuntu/KasmVNC base, allowing the project to retain driver,
+desktop, and application compatibility while the OS-specific services evolve.
+
 ---
 
 ## ✨ **WHAT YOU GET**
@@ -280,8 +304,9 @@ python3 app.py logs
 python3 app.py stop
 ```
 
-For Pterodactyl, upload `app.py`, `config.env`, and `docker-compose.yml` to
-the same directory. If the panel stores configuration elsewhere, use
+For Pterodactyl, upload the complete FastVM project, including `app.py`,
+`config.env`, `docker-compose.yml`, and the Docker build context. If the panel
+stores configuration elsewhere, use
 `FASTVM_CONFIG_FILE=/absolute/path/config.env python3 app.py`.
 
 ### ⚙️ **Configuration**
