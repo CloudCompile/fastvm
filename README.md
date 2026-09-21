@@ -105,6 +105,23 @@ desktop/preset. This first version is intentionally an additive identity layer
 over the maintained Ubuntu/KasmVNC base, allowing the project to retain driver,
 desktop, and application compatibility while the OS-specific services evolve.
 
+FastVM OS uses a custom Openbox/Tint2 shell. It includes a FastVM Control
+Center launcher, branded welcome terminal, app launcher (`Super+Space`),
+terminal shortcut (`Super+T`), and dashboard shortcut (`Super+D`). Existing
+desktop, preset, and single-app variants remain unchanged.
+
+### Recovery and updates
+
+The dashboard **System** view creates authenticated `recovery` and `update`
+requests in `data/.fastvm/system-action.json`. The dashboard does not mount the
+Docker socket and cannot restart or replace its own container. A trusted host
+operator can inspect or consume requests with `scripts/fastvm-supervisor.sh`,
+then run the approved snapshot or Compose workflow.
+
+The supported FastVM OS artifact is currently the browser-appliance Docker
+image. Bootable ISO and cloud-image packaging remain future artifacts until
+persistence, hardware, and update tests are complete.
+
 ---
 
 ## ✨ **WHAT YOU GET**

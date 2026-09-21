@@ -27,6 +27,9 @@ Upload these files to your Pterodactyl server:
 - All other FastVM files (Dockerfile.optimized, scripts, presets, etc.)
 
 Keep `app.py`, `config.env`, and `docker-compose.yml` in the same directory.
+The Compose file references the Docker build context, so upload the complete
+FastVM project—not only `app.py` and `config.env`—when using the local build
+configuration.
 Pterodactyl normally starts processes from `/home/container`; the launcher now
 resolves its default project directory from the location of `app.py`, so the
 files do not need to be in the panel's current working directory. If the

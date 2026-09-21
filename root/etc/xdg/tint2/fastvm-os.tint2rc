@@ -11,6 +11,7 @@ task_icon = 1
 task_text = 1
 task_width = 220
 clock_format = %H:%M  %d %b
+launcher_item_app = /usr/share/applications/fastvm-dashboard.desktop
 launcher_item_app = /usr/share/applications/xterm.desktop
 launcher_item_app = /usr/share/applications/firefox.desktop
 launcher_icon_theme = Papirus

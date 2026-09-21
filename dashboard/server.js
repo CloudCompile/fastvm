@@ -23,6 +23,7 @@ const tasks = require('./api/tasks');
 const recording = require('./api/recording');
 const clipboard = require('./api/clipboard');
 const analytics = require('./api/analytics');
+const system = require('./api/system');
 
 const PORT = parseInt(process.env.FASTVM_DASHBOARD_PORT || '3001', 10);
 const DATA_ROOT = process.env.FASTVM_DATA_ROOT || '/config';
@@ -102,6 +103,7 @@ app.use('/api/tasks', tasks.router);
 app.use('/api/recording', recording.router);
 app.use('/api/clipboard', clipboard.router);
 app.use('/api/analytics', analytics.router);
+app.use('/api/system', system.router);
 
 app.get('/api/whoami', (_req, res) => res.json({ ok: true, dataRoot: DATA_ROOT }));
 

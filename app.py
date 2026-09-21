@@ -336,6 +336,8 @@ class FastVMPterodactylLauncher:
         """Start the FastVM container."""
         self.log_step("Starting FastVM container")
 
+        self._require_compose_file()
+
         # Use docker-compose or podman-compose
         compose_cmd = (
             f"{self.runtime}-compose" if self.runtime == "podman" else "docker-compose"
@@ -355,7 +357,9 @@ class FastVMPterodactylLauncher:
             env["DOCKER_HOST"] = env["FASTVM_DOCKER_HOST"]
 
         try:
-            cmd = [compose_cmd, "up", "-d"] if detach else [compose_cmd, "up"]
+            cmd = [compose_cmd, "-f", str(self.docker_compose_file), "up"]
+            if detach:
+                cmd.append("-d")
             cmd = cmd[0].split() + cmd[1:] if " " in compose_cmd else cmd
             self.log_info(f"  Running: {' '.join(cmd)}")
             result = subprocess.run(
@@ -365,6 +369,17 @@ class FastVMPterodactylLauncher:
         except subprocess.CalledProcessError as e:
             self.log_error(f"  ✗ Failed to start container: {e}")
             sys.exit(1)
+
+    def _require_compose_file(self) -> None:
+        """Fail early when the panel upload omits Docker Compose files."""
+        if self.docker_compose_file.exists():
+            return
+        self.log_error(f"Compose file not found: {self.docker_compose_file}")
+        self.log_error(
+            "Upload docker-compose.yml beside app.py, or set FASTVM_BASE_DIR "
+            "to the directory containing the complete FastVM project."
+        )
+        sys.exit(1)
 
     def status(self) -> None:
         """Show container status."""
@@ -393,6 +408,7 @@ class FastVMPterodactylLauncher:
         """Stop the FastVM container."""
         self.log_step("Stopping FastVM container")
         try:
+            self._require_compose_file()
             compose_cmd = (
                 f"{self.runtime}-compose"
                 if self.runtime == "podman"
@@ -402,7 +418,7 @@ class FastVMPterodactylLauncher:
             if rc != 0:
                 compose_cmd = f"{self.runtime} compose"
 
-            cmd = [compose_cmd, "down"]
+            cmd = [compose_cmd, "-f", str(self.docker_compose_file), "down"]
             cmd = cmd[0].split() + cmd[1:] if " " in compose_cmd else cmd
             self.run_cmd(cmd, cwd=self.base_dir)
             self.log_info("  ✓ Container stopped")
@@ -413,6 +429,7 @@ class FastVMPterodactylLauncher:
         """Show container logs."""
         self.log_step(f"FastVM Logs (last {lines} lines)")
         try:
+            self._require_compose_file()
             compose_cmd = (
                 f"{self.runtime}-compose"
                 if self.runtime == "podman"
@@ -422,7 +439,14 @@ class FastVMPterodactylLauncher:
             if rc != 0:
                 compose_cmd = f"{self.runtime} compose"
 
-            cmd = [compose_cmd, "logs", "--tail", str(lines)]
+            cmd = [
+                compose_cmd,
+                "-f",
+                str(self.docker_compose_file),
+                "logs",
+                "--tail",
+                str(lines),
+            ]
             cmd = cmd[0].split() + cmd[1:] if " " in compose_cmd else cmd
             self.run_cmd(cmd, check=False, cwd=self.base_dir)
         except Exception as e:

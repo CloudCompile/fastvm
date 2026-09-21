@@ -59,6 +59,7 @@
             if (b.dataset.view === 'recording') { refreshRecordings(); refreshRecStatus(); }
             if (b.dataset.view === 'tasks') refreshTasks();
             if (b.dataset.view === 'clipboard') pullClipboard();
+            if (b.dataset.view === 'system') refreshSystem();
         });
     });
 
@@ -305,6 +306,21 @@
     }
     $('#clip-pull').addEventListener('click', pullClipboard);
     $('#clip-push').addEventListener('click', pushClipboard);
+
+    // ----- system controls -----------------------------------------------
+    async function refreshSystem() {
+        const data = await api('/api/system/status');
+        const action = data.pending_action;
+        const el = $('#system-action');
+        el.textContent = action ? `${action.type}: ${action.status}` : 'no pending action';
+    }
+    async function requestSystemAction(type) {
+        if (!confirm(`Request ${type}? A trusted host supervisor must approve and execute it.`)) return;
+        await api(`/api/system/${type}`, { method: 'POST' });
+        refreshSystem();
+    }
+    $('#system-recovery').addEventListener('click', () => requestSystemAction('recovery'));
+    $('#system-update').addEventListener('click', () => requestSystemAction('update'));
 
     // ----- init -----------------------------------------------------------
     async function init() {

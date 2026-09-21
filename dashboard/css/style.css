@@ -126,6 +126,12 @@ main { padding: 24px; max-width: 1400px; margin: 0 auto; }
     color: var(--text-dim);
     margin-bottom: 12px;
 }
+.eyebrow { color: var(--accent); font: 11px var(--mono); letter-spacing: .14em; }
+.system-hero { display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(120deg, rgba(94,242,200,.1), rgba(102,179,255,.04)); }
+.system-hero h1 { margin: 8px 0; font-size: clamp(24px, 4vw, 42px); letter-spacing: -.03em; }
+.muted { color: var(--text-dim); line-height: 1.6; }
+.action-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.action-card p { min-height: 48px; }
 
 .metric .metric-label {
     font-family: var(--mono);

@@ -39,6 +39,7 @@
             <button class="nav" data-view="recording">Recording</button>
             <button class="nav" data-view="tasks">Tasks</button>
             <button class="nav" data-view="clipboard">Clipboard</button>
+            <button class="nav" data-view="system">System</button>
         </nav>
         <div class="status">
             <span class="dot" id="ws-dot"></span>
@@ -140,6 +141,29 @@
                 <div class="row gap">
                     <button id="clip-pull">Pull from desktop</button>
                     <button id="clip-push" class="primary">Push to desktop</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="view" id="view-system">
+            <div class="card system-hero">
+                <div>
+                    <div class="eyebrow">FASTVM OS CONTROL CENTER</div>
+                    <h1>Operate the appliance safely.</h1>
+                    <p class="muted">Recovery and update requests are recorded for the trusted host supervisor. The dashboard never receives Docker access.</p>
+                </div>
+                <span class="status-pill" id="system-action">no pending action</span>
+            </div>
+            <div class="grid action-grid">
+                <div class="card action-card">
+                    <div class="card-title">Recovery</div>
+                    <p class="muted">Ask the host supervisor to prepare a recovery workflow.</p>
+                    <button id="system-recovery" class="danger">Request recovery</button>
+                </div>
+                <div class="card action-card">
+                    <div class="card-title">Updates</div>
+                    <p class="muted">Request an image update without granting the dashboard shell access.</p>
+                    <button id="system-update" class="primary">Request update</button>
                 </div>
             </div>
         </section>

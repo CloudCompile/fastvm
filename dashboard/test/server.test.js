@@ -15,9 +15,11 @@ process.env.FASTVM_SCRIPTS_DIR = path.join(__dirname, '..');
 
 const server = require('../server');
 
-function request(method, url, body) {
+function request(method, url, body, token) {
     return new Promise((resolve, reject) => {
-        const req = http.request(`http://127.0.0.1:${server.address().port}${url}`, { method, headers: { 'Content-Type': 'application/json' } }, (res) => {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        const req = http.request(`http://127.0.0.1:${server.address().port}${url}`, { method, headers }, (res) => {
             let data = '';
             res.on('data', (chunk) => { data += chunk; });
             res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data) }));
@@ -45,6 +47,17 @@ test('login accepts valid token', async () => {
     const result = await request('POST', '/api/login', { token: 'test-token' });
     assert.equal(result.status, 200);
     assert.equal(result.body.ok, true);
+});
+
+test('system update writes a durable host action request', async () => {
+    const result = await request('POST', '/api/system/update', {}, 'test-token');
+    assert.equal(result.status, 202);
+    assert.equal(result.body.action.type, 'update');
+
+    const status = await request('GET', '/api/system/status', undefined, 'test-token');
+    assert.equal(status.status, 200);
+    assert.equal(status.body.pending_action.type, 'update');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(dataRoot, '.fastvm', 'system-action.json'), 'utf8')).type, 'update');
 });
 
 test.after(() => server.close());

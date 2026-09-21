@@ -16,5 +16,6 @@
   <keyboard>
     <keybind key="W-space"><action name="Execute"><command>rofi -show drun</command></action></keybind>
     <keybind key="W-t"><action name="Execute"><command>xterm</command></action></keybind>
+    <keybind key="W-d"><action name="Execute"><command>fastvm-os-dashboard</command></action></keybind>
   </keyboard>
 </openbox_config>
