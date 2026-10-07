@@ -11,6 +11,9 @@
 
 <br/>
 
+### DISCORD JOIN UP
+https://discord.gg/aahtG9n537
+
 ### ⚡ STATUS
 
 <a href="https://github.com/CloudCompile/fastvm/actions"><img src="https://img.shields.io/github/actions/workflow/status/CloudCompile/fastvm/build-images.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white&label=CI%20BUILDS&color=6366f1&labelColor=1e1b4b" alt="CI Status"></a>
