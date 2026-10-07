@@ -33,16 +33,14 @@
 
 ## 📊 **Real-Time Stats**
 
-This section is updated automatically by GitHub Actions using live repository and workflow data.
+  ```text
+  ✅ Successful Builds:     2+
+  📦 Published Image Variants: 46
+  📝 Total Commits:         95
+  🕐 Last Updated:          2026-10-07 15:55:12 UTC
+  ```
 
-```
-✅ Successful Builds:     loading...
-📦 Published Image Variants: 46
-📝 Total Commits:         loading...
-🕐 Last Updated:          loading...
-```
-
-**These are real metrics** — updated every hour from actual GitHub Actions and repository data.
+  **These are real metrics** — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data.
 
 ---
 
