@@ -147,6 +147,21 @@ if jq_check '.apps | contains([4])' "$JSON_FILE"; then
     APP_NAMES["$INSTALL_DIR/tlauncher.sh"]="TLauncher"
 fi
 
+if jq_check '.apps | contains([5])' "$JSON_FILE"; then
+    INSTALL_QUEUE+=("$INSTALL_DIR/flatpak.sh")
+    APP_NAMES["$INSTALL_DIR/flatpak.sh"]="Flatpak"
+fi
+
+if jq_check '.apps | contains([6])' "$JSON_FILE"; then
+    INSTALL_QUEUE+=("$INSTALL_DIR/heroic.sh")
+    APP_NAMES["$INSTALL_DIR/heroic.sh"]="Heroic"
+fi
+
+if jq_check '.apps | contains([7])' "$JSON_FILE"; then
+    INSTALL_QUEUE+=("$INSTALL_DIR/modrinth.sh")
+    APP_NAMES["$INSTALL_DIR/modrinth.sh"]="Modrinth"
+fi
+
 # =============================================================================
 # Parallel Installation
 # =============================================================================

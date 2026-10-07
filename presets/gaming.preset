@@ -1,5 +1,6 @@
 # FastVM "gaming" preset
 # Wine + Steam + controller support + DXVK + generous shared memory.
+FASTVM_PRESET=gaming
 
 FASTVM_DE=XFCE4
 FASTVM_SHM_SIZE=8gb
@@ -12,6 +13,9 @@ FASTVM_APP_CHROME=true
 FASTVM_APP_DISCORD=true
 FASTVM_APP_MINECRAFT=true
 FASTVM_APP_TLAUNCHER=true
+FASTVM_APP_FLATPAK=true
+FASTVM_APP_HEROIC=true
+FASTVM_APP_MODRINTH=true
 
 FASTVM_PROG_JAVA17=true   # Minecraft modern launcher dependency
 

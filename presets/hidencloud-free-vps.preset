@@ -1,5 +1,6 @@
 # FastVM "hidencloud-free-vps" preset
 # Tuned for free non-root Pterodactyl VPS tiers and Cloudflare fronting.
+FASTVM_PRESET=hidencloud-free-vps
 
 FASTVM_DE=LXQT
 FASTVM_SHM_SIZE=1gb

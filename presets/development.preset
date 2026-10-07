@@ -1,5 +1,6 @@
 # FastVM "development" preset
 # Editor, JDKs, container tooling, generous CPU.
+FASTVM_PRESET=development
 
 FASTVM_DE=XFCE4
 FASTVM_SHM_SIZE=4gb

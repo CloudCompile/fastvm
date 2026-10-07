@@ -1,5 +1,6 @@
 # FastVM "office" preset
 # LibreOffice, browsers, light productivity stack.
+FASTVM_PRESET=office
 
 FASTVM_DE=XFCE4
 FASTVM_SHM_SIZE=2gb

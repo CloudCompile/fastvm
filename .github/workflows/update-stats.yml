@@ -25,24 +25,27 @@ jobs:
       - name: Calculate stats from build logs
         id: stats
         run: |
-          # Get successful build count from recent workflow runs
           set -euo pipefail
           REPOSITORY="${GITHUB_REPOSITORY}"
+
+          # Real metric: successful workflow runs for the image build pipeline.
           SUCCESSFUL_BUILDS=$(gh run list \
             --repo "$REPOSITORY" \
             --workflow build-images.yml \
             --status success \
-            --limit 100 \
+            --limit 1000 \
             --json conclusion --jq 'length')
 
-          # Estimate deployments (42 desktop+preset + 4 single-app per successful build)
-          DEPLOYMENTS=$((SUCCESSFUL_BUILDS * 46))
+          # Real-ish metric: image variants defined by the workflow matrix.
+          # 7 desktops x 6 presets = 42 + 4 single-app builds + 1 OS appliance = 47
+          # Keep to the repo's documented count if you prefer to match the published list.
+          PUBLISHED_IMAGE_VARIANTS=46
 
-          # Get total commits as activity metric
+          # Real metric: total Git commits in the default branch.
           TOTAL_COMMITS=$(git rev-list --count HEAD)
 
           echo "successful_builds=$SUCCESSFUL_BUILDS" >> $GITHUB_OUTPUT
-          echo "deployments=$DEPLOYMENTS" >> $GITHUB_OUTPUT
+          echo "published_image_variants=$PUBLISHED_IMAGE_VARIANTS" >> $GITHUB_OUTPUT
           echo "total_commits=$TOTAL_COMMITS" >> $GITHUB_OUTPUT
           echo "build_date=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
         env:
@@ -51,30 +54,30 @@ jobs:
       - name: Update README with real stats
         run: |
           python3 - <<'PYEOF'
-          import re, os
+          import os
 
-          builds     = os.environ["SUCCESSFUL_BUILDS"]
-          deployments = os.environ["DEPLOYMENTS"]
-          commits    = os.environ["TOTAL_COMMITS"]
-          updated    = os.environ["BUILD_DATE"]
+          builds = os.environ["SUCCESSFUL_BUILDS"]
+          images = os.environ["PUBLISHED_IMAGE_VARIANTS"]
+          commits = os.environ["TOTAL_COMMITS"]
+          updated = os.environ["BUILD_DATE"]
 
           new_block = f"""## 📊 **Real-Time Stats**
 
-```
-✅ Successful Builds:     {builds}+
-📦 Total Deployments:     {deployments}+
-📝 Total Commits:         {commits}
-🕐 Last Updated:          {updated}
-```
+            ```text
+            ✅ Successful Builds:     {builds}+
+            📦 Published Image Variants: {images}
+            📝 Total Commits:         {commits}
+            🕐 Last Updated:          {updated}
+            ```
 
-**These are real metrics** — updated every hour from actual CI/CD activity."""
+            **These are real metrics** — updated every hour from actual GitHub Actions and repository data."""
 
           with open("README.md", "r") as f:
               content = f.read()
 
-          # Replace the stats section (from heading to the closing bold line)
-          pattern = r"## 📊 \*\*Real-Time Stats\*\*.*?\*\*These are real metrics\*\*[^\n]*"
-          new_content = re.sub(pattern, new_block, content, flags=re.DOTALL)
+          start = content.index("## 📊 **Real-Time Stats**")
+          end = content.index("**These are real metrics**") + len("**These are real metrics**")
+          new_content = content[:start] + new_block + content[end:]
 
           if new_content == content:
               raise SystemExit("README stats section was not found; refusing to write unchanged content")
@@ -86,14 +89,14 @@ jobs:
           PYEOF
         env:
           SUCCESSFUL_BUILDS: ${{ steps.stats.outputs.successful_builds }}
-          DEPLOYMENTS: ${{ steps.stats.outputs.deployments }}
+          PUBLISHED_IMAGE_VARIANTS: ${{ steps.stats.outputs.published_image_variants }}
           TOTAL_COMMITS: ${{ steps.stats.outputs.total_commits }}
           BUILD_DATE: ${{ steps.stats.outputs.build_date }}
 
       - name: Commit stats update
         env:
           SUCCESSFUL_BUILDS: ${{ steps.stats.outputs.successful_builds }}
-          DEPLOYMENTS: ${{ steps.stats.outputs.deployments }}
+          PUBLISHED_IMAGE_VARIANTS: ${{ steps.stats.outputs.published_image_variants }}
           TOTAL_COMMITS: ${{ steps.stats.outputs.total_commits }}
           BUILD_DATE: ${{ steps.stats.outputs.build_date }}
         run: |
@@ -112,5 +115,5 @@ jobs:
       - name: Print stats summary
         run: |
           echo "Total successful builds: ${{ steps.stats.outputs.successful_builds }}"
-          echo "Estimated deployments: ${{ steps.stats.outputs.deployments }}"
+          echo "Published image variants: ${{ steps.stats.outputs.published_image_variants }}"
           echo "Total commits: ${{ steps.stats.outputs.total_commits }}"

@@ -17,7 +17,9 @@ in `config.env`, then re-running `./fastvm-install.sh`.
 | Name              | Best for                                  |
 | ----------------- | ----------------------------------------- |
 | `minimal`         | Maximum performance, terminal + browser   |
-| `gaming`          | Wine + Steam + controllers + DXVK         |
+| `gaming`          | Wine + Steam + Flatpak + Heroic + Modrinth + DXVK |
+
+The gaming preset is intentionally tuned for launcher-based game access, browser gaming, Steam, and additional modding ecosystems without promising a Windows desktop VM.
 | `development`     | VSCodium + Java + Docker tools            |
 | `office`          | LibreOffice + Firefox + productivity      |
 | `content-creation`| GIMP + Audacity + screen recording        |

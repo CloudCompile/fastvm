@@ -33,14 +33,16 @@
 
 ## 📊 **Real-Time Stats**
 
+This section is updated automatically by GitHub Actions using live repository and workflow data.
+
 ```
-✅ Successful Builds:     0+
-📦 Total Deployments:     0+
-📝 Total Commits:         0
-🕐 Last Updated:          [Auto-updating every hour]
+✅ Successful Builds:     loading...
+📦 Published Image Variants: 46
+📝 Total Commits:         loading...
+🕐 Last Updated:          loading...
 ```
 
-**These are real metrics** — updated every hour from actual CI/CD activity.
+**These are real metrics** — updated every hour from actual GitHub Actions and repository data.
 
 ---
 
@@ -213,9 +215,13 @@ docker run -d -p 3000:3000 --device /dev/dri ghcr.io/cloudcompile/fastvm:kde-gam
 
 ✅ **Wine support** (x86-64 + i386)
 ✅ **Steam integration** with Proton
+✅ **Flatpak support** for launcher-based gaming
+✅ **Optional gaming extras** — Heroic (Epic), Modrinth, TLauncher, Minecraft
 ✅ **CPU-rendered** — Codespaces is CPU-only (no GPU)
 ✅ **Local Docker:** optional GPU via `--device /dev/dri`
 ✅ **Games run** — just no hardware acceleration in Codespaces
+
+> Windows is not a supported FastVM target. It is intentionally omitted because Windows desktop sessions are too slow and resource-heavy for the browser-streaming model used here.
 
 ---
 

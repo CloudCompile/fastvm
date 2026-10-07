@@ -187,6 +187,20 @@ prepare_directories() {
 }
 
 # =============================================================================
+# Build config sync
+# =============================================================================
+generate_options_json() {
+    log_step "Syncing app selection with config.env"
+    local render_script="${SCRIPT_DIR}/scripts/render-options-json.py"
+    if [[ -f "$render_script" ]]; then
+        python3 "$render_script" "${CONFIG_FILE}" "${SCRIPT_DIR}/options.json"
+        log_success "options.json generated from config.env"
+    else
+        log_warn "No options generator found at $render_script"
+    fi
+}
+
+# =============================================================================
 # Build
 # =============================================================================
 build_image() {
@@ -291,6 +305,7 @@ main() {
     show_banner
     check_prerequisites
     load_configuration
+    generate_options_json
     prepare_directories
     build_image
     start_fastvm

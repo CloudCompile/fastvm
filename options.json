@@ -1,5 +1,8 @@
 {
-  "defaultapps": [0, 1],
+  "defaultapps": [
+    0,
+    1
+  ],
   "programming": [],
   "apps": [],
   "enablekvm": true,

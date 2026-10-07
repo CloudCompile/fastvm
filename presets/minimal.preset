@@ -1,5 +1,6 @@
 # FastVM "minimal" preset
 # Smallest possible footprint: lightweight DE, browser only.
+FASTVM_PRESET=minimal
 
 FASTVM_DE=I3
 FASTVM_SHM_SIZE=1gb

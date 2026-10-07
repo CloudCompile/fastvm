@@ -1,5 +1,6 @@
 # FastVM "content-creation" preset
 # GIMP + Audacity + ffmpeg + screen recording with high bitrate.
+FASTVM_PRESET=content-creation
 
 FASTVM_DE=XFCE4
 FASTVM_SHM_SIZE=4gb
