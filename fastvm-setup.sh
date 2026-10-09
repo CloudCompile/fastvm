@@ -389,6 +389,7 @@ rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh \
       /startwm-mate.sh /startwm-lxde.sh /startwm-fluxbox.sh /startwm-unity.sh \
       /startwm-enlightenment.sh /startwm-icewm.sh /startwm-awesome.sh /startwm-ukui.sh \
       /startwm-bspwm.sh /startwm-gnome-flashback.sh /startwm-wmaker.sh \
+      /startwm-pearos.sh \
       2>/dev/null || true
 
 log_info "Desktop Environment setup complete!"
