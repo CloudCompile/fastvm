@@ -36,6 +36,7 @@ jobs:
           - bspwm
           - gnome-flashback
           - wmaker
+          - pearos
         preset:
           - none
           - minimal
