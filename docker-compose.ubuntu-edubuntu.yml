@@ -1,0 +1,11 @@
+# Optional Ubuntu Edubuntu distro-flavor image. Existing docker-compose.yml is unchanged.
+# docker compose -f docker-compose.yml -f docker-compose.ubuntu-edubuntu.yml up -d --build
+services:
+  fastvm:
+    image: fastvm:ubuntu-edubuntu
+    container_name: ${FASTVM_NAME:-FastVM-UbuntuEdubuntu}
+    build:
+      args:
+        FASTVM_DE: gnome
+        FASTVM_PRESET: development
+        FASTVM_OS_FLAVOR: ubuntu-edubuntu

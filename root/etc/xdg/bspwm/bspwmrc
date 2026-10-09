@@ -1,0 +1,16 @@
+#!/bin/sh
+# FastVM default bspwm session — seeds a usable single-monitor desktop.
+# Copied into $HOME/.config/bspwm on first launch by startwm-bspwm.sh.
+
+# Kill any stale sxhkd, then start the hotkey daemon for this session.
+pgrep -x sxhkd >/dev/null && pkill -x sxhkd
+sxhkd &
+
+# Set a sane default gap and window border.
+bspc config window_gap 8
+bspc config border_width 2
+bspc config split_ratio 0.52
+bspc config focus_follows_pointer true
+
+# Create five tagged desktops on the single virtual monitor.
+bspc monitor -d I II III IV V

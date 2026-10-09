@@ -1,0 +1,47 @@
+# FastVM default sxhkd hotkeys for bspwm.
+# Copied into $HOME/.config/sxhkd on first launch by startwm-bspwm.sh.
+
+# Terminal
+super + Return
+    xterm
+
+# Application launcher
+super + d
+    dmenu_run
+
+# Close focused window
+super + w
+    bspc node -c
+
+# Quit bspwm
+super + shift + q
+    bspc quit
+
+# Focus / move directions
+super + {h,j,k,l}
+    bspc node -f {west,south,north,east}
+
+super + shift + {h,j,k,l}
+    bspc node -s {west,south,north,east}
+
+# Resize
+super + alt + {h,j,k,l}
+    bspc node -z {left -20 0,down 0 20,up 0 -20,right 20 0}
+
+# Workspaces 1-5
+super + {1-5}
+    bspc desktop -f {I,II,III,IV,V}
+
+# Send focused window to workspace 1-5
+super + shift + {1-5}
+    bspc node -d {I,II,III,IV,V}
+
+# Layouts
+super + t
+    bspc layout -d tiled
+super + space
+    bspc layout -d tiled
+super + f
+    bspc layout -d floating
+super + m
+    bspc layout -d monocle

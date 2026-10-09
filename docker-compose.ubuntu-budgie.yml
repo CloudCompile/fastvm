@@ -1,0 +1,11 @@
+# Optional Ubuntu Budgie distro-flavor image. Existing docker-compose.yml is unchanged.
+# docker compose -f docker-compose.yml -f docker-compose.ubuntu-budgie.yml up -d --build
+services:
+  fastvm:
+    image: fastvm:ubuntu-budgie
+    container_name: ${FASTVM_NAME:-FastVM-UbuntuBudgie}
+    build:
+      args:
+        FASTVM_DE: budgie
+        FASTVM_PRESET: development
+        FASTVM_OS_FLAVOR: ubuntu-budgie

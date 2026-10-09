@@ -1,23 +1,27 @@
 # FastVM Image Catalog
 
-FastVM publishes 90 desktop/preset combinations and 4 single-app variants.
+FastVM publishes 108 desktop/preset combinations and 4 single-app variants.
 Tags follow `<desktop>-<preset>-latest` or `<name>-latest`; release tags add
 `-vX.Y.Z`. The supported desktop values are `xfce4`, `kde`, `gnome`,
 `cinnamon`, `lxqt`, `i3`, `budgie`, `mate`, `lxde`, `fluxbox`, `unity`,
-`enlightenment`, `icewm`, `awesome`, and `ukui`.
+`enlightenment`, `icewm`, `awesome`, `ukui`, `bspwm`, `gnome-flashback`, and
+`wmaker`.
 Presets are `none`, `minimal`, `gaming`, `development`, `office`, and
 `content-creation`.
 
-Three additive distro-flavor images are published separately and do not replace
+Five additive distro-flavor images are published separately and do not replace
 any desktop/preset tag: `fastvm-os-latest` (Openbox/Tint2 appliance shell),
 `ubuntu-studio-latest` (KDE Plasma with the Ubuntu Studio 22.04 identity layer),
-and `ubuntu-kylin-latest` (UKUI with the Ubuntu Kylin 22.04 identity layer).
+`ubuntu-kylin-latest` (UKUI with the Ubuntu Kylin 22.04 identity layer),
+`ubuntu-budgie-latest` (Budgie with the Ubuntu Budgie 22.04 identity layer),
+and `ubuntu-edubuntu-latest` (GNOME with the Ubuntu Edubuntu 22.04 identity
+layer).
 
 | Category | Variants | Notes |
 | --- | ---: | --- |
-| Desktop + preset | 90 | Built from the workflow matrix |
+| Desktop + preset | 108 | Built from the workflow matrix |
 | Single-app | 4 | browser, discord, vscode, terminal |
-| Distro flavor | 3 | fastvm-os, ubuntu-studio, ubuntu-kylin |
+| Distro flavor | 5 | fastvm-os, ubuntu-studio, ubuntu-kylin, ubuntu-budgie, ubuntu-edubuntu |
 
 Exact package contents are defined by `presets/*.preset` and
 `installable-apps/*.sh`; update this document when the workflow matrix changes.

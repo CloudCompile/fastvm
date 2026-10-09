@@ -7,7 +7,7 @@
 
 ### 🎯 One Command. Full Desktop.
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Jetbrains+Mono&size=20&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&height=100&lines=⚡+Stream+a+full+Linux+desktop+in+your+browser;🚀+97+production-ready+image+variants;🎨+15+desktop+environments+to+choose+from;💻+Zero+local+setup%2C+instant+deployment;🔥+30-second+startup%2C+pure+speed)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Jetbrains+Mono&size=20&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&height=100&lines=⚡+Stream+a+full+Linux+desktop+in+your+browser;🚀+117+production-ready+image+variants;🎨+18+desktop+environments+to+choose+from;💻+Zero+local+setup%2C+instant+deployment;🔥+30-second+startup%2C+pure+speed)](https://git.io/typing-svg)
 
 <br/>
 
@@ -17,7 +17,7 @@ https://discord.gg/aahtG9n537
 ### ⚡ STATUS
 
 <a href="https://github.com/CloudCompile/fastvm/actions"><img src="https://img.shields.io/github/actions/workflow/status/CloudCompile/fastvm/build-images.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white&label=CI%20BUILDS&color=6366f1&labelColor=1e1b4b" alt="CI Status"></a>
-<a href="https://github.com/CloudCompile/fastvm"><img src="https://img.shields.io/badge/📦%20IMAGES-97%20VARIANTS-a855f7?style=for-the-badge&labelColor=0a0e27" alt="Docker Images"></a>
+<a href="https://github.com/CloudCompile/fastvm"><img src="https://img.shields.io/badge/📦%20IMAGES-117%20VARIANTS-a855f7?style=for-the-badge&labelColor=0a0e27" alt="Docker Images"></a>
 <a href="https://github.com/CloudCompile/fastvm/stargazers"><img src="https://img.shields.io/github/stars/cloudcompile/fastvm?style=for-the-badge&logo=starship&logoColor=white&color=ffd60a&labelColor=0a0e27" alt="GitHub Stars"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-MIT-ff006e?style=for-the-badge&labelColor=0a0e27" alt="License"></a>
 
@@ -38,7 +38,7 @@ https://discord.gg/aahtG9n537
 
   ```text
   ✅ Successful Builds:     2+
-  📦 Published Image Variants: 97
+  📦 Published Image Variants: 117
   📝 Total Commits:         109
   🕐 Last Updated:          2026-10-09 20:56:11 UTC
   ```
@@ -158,6 +158,45 @@ To build it locally with Compose:
 docker compose -f docker-compose.yml -f docker-compose.ubuntu-kylin.yml up -d --build
 ```
 
+## 🐦 Ubuntu Budgie distro flavor
+
+FastVM also publishes an additive `ubuntu-budgie-latest` image. It is the
+official Ubuntu Budgie 22.04 LTS flavor (Budgie desktop) layered on the same
+Ubuntu/KasmVNC base. Like the other flavors it only adds a distro identity layer
+(`/etc/ubuntu-budgie/release`, `/usr/local/bin/ubuntu-budgie-info`) and does
+**not** replace or repoint the existing Ubuntu base or any desktop/preset tag.
+
+```bash
+docker run -d -p 3000:3000 -p 3001:8099 \
+  ghcr.io/cloudcompile/fastvm:ubuntu-budgie-latest
+```
+
+To build it locally with Compose:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.ubuntu-budgie.yml up -d --build
+```
+
+## 🎓 Ubuntu Edubuntu distro flavor
+
+FastVM also publishes an additive `ubuntu-edubuntu-latest` image. It is the
+official Ubuntu Edubuntu 22.04 LTS education flavor (GNOME based) layered on the
+same Ubuntu/KasmVNC base. Like the other flavors it only adds a distro identity
+layer (`/etc/ubuntu-edubuntu/release`, `/usr/local/bin/ubuntu-edubuntu-info`) and
+does **not** replace or repoint the existing Ubuntu base or any desktop/preset
+tag.
+
+```bash
+docker run -d -p 3000:3000 -p 3001:8099 \
+  ghcr.io/cloudcompile/fastvm:ubuntu-edubuntu-latest
+```
+
+To build it locally with Compose:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.ubuntu-edubuntu.yml up -d --build
+```
+
 ### Recovery and updates
 
 The dashboard **System** view creates authenticated `recovery` and `update`
@@ -178,8 +217,8 @@ persistence, hardware, and update tests are complete.
 
 | 🏃 SPEED | 🎨 CHOICE | ☁️ CLOUD | 💾 DATA |
 |:---:|:---:|:---:|:---:|
-| **30-sec startup** | **15 desktops** | **Deploy anywhere** | **Auto-backup** |
-| 97 prebuilt images | XFCE4 → UKUI | Codespaces ready | Point-in-time restore |
+| **30-sec startup** | **18 desktops** | **Deploy anywhere** | **Auto-backup** |
+| 117 prebuilt images | XFCE4 → Window Maker | Codespaces ready | Point-in-time restore |
 | Parallel CI/CD | Pick your vibe | Infinite scaling | Persistent storage |
 | Layer caching | Lightweight+full | Zero local setup | Snapshot manager |
 
@@ -257,6 +296,9 @@ docker run -d -p 3000:3000 --device /dev/dri ghcr.io/cloudcompile/fastvm:kde-gam
 | ❄️ **IceWM** | 128 MB | ⚡⚡⚡⚡⚡ | Very light | Taskbar + menu, near-zero RAM, great on tiny hosts |
 | 🔲 **awesome** | 160 MB | ⚡⚡⚡⚡⚡ | Tiling | Lua-scriptable tiling WM, keyboard-driven workflows |
 | 🇨🇳 **UKUI** | 1 GB | ⚡⚡⚡⚡ | Kylin | Ubuntu Kylin's desktop, pairs with the ubuntu-kylin flavor |
+| 🧩 **bspwm** | 128 MB | ⚡⚡⚡⚡⚡ | Tiling (BSP) | Binary space partitioning with sxhkd hotkeys, ultra-light |
+| 🖥️ **GNOME Flashback** | 512 MB | ⚡⚡⚡⚡ | Classic GNOME 2 | The GNOME 2 panel layout on a maintained stack |
+| 🪟 **Window Maker** | 128 MB | ⚡⚡⚡⚡⚡ | NeXTSTEP-style | Iconic dock and app icons, extremely light |
 
 ---
 
@@ -494,7 +536,7 @@ Persistent Data (/config)
 
 ### **What's Included**
 - 🐳 **Multi-stage Dockerfile** — optimized layers, ~2GB compressed
-- 🎨 **Desktop Environment** — 15 choices, pre-configured
+- 🎨 **Desktop Environment** — 18 choices, pre-configured
 - 📦 **14 App Installers** — Wine, Chrome, Steam, VSCodium, etc.
 - 📊 **Node.js Dashboard** — monitoring, recording, backups
 - 🔧 **Runtime Scripts** — audio, clipboard, recording, autoscaling

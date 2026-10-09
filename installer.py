@@ -101,6 +101,9 @@ DE_LINES = [
     "IceWM (Very Lightweight)",
     "awesome (Tiling)",
     "UKUI Desktop",
+    "BSPWM (Tiling)",
+    "GNOME Flashback (Classic)",
+    "Window Maker (Minimal)",
 ]
 
 PRESET_LINES = [

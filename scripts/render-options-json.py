@@ -69,6 +69,13 @@ def map_desktop(value):
         "IceWM": "IceWM (Very Lightweight)",
         "awesome": "awesome (Tiling)",
         "UKUI": "UKUI Desktop",
+        "BSPWM": "BSPWM (Tiling)",
+        "GNOME-Flashback": "GNOME Flashback (Classic)",
+        "GNOME Flashback": "GNOME Flashback (Classic)",
+        "Flashback": "GNOME Flashback (Classic)",
+        "WMAKER": "Window Maker (Minimal)",
+        "WindowMaker": "Window Maker (Minimal)",
+        "Window Maker": "Window Maker (Minimal)",
         "FASTVM-OS": "FastVM OS",
         "fastvm-os": "FastVM OS",
     }

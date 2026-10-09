@@ -78,6 +78,77 @@ EOF
     exit 0
 fi
 
+# ---------------------------------------------------------------------------
+# Additive base-distribution flavor: Ubuntu Budgie.
+# Ubuntu Budgie is an official Ubuntu 22.04 flavor whose Budgie desktop is
+# packaged in the Ubuntu archive. The desktop packages are installed by
+# fastvm-setup.sh (FASTVM_DE=budgie); this layer only writes distro identity
+# files and never replaces or repoints the Ubuntu base image.
+# ---------------------------------------------------------------------------
+if [[ "$flavor" == "ubuntu-budgie" ]]; then
+    install -d -m 0755 /etc/ubuntu-budgie /etc/issue.d /usr/local/bin /etc/profile.d
+    cat > /etc/ubuntu-budgie/release <<'EOF'
+NAME="Ubuntu Budgie"
+ID=ubuntu-budgie
+ID_LIKE=ubuntu
+PRETTY_NAME="Ubuntu Budgie 22.04 LTS (FastVM flavor)"
+VARIANT="Budgie desktop, modern Ubuntu flavor"
+EOF
+
+    cat > /etc/profile.d/ubuntu-budgie.sh <<'EOF'
+# Ubuntu Budgie identity; configuration remains controlled by FASTVM_* variables.
+export FASTVM_DISTRO_FLAVOR="ubuntu-budgie"
+EOF
+
+    cat > /usr/local/bin/ubuntu-budgie-info <<'EOF'
+#!/bin/sh
+set -eu
+cat /etc/ubuntu-budgie/release
+printf 'Desktop: %s\nPreset: %s\n' "${FASTVM_DE:-BUDGIE}" "${FASTVM_PRESET:-none}"
+EOF
+    chmod 0755 /usr/local/bin/ubuntu-budgie-info
+
+    printf 'Ubuntu Budgie 22.04 LTS (FastVM flavor)\n' > /etc/issue.d/ubuntu-budgie.issue
+    echo "Installed Ubuntu Budgie distro identity layer"
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Additive base-distribution flavor: Ubuntu Edubuntu.
+# Edubuntu is an official Ubuntu 22.04 education flavor built on the GNOME
+# desktop; Jammy ships its identity/branding packages (edubuntu-artwork etc.)
+# rather than a single desktop metapackage, so the desktop itself is installed
+# by fastvm-setup.sh (FASTVM_DE=gnome). This layer only writes distro identity
+# files and never replaces or repoints the Ubuntu base image.
+# ---------------------------------------------------------------------------
+if [[ "$flavor" == "ubuntu-edubuntu" ]]; then
+    install -d -m 0755 /etc/ubuntu-edubuntu /etc/issue.d /usr/local/bin /etc/profile.d
+    cat > /etc/ubuntu-edubuntu/release <<'EOF'
+NAME="Ubuntu Edubuntu"
+ID=ubuntu-edubuntu
+ID_LIKE=ubuntu
+PRETTY_NAME="Ubuntu Edubuntu 22.04 LTS (FastVM flavor)"
+VARIANT="GNOME education and classroom flavor"
+EOF
+
+    cat > /etc/profile.d/ubuntu-edubuntu.sh <<'EOF'
+# Ubuntu Edubuntu identity; configuration remains controlled by FASTVM_* variables.
+export FASTVM_DISTRO_FLAVOR="ubuntu-edubuntu"
+EOF
+
+    cat > /usr/local/bin/ubuntu-edubuntu-info <<'EOF'
+#!/bin/sh
+set -eu
+cat /etc/ubuntu-edubuntu/release
+printf 'Desktop: %s\nPreset: %s\n' "${FASTVM_DE:-GNOME}" "${FASTVM_PRESET:-none}"
+EOF
+    chmod 0755 /usr/local/bin/ubuntu-edubuntu-info
+
+    printf 'Ubuntu Edubuntu 22.04 LTS (FastVM flavor)\n' > /etc/issue.d/ubuntu-edubuntu.issue
+    echo "Installed Ubuntu Edubuntu distro identity layer"
+    exit 0
+fi
+
 if [[ "$flavor" != "fastvm-os" ]]; then
     echo "Unsupported FastVM OS flavor: $flavor" >&2
     exit 1

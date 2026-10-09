@@ -277,6 +277,43 @@ case "$DE_UPPER" in
         cp /startwm-awesome.sh /defaults/startwm.sh
         ;;
 
+    "BSPWM"|"BSPWM (TILING)")
+        log_info "Installing bspwm tiling window manager..."
+        install_packages \
+            bspwm \
+            sxhkd \
+            dmenu \
+            xterm \
+            firefox
+        # Seed the default bspwm/sxhkd configs so the first session is usable.
+        cp /etc/xdg/bspwm/bspwmrc /defaults/bspwmrc 2>/dev/null || true
+        cp /etc/xdg/sxhkd/sxhkdrc /defaults/sxhkdrc 2>/dev/null || true
+        cp /startwm-bspwm.sh /defaults/startwm.sh
+        ;;
+
+    "GNOME-FLASHBACK"|"GNOME FLASHBACK"|"FLASHBACK"|"GNOME FLASHBACK (CLASSIC)")
+        log_info "Installing GNOME Flashback (classic panel) desktop..."
+        install_packages \
+            gnome-session-flashback \
+            gnome-flashback \
+            gnome-panel \
+            gnome-terminal \
+            metacity \
+            dbus-x11 \
+            firefox
+        # Flashback is a GNOME session and reads dconf/gsettings.
+        cp /startwm-gnome-flashback.sh /defaults/startwm.sh
+        ;;
+
+    "WMAKER"|"WINDOW MAKER"|"WINDOWMAKER"|"WINDOW MAKER (MINIMAL)")
+        log_info "Installing Window Maker..."
+        install_packages \
+            wmaker \
+            xterm \
+            firefox
+        cp /startwm-wmaker.sh /defaults/startwm.sh
+        ;;
+
     "UKUI"|"UKUI DESKTOP")
         log_info "Installing UKUI Desktop (Ubuntu Kylin desktop)..."
         # ukui-settings-daemon's postinst launches a Qt GUI helper (save-param)
@@ -341,6 +378,7 @@ rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh \
       /startwm-cinnamon.sh /startwm-lxqt.sh /startwm-budgie.sh /startwm-singleapp.sh \
       /startwm-mate.sh /startwm-lxde.sh /startwm-fluxbox.sh /startwm-unity.sh \
       /startwm-enlightenment.sh /startwm-icewm.sh /startwm-awesome.sh /startwm-ukui.sh \
+      /startwm-bspwm.sh /startwm-gnome-flashback.sh /startwm-wmaker.sh \
       2>/dev/null || true
 
 log_info "Desktop Environment setup complete!"
