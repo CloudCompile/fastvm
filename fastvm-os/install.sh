@@ -43,6 +43,41 @@ EOF
     exit 0
 fi
 
+# ---------------------------------------------------------------------------
+# Additive base-distribution flavor: Ubuntu Kylin.
+# Ubuntu Kylin is an official Ubuntu 22.04 flavor whose UKUI desktop is
+# packaged in the Ubuntu archive. The desktop packages are installed by
+# fastvm-setup.sh (FASTVM_DE=UKUI); this layer only writes distro identity
+# files and never replaces or repoints the Ubuntu base image.
+# ---------------------------------------------------------------------------
+if [[ "$flavor" == "ubuntu-kylin" ]]; then
+    install -d -m 0755 /etc/ubuntu-kylin /etc/issue.d /usr/local/bin /etc/profile.d
+    cat > /etc/ubuntu-kylin/release <<'EOF'
+NAME="Ubuntu Kylin"
+ID=ubuntu-kylin
+ID_LIKE=ubuntu
+PRETTY_NAME="Ubuntu Kylin 22.04 LTS (FastVM flavor)"
+VARIANT="UKUI desktop, Chinese-localised Ubuntu flavor"
+EOF
+
+    cat > /etc/profile.d/ubuntu-kylin.sh <<'EOF'
+# Ubuntu Kylin identity; configuration remains controlled by FASTVM_* variables.
+export FASTVM_DISTRO_FLAVOR="ubuntu-kylin"
+EOF
+
+    cat > /usr/local/bin/ubuntu-kylin-info <<'EOF'
+#!/bin/sh
+set -eu
+cat /etc/ubuntu-kylin/release
+printf 'Desktop: %s\nPreset: %s\n' "${FASTVM_DE:-UKUI}" "${FASTVM_PRESET:-none}"
+EOF
+    chmod 0755 /usr/local/bin/ubuntu-kylin-info
+
+    printf 'Ubuntu Kylin 22.04 LTS (FastVM flavor)\n' > /etc/issue.d/ubuntu-kylin.issue
+    echo "Installed Ubuntu Kylin distro identity layer"
+    exit 0
+fi
+
 if [[ "$flavor" != "fastvm-os" ]]; then
     echo "Unsupported FastVM OS flavor: $flavor" >&2
     exit 1

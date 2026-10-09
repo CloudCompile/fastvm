@@ -65,6 +65,10 @@ def map_desktop(value):
         "Unity": "Unity (Ubuntu Classic)",
         "UbuntuStudio": "Ubuntu Studio (KDE Flavor)",
         "ubuntu-studio": "Ubuntu Studio (KDE Flavor)",
+        "Enlightenment": "Enlightenment (Eye Candy)",
+        "IceWM": "IceWM (Very Lightweight)",
+        "awesome": "awesome (Tiling)",
+        "UKUI": "UKUI Desktop",
         "FASTVM-OS": "FastVM OS",
         "fastvm-os": "FastVM OS",
     }

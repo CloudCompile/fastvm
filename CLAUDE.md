@@ -32,7 +32,7 @@ docker-compose build --no-cache && docker-compose up -d
 All runtime settings live in `config.env`. Changes require `docker-compose down && ./fastvm-install.sh` to take effect. The file is sourced with `set -a` so all `FASTVM_*` vars are automatically exported to the container.
 
 Key settings:
-- `FASTVM_DE` — desktop environment (XFCE4 default; options: KDE, GNOME, Cinnamon, LXQT, I3, Budgie, MATE, LXDE, Fluxbox, Unity, UbuntuStudio, fastvm-os)
+- `FASTVM_DE` — desktop environment (XFCE4 default; options: KDE, GNOME, Cinnamon, LXQT, I3, Budgie, MATE, LXDE, Fluxbox, Unity, UbuntuStudio, Enlightenment, IceWM, awesome, UKUI, fastvm-os)
 - `FASTVM_PRESET` — overlays app/resource defaults (none, minimal, gaming, development, office, content-creation, hidencloud-free-vps)
 - `FASTVM_APP_*` / `FASTVM_PROG_*` — toggle individual app installs
 - `FASTVM_DASHBOARD_PORT` — internal port the Node.js dashboard listens on (default 8099 inside container, mapped to host 3001)

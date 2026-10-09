@@ -243,6 +243,59 @@ case "$DE_UPPER" in
         cp /startwm-kde.sh /defaults/startwm.sh
         ;;
 
+    "ENLIGHTENMENT"|"ENLIGHTENMENT (EYE CANDY)")
+        log_info "Installing Enlightenment..."
+        install_packages \
+            enlightenment \
+            terminology \
+            firefox
+        # Enlightenment is a lightweight compositing desktop; dbus-launch is
+        # used by the session launcher so make sure it is present.
+        install_packages dbus-x11
+        cp /startwm-enlightenment.sh /defaults/startwm.sh
+        ;;
+
+    "ICEWM"|"ICEWM (VERY LIGHTWEIGHT)")
+        log_info "Installing IceWM..."
+        install_packages \
+            icewm \
+            xterm \
+            firefox
+        cp /startwm-icewm.sh /defaults/startwm.sh
+        ;;
+
+    "AWESOME"|"AWESOME (TILING)")
+        log_info "Installing awesome WM..."
+        install_packages \
+            awesome \
+            awesome-extra \
+            rxvt-unicode \
+            firefox
+        # Register urxvt as the terminal for menus/app launchers that expect one.
+        update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/urxvt 40 || true
+        update-alternatives --set x-terminal-emulator /usr/bin/urxvt || true
+        cp /startwm-awesome.sh /defaults/startwm.sh
+        ;;
+
+    "UKUI"|"UKUI DESKTOP")
+        log_info "Installing UKUI Desktop (Ubuntu Kylin desktop)..."
+        # ukui-settings-daemon's postinst launches a Qt GUI helper (save-param)
+        # whenever DISPLAY is set, which aborts in the headless build. Blank
+        # DISPLAY for the install so dpkg can configure the package, then
+        # restore it so later layers are unaffected.
+        export DISPLAY=""
+        install_packages \
+            ukui-desktop-environment \
+            ukui-session-manager \
+            ukui-panel \
+            ukui-menu \
+            peony \
+            dbus-x11 \
+            firefox
+        unset DISPLAY
+        cp /startwm-ukui.sh /defaults/startwm.sh
+        ;;
+
     "SINGLEAPP")
         # Single-app mode: minimal openbox, no full desktop environment
         # The specific app is installed later via installapps-parallel.sh
@@ -287,6 +340,7 @@ chmod +x /defaults/startwm.sh
 rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh \
       /startwm-cinnamon.sh /startwm-lxqt.sh /startwm-budgie.sh /startwm-singleapp.sh \
       /startwm-mate.sh /startwm-lxde.sh /startwm-fluxbox.sh /startwm-unity.sh \
+      /startwm-enlightenment.sh /startwm-icewm.sh /startwm-awesome.sh /startwm-ukui.sh \
       2>/dev/null || true
 
 log_info "Desktop Environment setup complete!"

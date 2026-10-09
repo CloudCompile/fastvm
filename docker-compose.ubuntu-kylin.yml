@@ -1,0 +1,11 @@
+# Optional Ubuntu Kylin distro-flavor image. Existing docker-compose.yml is unchanged.
+# docker compose -f docker-compose.yml -f docker-compose.ubuntu-kylin.yml up -d --build
+services:
+  fastvm:
+    image: fastvm:ubuntu-kylin
+    container_name: ${FASTVM_NAME:-FastVM-UbuntuKylin}
+    build:
+      args:
+        FASTVM_DE: ukui
+        FASTVM_PRESET: development
+        FASTVM_OS_FLAVOR: ubuntu-kylin

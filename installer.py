@@ -97,6 +97,10 @@ DE_LINES = [
     "Fluxbox (Minimal WM)",
     "Unity (Ubuntu Classic)",
     "Ubuntu Studio (KDE Flavor)",
+    "Enlightenment (Eye Candy)",
+    "IceWM (Very Lightweight)",
+    "awesome (Tiling)",
+    "UKUI Desktop",
 ]
 
 PRESET_LINES = [
