@@ -36,10 +36,10 @@ jobs:
             --limit 1000 \
             --json conclusion --jq 'length')
 
-          # Real-ish metric: image variants defined by the workflow matrix.
-          # 7 desktops x 6 presets = 42 + 4 single-app builds + 1 OS appliance = 47
-          # Keep to the repo's documented count if you prefer to match the published list.
-          PUBLISHED_IMAGE_VARIANTS=46
+          # Real metric: image variants defined by the workflow matrices.
+          # 11 desktops x 6 presets = 66 + 4 single-app builds + 1 OS appliance
+          # + 1 Ubuntu Studio flavor = 72.
+          PUBLISHED_IMAGE_VARIANTS=72
 
           # Real metric: total Git commits in the default branch.
           TOTAL_COMMITS=$(git rev-list --count HEAD)

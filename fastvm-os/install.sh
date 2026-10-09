@@ -9,6 +9,40 @@ if [[ "$flavor" == "standard" ]]; then
     exit 0
 fi
 
+# ---------------------------------------------------------------------------
+# Additive base-distribution flavor: Ubuntu Studio.
+# Ubuntu Studio is an official Ubuntu 22.04 flavor (KDE Plasma based). The
+# desktop packages are installed by fastvm-setup.sh; this layer only writes
+# distro identity files and never replaces or repoints the Ubuntu base image.
+# ---------------------------------------------------------------------------
+if [[ "$flavor" == "ubuntu-studio" ]]; then
+    install -d -m 0755 /etc/ubuntu-studio /etc/issue.d /usr/local/bin /etc/profile.d
+    cat > /etc/ubuntu-studio/release <<'EOF'
+NAME="Ubuntu Studio"
+ID=ubuntu-studio
+ID_LIKE=ubuntu
+PRETTY_NAME="Ubuntu Studio 22.04 LTS (FastVM flavor)"
+VARIANT="KDE Plasma multimedia workstation"
+EOF
+
+    cat > /etc/profile.d/ubuntu-studio.sh <<'EOF'
+# Ubuntu Studio identity; configuration remains controlled by FASTVM_* variables.
+export FASTVM_DISTRO_FLAVOR="ubuntu-studio"
+EOF
+
+    cat > /usr/local/bin/ubuntu-studio-info <<'EOF'
+#!/bin/sh
+set -eu
+cat /etc/ubuntu-studio/release
+printf 'Desktop: %s\nPreset: %s\n' "${FASTVM_DE:-UBUNTUSTUDIO}" "${FASTVM_PRESET:-none}"
+EOF
+    chmod 0755 /usr/local/bin/ubuntu-studio-info
+
+    printf 'Ubuntu Studio 22.04 LTS (FastVM flavor)\n' > /etc/issue.d/ubuntu-studio.issue
+    echo "Installed Ubuntu Studio distro identity layer"
+    exit 0
+fi
+
 if [[ "$flavor" != "fastvm-os" ]]; then
     echo "Unsupported FastVM OS flavor: $flavor" >&2
     exit 1

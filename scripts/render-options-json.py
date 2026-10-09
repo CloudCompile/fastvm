@@ -59,6 +59,12 @@ def map_desktop(value):
         "LXQT": "LXQT",
         "I3": "I3",
         "Budgie": "Budgie",
+        "MATE": "MATE (Classic)",
+        "LXDE": "LXDE (Ultra Lightweight)",
+        "Fluxbox": "Fluxbox (Minimal WM)",
+        "Unity": "Unity (Ubuntu Classic)",
+        "UbuntuStudio": "Ubuntu Studio (KDE Flavor)",
+        "ubuntu-studio": "Ubuntu Studio (KDE Flavor)",
         "FASTVM-OS": "FastVM OS",
         "fastvm-os": "FastVM OS",
     }

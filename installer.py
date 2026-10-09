@@ -92,6 +92,11 @@ DE_LINES = [
     "GNOME 42 (Very Heavy)",
     "Cinnamon",
     "LXQT",
+    "MATE (Classic)",
+    "LXDE (Ultra Lightweight)",
+    "Fluxbox (Minimal WM)",
+    "Unity (Ubuntu Classic)",
+    "Ubuntu Studio (KDE Flavor)",
 ]
 
 PRESET_LINES = [

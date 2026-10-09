@@ -1,0 +1,11 @@
+# Optional Ubuntu Studio distro-flavor image. Existing docker-compose.yml is unchanged.
+# docker compose -f docker-compose.yml -f docker-compose.ubuntu-studio.yml up -d --build
+services:
+  fastvm:
+    image: fastvm:ubuntu-studio
+    container_name: ${FASTVM_NAME:-FastVM-UbuntuStudio}
+    build:
+      args:
+        FASTVM_DE: ubuntu-studio
+        FASTVM_PRESET: development
+        FASTVM_OS_FLAVOR: ubuntu-studio

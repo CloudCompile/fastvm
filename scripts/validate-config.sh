@@ -6,8 +6,9 @@ source "${SCRIPT_DIR}/lib-common.sh"
 load_fastvm_config
 
 fail=0
-valid_de='^(XFCE4|KDE|GNOME|Cinnamon|LXQT|I3|Budgie|fastvm-os|FASTVM-OS)$'
+valid_de='^(XFCE4|KDE|GNOME|Cinnamon|LXQT|I3|Budgie|MATE|LXDE|Fluxbox|Unity|UbuntuStudio|ubuntu-studio|fastvm-os|FASTVM-OS)$'
 valid_preset='^(none|minimal|gaming|development|office|content-creation|hidencloud-free-vps)$'
+valid_flavor='^(standard|fastvm-os|ubuntu-studio)$'
 valid_bool='^(true|false)$'
 valid_schedule='^(disabled|daily|weekly|hourly)$'
 valid_compression='^(gzip|zstd|xz)$'
@@ -31,6 +32,7 @@ check_range() {
 
 check_regex FASTVM_DE "${FASTVM_DE:-XFCE4}" "$valid_de"
 check_regex FASTVM_PRESET "${FASTVM_PRESET:-none}" "$valid_preset"
+check_regex FASTVM_OS_FLAVOR "${FASTVM_OS_FLAVOR:-standard}" "$valid_flavor"
 check_regex FASTVM_RECORDING_FORMAT "${FASTVM_RECORDING_FORMAT:-mp4}" "$valid_format"
 check_regex FASTVM_RECORDING_CODEC "${FASTVM_RECORDING_CODEC:-h264}" "$valid_codec"
 check_regex FASTVM_BACKUP_COMPRESSION "${FASTVM_BACKUP_COMPRESSION:-gzip}" "$valid_compression"

@@ -192,6 +192,57 @@ case "$DE_UPPER" in
         cp /startwm-budgie.sh /defaults/startwm.sh
         ;;
 
+    "MATE"|"MATE DESKTOP")
+        log_info "Installing MATE Desktop..."
+        install_packages \
+            mate-desktop-environment \
+            mate-desktop-environment-extras \
+            mate-terminal \
+            mate-tweak \
+            firefox
+        # MATE ships an xscreensaver autostart that fights the browser session.
+        rm -f /etc/xdg/autostart/xscreensaver.desktop
+        cp /startwm-mate.sh /defaults/startwm.sh
+        ;;
+
+    "LXDE"|"LXDE (LIGHTWEIGHT)")
+        log_info "Installing LXDE..."
+        install_packages \
+            lxde-core \
+            lxterminal \
+            firefox
+        # LXDE is the classic ultra-light GTK2 desktop.
+        rm -f /etc/xdg/autostart/xscreensaver.desktop
+        cp /startwm-lxde.sh /defaults/startwm.sh
+        ;;
+
+    "FLUXBOX"|"FLUXBOX (VERY LIGHTWEIGHT)")
+        log_info "Installing Fluxbox..."
+        install_packages \
+            fluxbox \
+            xterm \
+            firefox
+        cp /startwm-fluxbox.sh /defaults/startwm.sh
+        ;;
+
+    "UNITY")
+        log_info "Installing Unity..."
+        install_packages \
+            ubuntu-unity-desktop \
+            firefox
+        # Unity pulls in LightDM, but KasmVNC owns session startup.
+        cp /startwm-unity.sh /defaults/startwm.sh
+        ;;
+
+    "UBUNTU STUDIO"|"UBUNTUSTUDIO"|"UBUNTU-STUDIO")
+        log_info "Installing Ubuntu Studio desktop flavor (KDE Plasma based)..."
+        install_packages \
+            ubuntustudio-desktop \
+            firefox
+        # Ubuntu Studio is a KDE Plasma flavor; reuse the KDE session launcher.
+        cp /startwm-kde.sh /defaults/startwm.sh
+        ;;
+
     "SINGLEAPP")
         # Single-app mode: minimal openbox, no full desktop environment
         # The specific app is installed later via installapps-parallel.sh
@@ -234,6 +285,8 @@ chmod +x /defaults/startwm.sh
 
 # Clean up start scripts
 rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh \
-      /startwm-cinnamon.sh /startwm-lxqt.sh /startwm-budgie.sh /startwm-singleapp.sh 2>/dev/null || true
+      /startwm-cinnamon.sh /startwm-lxqt.sh /startwm-budgie.sh /startwm-singleapp.sh \
+      /startwm-mate.sh /startwm-lxde.sh /startwm-fluxbox.sh /startwm-unity.sh \
+      2>/dev/null || true
 
 log_info "Desktop Environment setup complete!"
