@@ -1,0 +1,11 @@
+# Optional Xubuntu distro-flavor image. Existing docker-compose.yml is unchanged.
+# docker compose -f docker-compose.yml -f docker-compose.xubuntu.yml up -d --build
+services:
+  fastvm:
+    image: fastvm:xubuntu
+    container_name: ${FASTVM_NAME:-FastVM-Xubuntu}
+    build:
+      args:
+        FASTVM_DE: xfce4
+        FASTVM_PRESET: development
+        FASTVM_OS_FLAVOR: xubuntu

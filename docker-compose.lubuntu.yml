@@ -1,0 +1,11 @@
+# Optional Lubuntu distro-flavor image. Existing docker-compose.yml is unchanged.
+# docker compose -f docker-compose.yml -f docker-compose.lubuntu.yml up -d --build
+services:
+  fastvm:
+    image: fastvm:lubuntu
+    container_name: ${FASTVM_NAME:-FastVM-Lubuntu}
+    build:
+      args:
+        FASTVM_DE: lxqt
+        FASTVM_PRESET: development
+        FASTVM_OS_FLAVOR: lubuntu

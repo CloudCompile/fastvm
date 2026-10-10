@@ -291,6 +291,37 @@ case "$DE_UPPER" in
         cp /startwm-bspwm.sh /defaults/startwm.sh
         ;;
 
+    "HERBSTLUFTWM"|"HERBSTLUFTWM (TILING)"|"HLWM")
+        log_info "Installing herbstluftwm tiling window manager..."
+        install_packages \
+            herbstluftwm \
+            dmenu \
+            xterm \
+            firefox
+        # Seed the packaged autostart so the first session has panels/hotkeys.
+        cp /startwm-herbstluftwm.sh /defaults/startwm.sh
+        ;;
+
+    "JWM"|"JWM (VERY LIGHTWEIGHT)"|"JOE'S WINDOW MANAGER")
+        log_info "Installing JWM (Joe's Window Manager)..."
+        install_packages \
+            jwm \
+            xterm \
+            firefox
+        # JWM ships a system config; the session launcher copies it per-user.
+        cp /startwm-jwm.sh /defaults/startwm.sh
+        ;;
+
+    "FVWM"|"FVWM (CLASSIC)"|"FVWM2"|"F? VIRTUAL WINDOW MANAGER")
+        log_info "Installing FVWM (F? Virtual Window Manager)..."
+        install_packages \
+            fvwm \
+            xterm \
+            firefox
+        # FVWM ships a full default config; the session launcher seeds it per-user.
+        cp /startwm-fvwm.sh /defaults/startwm.sh
+        ;;
+
     "GNOME-FLASHBACK"|"GNOME FLASHBACK"|"FLASHBACK"|"GNOME FLASHBACK (CLASSIC)")
         log_info "Installing GNOME Flashback (classic panel) desktop..."
         install_packages \
@@ -388,7 +419,9 @@ rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh \
       /startwm-cinnamon.sh /startwm-lxqt.sh /startwm-budgie.sh /startwm-singleapp.sh \
       /startwm-mate.sh /startwm-lxde.sh /startwm-fluxbox.sh /startwm-unity.sh \
       /startwm-enlightenment.sh /startwm-icewm.sh /startwm-awesome.sh /startwm-ukui.sh \
-      /startwm-bspwm.sh /startwm-gnome-flashback.sh /startwm-wmaker.sh \
+      /startwm-bspwm.sh /startwm-herbstluftwm.sh /startwm-jwm.sh \
+      /startwm-fvwm.sh \
+      /startwm-gnome-flashback.sh /startwm-wmaker.sh \
       /startwm-pearos.sh \
       2>/dev/null || true
 

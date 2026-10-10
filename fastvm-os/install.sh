@@ -149,6 +149,76 @@ EOF
     exit 0
 fi
 
+# ---------------------------------------------------------------------------
+# Additive base-distribution flavor: Xubuntu.
+# Xubuntu is an official Ubuntu 22.04 flavor built on the XFCE desktop. The
+# desktop packages are installed by fastvm-setup.sh (FASTVM_DE=XFCE4); this
+# layer only writes distro identity files and never replaces or repoints the
+# Ubuntu base image.
+# ---------------------------------------------------------------------------
+if [[ "$flavor" == "xubuntu" || "$flavor" == "ubuntu-xfce" ]]; then
+    install -d -m 0755 /etc/xubuntu /etc/issue.d /usr/local/bin /etc/profile.d
+    cat > /etc/xubuntu/release <<'EOF'
+NAME="Xubuntu"
+ID=xubuntu
+ID_LIKE=ubuntu
+PRETTY_NAME="Xubuntu 22.04 LTS (FastVM flavor)"
+VARIANT="XFCE desktop, official lightweight Ubuntu flavor"
+EOF
+
+    cat > /etc/profile.d/xubuntu.sh <<'EOF'
+# Xubuntu identity; configuration remains controlled by FASTVM_* variables.
+export FASTVM_DISTRO_FLAVOR="xubuntu"
+EOF
+
+    cat > /usr/local/bin/xubuntu-info <<'EOF'
+#!/bin/sh
+set -eu
+cat /etc/xubuntu/release
+printf 'Desktop: %s\nPreset: %s\n' "${FASTVM_DE:-XFCE4}" "${FASTVM_PRESET:-none}"
+EOF
+    chmod 0755 /usr/local/bin/xubuntu-info
+
+    printf 'Xubuntu 22.04 LTS (FastVM flavor)\n' > /etc/issue.d/xubuntu.issue
+    echo "Installed Xubuntu distro identity layer"
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Additive base-distribution flavor: Lubuntu.
+# Lubuntu is an official Ubuntu 22.04 flavor built on the LXQt desktop. The
+# desktop packages are installed by fastvm-setup.sh (FASTVM_DE=LXQT); this
+# layer only writes distro identity files and never replaces or repoints the
+# Ubuntu base image.
+# ---------------------------------------------------------------------------
+if [[ "$flavor" == "lubuntu" || "$flavor" == "ubuntu-lxqt" ]]; then
+    install -d -m 0755 /etc/lubuntu /etc/issue.d /usr/local/bin /etc/profile.d
+    cat > /etc/lubuntu/release <<'EOF'
+NAME="Lubuntu"
+ID=lubuntu
+ID_LIKE=ubuntu
+PRETTY_NAME="Lubuntu 22.04 LTS (FastVM flavor)"
+VARIANT="LXQt desktop, official lightweight Ubuntu flavor"
+EOF
+
+    cat > /etc/profile.d/lubuntu.sh <<'EOF'
+# Lubuntu identity; configuration remains controlled by FASTVM_* variables.
+export FASTVM_DISTRO_FLAVOR="lubuntu"
+EOF
+
+    cat > /usr/local/bin/lubuntu-info <<'EOF'
+#!/bin/sh
+set -eu
+cat /etc/lubuntu/release
+printf 'Desktop: %s\nPreset: %s\n' "${FASTVM_DE:-LXQT}" "${FASTVM_PRESET:-none}"
+EOF
+    chmod 0755 /usr/local/bin/lubuntu-info
+
+    printf 'Lubuntu 22.04 LTS (FastVM flavor)\n' > /etc/issue.d/lubuntu.issue
+    echo "Installed Lubuntu distro identity layer"
+    exit 0
+fi
+
 if [[ "$flavor" != "fastvm-os" ]]; then
     echo "Unsupported FastVM OS flavor: $flavor" >&2
     exit 1

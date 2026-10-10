@@ -7,7 +7,7 @@
 
 ### 🎯 One Command. Full Desktop.
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Jetbrains+Mono&size=20&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&height=100&lines=⚡+Stream+a+full+Linux+desktop+in+your+browser;🚀+117+production-ready+image+variants;🎨+18+desktop+environments+to+choose+from;💻+Zero+local+setup%2C+instant+deployment;🔥+30-second+startup%2C+pure+speed)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Jetbrains+Mono&size=20&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&height=100&lines=⚡+Stream+a+full+Linux+desktop+in+your+browser;🚀+137+production-ready+image+variants;🎨+21+desktop+environments+to+choose+from;💻+Zero+local+setup%2C+instant+deployment;🔥+30-second+startup%2C+pure+speed)](https://git.io/typing-svg)
 
 <br/>
 
@@ -17,7 +17,7 @@ https://discord.gg/aahtG9n537
 ### ⚡ STATUS
 
 <a href="https://github.com/CloudCompile/fastvm/actions"><img src="https://img.shields.io/github/actions/workflow/status/CloudCompile/fastvm/build-images.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white&label=CI%20BUILDS&color=6366f1&labelColor=1e1b4b" alt="CI Status"></a>
-<a href="https://github.com/CloudCompile/fastvm"><img src="https://img.shields.io/badge/📦%20IMAGES-117%20VARIANTS-a855f7?style=for-the-badge&labelColor=0a0e27" alt="Docker Images"></a>
+<a href="https://github.com/CloudCompile/fastvm"><img src="https://img.shields.io/badge/📦%20IMAGES-137%20VARIANTS-a855f7?style=for-the-badge&labelColor=0a0e27" alt="Docker Images"></a>
 <a href="https://github.com/CloudCompile/fastvm/stargazers"><img src="https://img.shields.io/github/stars/cloudcompile/fastvm?style=for-the-badge&logo=starship&logoColor=white&color=ffd60a&labelColor=0a0e27" alt="GitHub Stars"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-MIT-ff006e?style=for-the-badge&labelColor=0a0e27" alt="License"></a>
 
@@ -38,9 +38,9 @@ https://discord.gg/aahtG9n537
 
   ```text
   ✅ Successful Builds:     2+
-  📦 Published Image Variants: 117
-  📝 Total Commits:         119
-  🕐 Last Updated:          2026-10-10 03:38:28 UTC
+  📦 Published Image Variants: 137
+  📝 Total Commits:         118
+  🕐 Last Updated:          2026-10-09 23:47:38 UTC
   ```
 
   **These are real metrics** — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data. — updated every hour from actual GitHub Actions and repository data.
@@ -197,6 +197,44 @@ To build it locally with Compose:
 docker compose -f docker-compose.yml -f docker-compose.ubuntu-edubuntu.yml up -d --build
 ```
 
+## 🐭 Xubuntu distro flavor
+
+FastVM also publishes an additive `xubuntu-latest` image. It is the official
+Xubuntu 22.04 LTS flavor (XFCE desktop) layered on the same Ubuntu/KasmVNC base.
+Like the other flavors it only adds a distro identity layer
+(`/etc/xubuntu/release`, `/usr/local/bin/xubuntu-info`) and does **not** replace
+or repoint the existing Ubuntu base or any desktop/preset tag.
+
+```bash
+docker run -d -p 3000:3000 -p 3001:8099 \
+  ghcr.io/cloudcompile/fastvm:xubuntu-latest
+```
+
+To build it locally using the flavor layer directly:
+
+```bash
+FASTVM_DE=XFCE4 FASTVM_OS_FLAVOR=xubuntu ./fastvm-install.sh
+```
+
+## 🪶 Lubuntu distro flavor
+
+FastVM also publishes an additive `lubuntu-latest` image. It is the official
+Lubuntu 22.04 LTS flavor (LXQt desktop) layered on the same Ubuntu/KasmVNC base.
+Like the other flavors it only adds a distro identity layer
+(`/etc/lubuntu/release`, `/usr/local/bin/lubuntu-info`) and does **not** replace
+or repoint the existing Ubuntu base or any desktop/preset tag.
+
+```bash
+docker run -d -p 3000:3000 -p 3001:8099 \
+  ghcr.io/cloudcompile/fastvm:lubuntu-latest
+```
+
+To build it locally using the flavor layer directly:
+
+```bash
+FASTVM_DE=LXQT FASTVM_OS_FLAVOR=lubuntu ./fastvm-install.sh
+```
+
 ### Recovery and updates
 
 The dashboard **System** view creates authenticated `recovery` and `update`
@@ -217,8 +255,8 @@ persistence, hardware, and update tests are complete.
 
 | 🏃 SPEED | 🎨 CHOICE | ☁️ CLOUD | 💾 DATA |
 |:---:|:---:|:---:|:---:|
-| **30-sec startup** | **18 desktops** | **Deploy anywhere** | **Auto-backup** |
-| 117 prebuilt images | XFCE4 → Window Maker | Codespaces ready | Point-in-time restore |
+| **30-sec startup** | **21 desktops** | **Deploy anywhere** | **Auto-backup** |
+| 137 prebuilt images | XFCE4 → Window Maker | Codespaces ready | Point-in-time restore |
 | Parallel CI/CD | Pick your vibe | Infinite scaling | Persistent storage |
 | Layer caching | Lightweight+full | Zero local setup | Snapshot manager |
 
@@ -299,6 +337,9 @@ docker run -d -p 3000:3000 --device /dev/dri ghcr.io/cloudcompile/fastvm:kde-gam
 | 🧩 **bspwm** | 128 MB | ⚡⚡⚡⚡⚡ | Tiling (BSP) | Binary space partitioning with sxhkd hotkeys, ultra-light |
 | 🖥️ **GNOME Flashback** | 512 MB | ⚡⚡⚡⚡ | Classic GNOME 2 | The GNOME 2 panel layout on a maintained stack |
 | 🪟 **Window Maker** | 128 MB | ⚡⚡⚡⚡⚡ | NeXTSTEP-style | Iconic dock and app icons, extremely light |
+| 🌿 **herbstluftwm** | 128 MB | ⚡⚡⚡⚡⚡ | Tiling (manual) | Manual tiling WM driven by hotkeys, dmenu launcher, ultra-light |
+| 🧰 **JWM** | 128 MB | ⚡⚡⚡⚡⚡ | Stacking WM | Joe's Window Manager — XML-configured taskbar/pager, ultra-light |
+| 🏛️ **FVWM** | 160 MB | ⚡⚡⚡⚡ | Classic WM | F? Virtual Window Manager — scriptable virtual-desktop WM, fixed since 1993 |
 
 ---
 

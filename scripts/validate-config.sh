@@ -6,9 +6,9 @@ source "${SCRIPT_DIR}/lib-common.sh"
 load_fastvm_config
 
 fail=0
-valid_de='^(XFCE4|KDE|GNOME|Cinnamon|LXQT|I3|Budgie|MATE|LXDE|Fluxbox|Unity|UbuntuStudio|ubuntu-studio|Enlightenment|IceWM|awesome|UKUI|BSPWM|GNOME-Flashback|GNOME Flashback|Flashback|WMAKER|WindowMaker|Window Maker|fastvm-os|FASTVM-OS)$'
+valid_de='^(XFCE4|KDE|GNOME|Cinnamon|LXQT|I3|Budgie|MATE|LXDE|Fluxbox|Unity|UbuntuStudio|ubuntu-studio|Enlightenment|IceWM|awesome|UKUI|BSPWM|Herbstluftwm|herbstluftwm|HLWM|JWM|Jwm|jwm|FVWM|Fvwm|fvwm|FVWM2|GNOME-Flashback|GNOME Flashback|Flashback|WMAKER|WindowMaker|Window Maker|fastvm-os|FASTVM-OS)$'
 valid_preset='^(none|minimal|gaming|development|office|content-creation|hidencloud-free-vps)$'
-valid_flavor='^(standard|fastvm-os|ubuntu-studio|ubuntu-kylin|ubuntu-budgie|ubuntu-edubuntu)$'
+valid_flavor='^(standard|fastvm-os|ubuntu-studio|ubuntu-kylin|ubuntu-budgie|ubuntu-edubuntu|xubuntu|ubuntu-xfce|lubuntu|ubuntu-lxqt)$'
 valid_bool='^(true|false)$'
 valid_schedule='^(disabled|daily|weekly|hourly)$'
 valid_compression='^(gzip|zstd|xz)$'
