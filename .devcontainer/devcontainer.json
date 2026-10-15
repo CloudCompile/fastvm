@@ -22,9 +22,11 @@
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
-  // 2 cores / 8 GB works (FastVM auto-tunes for it); 4 cores / 16 GB is smooth.
+  // 2 cores / 8 GB is the free tier and works (FastVM auto-tunes for it);
+  // 4 cores / 16 GB is smoother. Keep the requirement at the free tier so the
+  // default Codespace can create — asking for 4 cores would block it.
   "hostRequirements": {
-    "cpus": 4,
+    "cpus": 2,
     "memory": "8gb",
     "storage": "32gb"
   },
