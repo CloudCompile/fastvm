@@ -206,6 +206,7 @@ jobs:
           assert env['kind'] == 'codespaces', env['kind']
           ids = {n['id'] for n in env['notices']}
           assert 'codespaces' in ids and 'no-kvm' in ids, ids
+          assert isinstance(env['disk_free_mb'], int)
           PY
 
   validate-discord-tuning:

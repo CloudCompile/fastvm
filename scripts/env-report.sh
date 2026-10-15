@@ -68,9 +68,15 @@ memory_mb() {
     awk '/MemTotal/{printf "%d\n", $2/1024}' /proc/meminfo 2>/dev/null || echo 0
 }
 
+# Free megabytes on the filesystem holding DATA_ROOT (the workspace in a
+# Codespace). Image pulls and backups live here.
+disk_free_mb() {
+    df -Pm "${DATA_ROOT}" 2>/dev/null | awk 'NR==2{print $4}' || echo 0
+}
+
 # Emit a JSON array of notices. Each notice is {id, severity, message}.
 notices_json() {
-    local kind="$1" kvm="$2" shm="$3"
+    local kind="$1" kvm="$2" shm="$3" disk="$4"
     local items=()
 
     if [[ "$kind" == "codespaces" ]]; then
@@ -82,6 +88,9 @@ notices_json() {
     if [[ "${shm:-0}" -lt 512 ]]; then
         items+=("{\"id\":\"small-shm\",\"severity\":\"warn\",\"message\":\"/dev/shm is ${shm} MB (<512); Chromium/Electron apps may need --disable-dev-shm-usage. Raise FASTVM_SHM_SIZE.\"}")
     fi
+    if [[ "${disk:-0}" -gt 0 && "${disk:-0}" -lt 8192 ]]; then
+        items+=("{\"id\":\"low-disk\",\"severity\":\"warn\",\"message\":\"Only ${disk} MB free on the workspace filesystem; image pulls and backups need several GB.\"}")
+    fi
 
     local joined=""
     local IFS=,
@@ -92,11 +101,11 @@ notices_json() {
 json_bool() { [[ "$1" == "true" ]] && echo true || echo false; }
 
 collect() {
-    local kind cloud kvm shm cpu mem
+    local kind cloud kvm shm cpu mem disk
     kind="$(detect_kind)"
     cloud="$(detect_cloud)"
     if kvm_available; then kvm=true; else kvm=false; fi
-    shm="$(shm_mb)"; cpu="$(cpus)"; mem="$(memory_mb)"
+    shm="$(shm_mb)"; cpu="$(cpus)"; mem="$(memory_mb)"; disk="$(disk_free_mb)"
 
     cat <<EOF
 {
@@ -106,16 +115,17 @@ collect() {
   "shm_mb": ${shm},
   "cpus": ${cpu},
   "memory_mb": ${mem},
-  "notices": $(notices_json "$kind" "$kvm" "$shm")
+  "disk_free_mb": ${disk},
+  "notices": $(notices_json "$kind" "$kvm" "$shm" "$disk")
 }
 EOF
 }
 
 print_report() {
-    local kind cloud kvm shm cpu mem
+    local kind cloud kvm shm cpu mem disk
     kind="$(detect_kind)"; cloud="$(detect_cloud)"
     if kvm_available; then kvm=true; else kvm=false; fi
-    shm="$(shm_mb)"; cpu="$(cpus)"; mem="$(memory_mb)"
+    shm="$(shm_mb)"; cpu="$(cpus)"; mem="$(memory_mb)"; disk="$(disk_free_mb)"
 
     log "FastVM environment"
     log "  Host kind      : ${kind}"
@@ -123,11 +133,13 @@ print_report() {
     log "  Hardware virt  : $([[ "$kvm" == true ]] && echo "available (/dev/kvm)" || echo "unavailable (software only)")"
     log "  /dev/shm       : ${shm} MB"
     log "  CPUs / memory  : ${cpu} / ${mem} MB"
+    log "  Disk free      : ${disk} MB"
 
     emit() { log "    - [$1] $2"; }
     [[ "$kind" == "codespaces" ]] && emit info "GitHub Codespaces: ports 3000 (desktop) and 3001 (dashboard) are forwarded; the desktop opens automatically."
     [[ "$kvm" != "true" ]] && emit info "No /dev/kvm: virtual machines and emulator guests (Android, aqemu) run in software and will be slow."
     [[ "${shm:-0}" -lt 512 ]] && emit warn "/dev/shm is ${shm} MB (<512); Chromium/Electron apps may need --disable-dev-shm-usage. Raise FASTVM_SHM_SIZE."
+    [[ "${disk:-0}" -gt 0 && "${disk:-0}" -lt 8192 ]] && emit warn "Only ${disk} MB free on the workspace filesystem; image pulls and backups need several GB."
     return 0
 }
 

@@ -73,6 +73,9 @@ Codespace you will see:
   crashes, add `--disable-dev-shm-usage` or raise `--shm-size`.
 - **No GPU.** GPU passthrough is a host feature; Codespaces machines are
   CPU-only, so FastVM selects the software encoder.
+- **Limited disk.** The free tier has ~32 GB, shared with the image and any
+  backups or recordings. `env-report.sh` warns when the workspace filesystem
+  drops below 8 GB free.
 
 ## Persistence and idle timeout
 
