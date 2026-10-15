@@ -18,6 +18,9 @@ valid_encoder='^(auto|nvenc|vaapi|qsv|software)$'
 valid_gpu='^(false|true|intel|amd|nvidia)$'
 valid_bundle='^(|none|browser|essentials|communication|gaming|development|office|content-creation)$'
 valid_perf='^(auto|constrained|balanced|performance)$'
+# Optional prebuilt image ref (empty = build locally). Loose on purpose: the
+# real validation is `docker pull`.
+valid_image='^(|[A-Za-z0-9][A-Za-z0-9._/:@-]*)$'
 
 check_regex() {
     local name="$1" value="$2" pattern="$3"
@@ -43,6 +46,7 @@ check_regex FASTVM_RECORDING_ENCODER "${FASTVM_RECORDING_ENCODER:-auto}" "$valid
 check_regex FASTVM_GPU "${FASTVM_GPU:-false}" "$valid_gpu"
 check_regex FASTVM_APP_BUNDLE "${FASTVM_APP_BUNDLE:-}" "$valid_bundle"
 check_regex FASTVM_PERF_PROFILE "${FASTVM_PERF_PROFILE:-auto}" "$valid_perf"
+check_regex FASTVM_IMAGE "${FASTVM_IMAGE:-}" "$valid_image"
 check_regex FASTVM_BACKUP_COMPRESSION "${FASTVM_BACKUP_COMPRESSION:-gzip}" "$valid_compression"
 check_regex FASTVM_BACKUP_AUTO_SCHEDULE "${FASTVM_BACKUP_AUTO_SCHEDULE:-daily}" "$valid_schedule"
 for name in FASTVM_AUDIO_ENABLED FASTVM_CLIPBOARD_ENABLED FASTVM_RECORDING_ENABLED FASTVM_BACKUP_ENABLED FASTVM_AUTOSCALE_ENABLED FASTVM_HEALTHCHECK_DISABLE FASTVM_ALLOW_QUERY_TOKEN FASTVM_PRIVILEGED FASTVM_ENABLE_GPU_DRIVERS FASTVM_GPU_SELFTEST FASTVM_GPU_HW FASTVM_GPU_KEEP_COMPOSITING; do

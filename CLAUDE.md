@@ -45,6 +45,8 @@ Key settings:
 - `DISABLE_DRI` — set to `1` to stop KasmVNC from enabling DRI3 (use on compute-only accelerators like AMD Instinct MI300X); FastVM auto-detects these via `compute_only` in `gpu.json`
 - `DRINODE` — DRM render node for multi-GPU hosts (default `/dev/dri/renderD128`)
 - `FASTVM_PERF_PROFILE` — host performance profile: `auto` (default), `constrained`, `balanced`, `performance`. Auto-measures the container's real CPU/RAM, then clamps llvmpipe (`LP_NUM_THREADS`), frees a core for the recorder (`FASTVM_PERF_ENCODE_THREADS`), and turns off desktop compositing on small hosts. This is what makes a 2-core / 8 GB / no-GPU Codespace usable. See `docs/performance.md`
+- `FASTVM_IMAGE` — prebuilt image reference to run instead of building locally (empty = build). `./fastvm-install.sh --pull` derives the published tag from `FASTVM_DE`/`FASTVM_PRESET` and sets this. Used by `.devcontainer/devcontainer.json` so a Codespace starts in ~1 min. See `--print-image` / `--no-build`.
+- `FASTVM_CONFIG` — path to an alternate config file (default `./config.env`); lets CI and multi-config setups avoid clobbering the real config
 
 ## Architecture
 

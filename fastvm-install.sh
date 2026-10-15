@@ -4,8 +4,48 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="${SCRIPT_DIR}/config.env"
+# FASTVM_CONFIG lets CI (and anyone running several configs) point at a
+# different config file than the default config.env.
+CONFIG_FILE="${FASTVM_CONFIG:-${SCRIPT_DIR}/config.env}"
 VERSION="2.0.0"
+
+# =============================================================================
+# Options
+# =============================================================================
+PULL_ONLY=false
+SKIP_BUILD=false
+PRINT_IMAGE=false
+
+show_help() {
+    cat <<'HELP'
+FastVM installer
+
+Usage: ./fastvm-install.sh [options]
+
+  (no options)   Build the image locally, then start FastVM.
+  --pull         Pull the published image for your desktop/preset instead of
+                 building. Much faster on a fresh Codespace. Falls back to a
+                 local build if the image cannot be pulled.
+  --no-build     Skip the local build (use the image already present / pulled).
+  --print-image  Print the image reference that --pull would use, then exit.
+  --help         Show this help.
+
+Environment:
+  FASTVM_IMAGE   Explicit image reference to pull (overrides --pull's derived
+                 tag), e.g. ghcr.io/cloudcompile/fastvm:xfce4-none-latest.
+HELP
+}
+
+while (( $# )); do
+    case "$1" in
+        --pull)        PULL_ONLY=true ;;
+        --no-build)    SKIP_BUILD=true ;;
+        --print-image) PRINT_IMAGE=true ;;
+        -h|--help)     show_help; exit 0 ;;
+        *) echo "Unknown option: $1" >&2; show_help; exit 2 ;;
+    esac
+    shift
+done
 
 # =============================================================================
 # Colors
@@ -217,9 +257,48 @@ generate_options_json() {
 # =============================================================================
 # Build
 # =============================================================================
+# Derive the published image tag for the selected desktop/preset, matching the
+# build-images.yml matrix (lowercased "<desktop>-<preset>-latest").
+derive_image_ref() {
+    if [[ -n "${FASTVM_IMAGE:-}" ]]; then
+        echo "$FASTVM_IMAGE"
+        return
+    fi
+    local repo="${FASTVM_REGISTRY_REPO:-cloudcompile/fastvm}"
+    local de preset
+    de="$(echo "${FASTVM_DE:-xfce4}" | tr '[:upper:]' '[:lower:]')"
+    preset="$(echo "${FASTVM_PRESET:-none}" | tr '[:upper:]' '[:lower:]')"
+    # Single-app images are published as "<app>-latest" (no preset suffix).
+    echo "ghcr.io/${repo}:${de}-${preset}-latest"
+}
+
+# Pull the published image for this configuration. Returns non-zero (without
+# exiting) so the caller can fall back to a local build.
+pull_image() {
+    local ref="$1"
+    log_step "Pulling published image ${ref}"
+    if docker pull "$ref"; then
+        export FASTVM_IMAGE="$ref"
+        log_success "Using prebuilt image ${ref}"
+        return 0
+    fi
+    log_warn "Could not pull ${ref}; will build locally instead"
+    return 1
+}
+
 build_image() {
+    if [[ "$SKIP_BUILD" == "true" ]]; then
+        log_info "Skipping build (--no-build)"
+        return 0
+    fi
+    if [[ "$PULL_ONLY" == "true" ]] || [[ -n "${FASTVM_IMAGE:-}" ]]; then
+        if pull_image "$(derive_image_ref)"; then
+            return 0
+        fi
+    fi
+
     log_step "Building FastVM Docker image"
-    log_info "This may take a few minutes on first build…"
+    log_info "This may take a few minutes on first build..."
 
     BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
     export BUILD_DATE
@@ -239,7 +318,15 @@ start_fastvm() {
     log_step "Starting FastVM"
     $DOCKER_COMPOSE "${COMPOSE_FILES[@]}" down 2>/dev/null || true
 
-    if ! $DOCKER_COMPOSE "${COMPOSE_FILES[@]}" up -d; then
+    # The service declares both build: and image:, so compose would build if the
+    # image were missing. --no-build makes that explicit (the pulled image must
+    # already be present).
+    local up_args=(-d)
+    if [[ "$SKIP_BUILD" == "true" ]]; then
+        up_args+=(--no-build)
+    fi
+
+    if ! $DOCKER_COMPOSE "${COMPOSE_FILES[@]}" up "${up_args[@]}"; then
         log_error "Failed to start FastVM"
         exit 1
     fi
@@ -293,8 +380,15 @@ show_status() {
     echo -e "${CYAN}${BOLD}  └─────────────────────────────────────────────────────┘${NC}"
     echo ""
     echo -e "  ${BOLD}Access${NC}"
-    echo    "    Desktop (KasmVNC)   →  http://localhost:${port}"
-    echo    "    Dashboard           →  http://localhost:${dport}"
+    if [[ "${CODESPACES:-false}" == "true" ]]; then
+        # Codespaces auto-forwards these ports, so the localhost URLs below are
+        # the forwarded ones and no public hostname is needed.
+        echo    "    Desktop (KasmVNC)   →  http://localhost:${port}  ${DIM}(forwarded by Codespaces)${NC}"
+        echo    "    Dashboard           →  http://localhost:${dport}  ${DIM}(forwarded by Codespaces)${NC}"
+    else
+        echo    "    Desktop (KasmVNC)   →  http://localhost:${port}"
+        echo    "    Dashboard           →  http://localhost:${dport}"
+    fi
     echo -e "    Dashboard token     →  ${DIM}cat data/dashboard.token${NC}"
     echo ""
     echo -e "  ${BOLD}Management${NC}"
@@ -317,8 +411,12 @@ show_status() {
 # =============================================================================
 main() {
     show_banner
-    check_prerequisites
     load_configuration
+    if [[ "$PRINT_IMAGE" == "true" ]]; then
+        derive_image_ref
+        exit 0
+    fi
+    check_prerequisites
     generate_options_json
     prepare_directories
     build_image

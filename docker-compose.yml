@@ -29,7 +29,11 @@ services:
       cache_from:
         - fastvm:latest
     container_name: ${FASTVM_NAME:-FastVM}
-    image: fastvm:latest
+    # FASTVM_IMAGE lets Codespaces / prebuilt users pull a published variant
+    # (e.g. ghcr.io/cloudcompile/fastvm:xfce4-none-latest) instead of building
+    # the image locally, which is what makes a fresh Codespace take ~1 minute
+    # instead of ~30.
+    image: ${FASTVM_IMAGE:-fastvm:latest}
 
     environment:
       - PUID=${FASTVM_PUID:-1000}

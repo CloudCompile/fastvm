@@ -1,0 +1,56 @@
+{
+  // FastVM on GitHub Codespaces.
+  //
+  // FastVM runs a streamed Linux desktop inside Docker, so a Codespace needs
+  // Docker-in-Docker. We pull the published image for the default desktop
+  // (xfce4) instead of building it, which is the difference between a ~1 minute
+  // start and a ~30 minute one on a fresh machine.
+  //
+  //   Desktop (KasmVNC) : port 3000  -> opens automatically
+  //   Dashboard         : port 3001
+  //
+  // Change the desktop/preset by editing FASTVM_DE / FASTVM_PRESET (and
+  // FASTVM_IMAGE) below; see docs/performance.md for small-machine tuning.
+  "name": "FastVM Desktop",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // 2 cores / 8 GB works (FastVM auto-tunes for it); 4 cores / 16 GB is smooth.
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+
+  "containerEnv": {
+    "FASTVM_IMAGE": "ghcr.io/cloudcompile/fastvm:xfce4-none-latest",
+    "FASTVM_DE": "XFCE4",
+    "FASTVM_PRESET": "none"
+  },
+
+  "forwardPorts": [3000, 3001],
+  "portsAttributes": {
+    "3000": {
+      "label": "FastVM Desktop",
+      "onAutoForward": "openBrowser"
+    },
+    "3001": {
+      "label": "FastVM Dashboard",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // --pull uses the FASTVM_IMAGE above; if the pull fails the installer falls
+  // back to a local build so the Codespace still comes up.
+  "postCreateCommand": "./fastvm-install.sh --pull",
+  "postStartCommand": "docker compose up -d",
+
+  "remoteUser": "vscode"
+}

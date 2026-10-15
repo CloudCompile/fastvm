@@ -83,8 +83,29 @@ Startup time depends on the host, image, and selected applications. Measure it o
 - Compose uses `privileged: false` by default. Enable it only when the workload requires broad device access, and expose the service through HTTPS/authenticated proxying outside a trusted network.
 
 See `SECURITY.md`, `docs/image-catalog.md`, `docs/benchmarks.md`, `docs/gpu.md`,
-`docs/app-bundles.md`, `docs/discord-vm.md`, and `docs/roadmap.md` for operational
-guidance.
+`docs/app-bundles.md`, `docs/discord-vm.md`, `docs/performance.md`, and
+`docs/roadmap.md` for operational guidance.
+
+## ☁️ **GITHUB CODESPACES**
+
+FastVM ships a `.devcontainer/` that starts a streamed XFCE4 desktop for you.
+Open the repository in a Codespace and, when the container is ready, port **3000**
+opens the desktop in your browser; the dashboard is on **3001**.
+
+The devcontainer pulls the published image (`ghcr.io/cloudcompile/fastvm:xfce4-none-latest`)
+rather than building, so a fresh Codespace is ready in about a minute instead of
+building the image for ~30. The installer's `--pull` fast path does the same thing
+outside Codespaces:
+
+```bash
+./fastvm-install.sh --pull      # pull the image for your desktop/preset
+./fastvm-install.sh --no-build  # use the image already present
+./fastvm-install.sh --print-image   # show which image --pull would use
+```
+
+Change the desktop or preset by editing `FASTVM_DE` / `FASTVM_PRESET` (and
+`FASTVM_IMAGE`) in `.devcontainer/devcontainer.json`. A 2-core / 8 GB Codespace
+works because FastVM auto-tunes itself for small hosts (`docs/performance.md`).
 
 ## 📦 **Every Deployment Option**
 

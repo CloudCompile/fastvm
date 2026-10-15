@@ -144,6 +144,52 @@ jobs:
           grep -q 'FASTVM_PERF_ENCODE_THREADS' scripts/screen-recorder.sh
           grep -q 'sw_threads' scripts/screen-recorder.sh
 
+  validate-codespaces:
+    name: Validate Codespaces setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax-check the installer
+        run: bash -n fastvm-install.sh
+      - name: Installer help lists the fast paths
+        run: |
+          set -euo pipefail
+          ./fastvm-install.sh --help | grep -q -- '--pull'
+          ./fastvm-install.sh --help | grep -q -- '--no-build'
+          ./fastvm-install.sh --help | grep -q -- '--print-image'
+      - name: Derives the published image tag for a desktop/preset
+        run: |
+          set -euo pipefail
+          cfg="$(mktemp)"
+          printf 'FASTVM_DE=KDE\nFASTVM_PRESET=none\n' > "$cfg"
+          ref="$(FASTVM_CONFIG="$cfg" ./fastvm-install.sh --print-image | tail -1)"
+          echo "$ref"
+          [[ "$ref" == "ghcr.io/cloudcompile/fastvm:kde-none-latest" ]]
+      - name: devcontainer.json is valid and wired to the prebuilt image
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, re
+          src = open('.devcontainer/devcontainer.json').read()
+          stripped = "\n".join(l for l in src.splitlines() if not l.lstrip().startswith('//'))
+          cfg = json.loads(re.sub(r'//.*', '', stripped))
+          assert cfg['features']['ghcr.io/devcontainers/features/docker-in-docker:2']
+          assert 3000 in cfg['forwardPorts'] and 3001 in cfg['forwardPorts']
+          assert 'xfce4-none-latest' in cfg['containerEnv']['FASTVM_IMAGE']
+          assert '--pull' in cfg['postCreateCommand']
+          print('devcontainer.json ok')
+          PY
+      - name: The derived image tag exists in the registry
+        run: |
+          set -euo pipefail
+          ref="$(./fastvm-install.sh --print-image | tail -1)"
+          tag="${ref##*:}"
+          token="$(curl -fsS "https://ghcr.io/token?scope=repository:cloudcompile/fastvm:pull&service=ghcr.io" | python3 -c 'import sys,json;print(json.load(sys.stdin)["token"])')"
+          curl -fsS -H "Authorization: Bearer $token" \
+            "https://ghcr.io/v2/cloudcompile/fastvm/tags/list" \
+            | python3 -c "import sys,json;t=set(json.load(sys.stdin)['tags']);sys.exit(0 if '$tag' in t else 1)"
+          echo "$ref is published"
+
   validate-discord-tuning:
     name: Validate Discord tuning
     runs-on: ubuntu-latest
