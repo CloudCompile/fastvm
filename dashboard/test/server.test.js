@@ -83,6 +83,20 @@ test('gpu endpoints report detected capabilities', async () => {
     assert.equal(system.body.gpu.detected, true);
 });
 
+test('system status surfaces the host performance profile', async () => {
+    fs.mkdirSync(path.join(dataRoot, '.fastvm'), { recursive: true });
+    fs.writeFileSync(
+        path.join(dataRoot, '.fastvm', 'perf-profile.json'),
+        JSON.stringify({ cpus: 2, memory_mb: 8192, profile: 'constrained', compositing_off: true, raster_threads: 2, encode_threads: 1, env: { LP_NUM_THREADS: '2' } }),
+    );
+
+    const system = await request('GET', '/api/system/status', undefined, 'test-token');
+    assert.equal(system.status, 200);
+    assert.equal(system.body.perf.profile, 'constrained');
+    assert.equal(system.body.perf.raster_threads, 2);
+    assert.equal(system.body.perf.compositing_off, true);
+});
+
 test('gpu endpoints flag compute-only accelerators', async () => {
     fs.mkdirSync(path.join(dataRoot, '.fastvm'), { recursive: true });
     fs.writeFileSync(

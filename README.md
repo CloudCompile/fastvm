@@ -905,9 +905,15 @@ cloudflare-tunnel run \
 
 | Codespace | RAM | Cores | Best Desktop | Experience |
 |:---|:---:|:---:|:---|:---|
-| **2-core** | 8 GB | 2 | XFCE4, LXQT | ✅ Works fine |
+| **2-core** | 8 GB | 2 | XFCE4, LXQT | ✅ Works fine (auto-tuned) |
 | **4-core** ⭐ | 16 GB | 4 | Any | ✅✅ **Recommended** |
 | **8-core** | 32 GB | 8 | Any | ✅✅✅ Butter smooth |
+
+FastVM measures the host at startup and applies a **performance profile**
+automatically (`docs/performance.md`): on a 2-core / 8 GB / no-GPU box it clamps
+the software renderer to the vCPU count, frees a core for the recorder, and turns
+off desktop compositing. Set `FASTVM_PERF_PROFILE=performance` in `config.env` to
+disable the automatic tuning.
 
 ---
 

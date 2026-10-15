@@ -115,18 +115,33 @@ fastvm_gpu_disable_compositing() {
     return 0
 }
 
+# Apply the host performance profile (CPU/software-render tuning + compositor).
+# No-op without perf-profile.sh; safe to source on any host.
+fastvm_perf_apply() {
+    local scripts="${FASTVM_SCRIPTS_DIR:-/fastvm-scripts}"
+    [[ -x "${scripts}/perf-profile.sh" ]] || return 0
+    FASTVM_DATA_ROOT="${FASTVM_DATA_ROOT:-/config}" "${scripts}/perf-profile.sh" apply >/dev/null 2>&1 || true
+    local envf="${FASTVM_DATA_ROOT:-/config}/.fastvm/perf-env.sh"
+    [[ -r "$envf" ]] && . "$envf"
+    FASTVM_DATA_ROOT="${FASTVM_DATA_ROOT:-/config}" "${scripts}/perf-profile.sh" session >/dev/null 2>&1 || true
+    return 0
+}
+
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     # Executed directly (not sourced).
     case "${1:-}" in
         --print)
             fastvm_gpu_apply
-            env | grep -E '^(LIBVA_DRM_DEVICE|MESA_LOADER_DRIVER_OVERRIDE|GALLIUM_DRIVER|__GLX_VENDOR_LIBRARY_NAME)=' | sort || true
+            fastvm_perf_apply
+            env | grep -E '^(LIBVA_DRM_DEVICE|MESA_LOADER_DRIVER_OVERRIDE|GALLIUM_DRIVER|__GLX_VENDOR_LIBRARY_NAME|LIBGL_ALWAYS_SOFTWARE|LP_NUM_THREADS|FASTVM_PERF_ENCODE_THREADS|vblank_mode|__GL_SYNC_TO_VBLANK)=' | sort || true
             ;;
         *)
             fastvm_gpu_apply
+            fastvm_perf_apply
             ;;
     esac
 else
     # Sourced by startwm: apply immediately, no side effects on caller options.
     fastvm_gpu_apply
+    fastvm_perf_apply
 fi

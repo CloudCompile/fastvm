@@ -14,6 +14,13 @@ function readAction() {
     try { return JSON.parse(fs.readFileSync(ACTION_FILE, 'utf8')); } catch { return null; }
 }
 
+// Host performance profile written by scripts/perf-profile.sh. Absent on hosts
+// that have not run it yet.
+const PERF_FILE = path.join(STATE_DIR, 'perf-profile.json');
+function readPerf() {
+    try { return JSON.parse(fs.readFileSync(PERF_FILE, 'utf8')); } catch { return null; }
+}
+
 function requestAction(type, res) {
     fs.mkdirSync(STATE_DIR, { recursive: true });
     const action = { type, requested_at: new Date().toISOString(), status: 'requested' };
@@ -27,6 +34,7 @@ router.get('/status', (_req, res) => res.json({
     desktop: process.env.FASTVM_DE || 'XFCE4',
     preset: process.env.FASTVM_PRESET || 'none',
     gpu: gpu.readGpu(),
+    perf: readPerf(),
     pending_action: readAction(),
 }));
 

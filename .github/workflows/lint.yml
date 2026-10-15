@@ -80,6 +80,70 @@ jobs:
           grep -q 'docs/app-bundles.md' CLAUDE.md
           grep -q 'webcam' docs/roadmap.md
 
+  validate-perf-profile:
+    name: Validate performance profile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax-check
+        run: bash -n scripts/perf-profile.sh scripts/gpu-session-env.sh
+      - name: Classifies a 2-core / 8 GB no-GPU host as constrained
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          export FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=2 FASTVM_PERF_FORCE_MEM_MB=8192
+          json="$(bash scripts/perf-profile.sh json)"
+          echo "$json"
+          grep -q '"profile":"constrained"' <<<"$json"
+          grep -q '"compositing_off":true' <<<"$json"
+          grep -q '"raster_threads":2' <<<"$json"
+          grep -q '"encode_threads":1' <<<"$json"
+      - name: Clamps llvmpipe to the vCPU count and frees a core for the encoder
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          env_out="$(FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=2 FASTVM_PERF_FORCE_MEM_MB=8192 \
+            bash scripts/perf-profile.sh env)"
+          echo "$env_out"
+          grep -q '^LIBGL_ALWAYS_SOFTWARE=1$' <<<"$env_out"
+          grep -q '^GALLIUM_DRIVER=llvmpipe$' <<<"$env_out"
+          grep -q '^LP_NUM_THREADS=2$' <<<"$env_out"
+          grep -q '^FASTVM_PERF_ENCODE_THREADS=1$' <<<"$env_out"
+          # A bigger host leaves llvmpipe and the encoder at defaults.
+          big="$(FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=8 FASTVM_PERF_FORCE_MEM_MB=32768 \
+            bash scripts/perf-profile.sh env)"
+          [[ -z "$big" ]] || { echo "expected no overrides on a large host; got: $big"; exit 1; }
+      - name: A graphics GPU is never forced onto the software path
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          # A constrained host that nonetheless has a graphics GPU: no
+          # software-render overrides, and compositing is left alone. (The
+          # software-recorder thread budget is still emitted, harmlessly.)
+          env_out="$(FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=2 FASTVM_PERF_FORCE_MEM_MB=8192 \
+            FASTVM_PERF_FORCE_GPU_KIND=graphics bash scripts/perf-profile.sh env)"
+          ! grep -q '^LIBGL_ALWAYS_SOFTWARE=' <<<"$env_out"
+          ! grep -q '^LP_NUM_THREADS=' <<<"$env_out"
+          ! grep -q '^GALLIUM_DRIVER=' <<<"$env_out"
+          json="$(FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=2 FASTVM_PERF_FORCE_MEM_MB=8192 \
+            FASTVM_PERF_FORCE_GPU_KIND=graphics bash scripts/perf-profile.sh json)"
+          grep -q '"gpu_kind":"graphics"' <<<"$json"
+          grep -q '"compositing_off":false' <<<"$json"
+      - name: Config surface is documented and validated
+        run: |
+          set -euo pipefail
+          grep -q 'FASTVM_PERF_PROFILE' config.env
+          grep -q 'FASTVM_PERF_PROFILE' config.env.example
+          grep -q 'FASTVM_PERF_PROFILE' scripts/validate-config.sh
+          grep -q 'FASTVM_PERF_PROFILE' docker-compose.yml
+          grep -q 'perf-profile.sh' root/etc/cont-init.d/99-fastvm-init
+          grep -q 'perf-profile.sh' scripts/gpu-session-env.sh
+      - name: Recorder honours the encode-thread budget
+        run: |
+          set -euo pipefail
+          grep -q 'FASTVM_PERF_ENCODE_THREADS' scripts/screen-recorder.sh
+          grep -q 'sw_threads' scripts/screen-recorder.sh
+
   validate-discord-tuning:
     name: Validate Discord tuning
     runs-on: ubuntu-latest

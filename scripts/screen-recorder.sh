@@ -26,6 +26,15 @@ bitrate="${FASTVM_RECORDING_BITRATE:-5M}"
 fps="${FASTVM_RECORDING_FRAMERATE:-30}"
 encoder_choice="${FASTVM_RECORDING_ENCODER:-auto}"
 
+# Software-encode thread budget. The performance profile leaves a core for the
+# desktop on small hosts; honour it so a 2-core box is not oversubscribed while
+# it is being recorded. Unset on larger hosts => ffmpeg default.
+encode_threads="${FASTVM_PERF_ENCODE_THREADS:-}"
+sw_threads=()
+if [[ -n "$encode_threads" ]]; then
+    sw_threads=(-threads "$encode_threads")
+fi
+
 # Hardware encoders emit H.264 only; a container-friendly muxer is required.
 vcodec="$(resolve_encoder)"
 
@@ -60,14 +69,14 @@ case "$vcodec" in
         if [[ -z "$vaapi_render" ]]; then
             log_warn "VAAPI selected but no render node found; falling back to software"
             vcodec="libx264"
-            video_args=(-c:v libx264 -b:v "$bitrate" -preset veryfast)
+            video_args=(-c:v libx264 -b:v "$bitrate" -preset veryfast "${sw_threads[@]}")
         else
             video_args=(-vaapi_device "$vaapi_render" -vf "format=nv12,hwupload" -c:v h264_vaapi -b:v "$bitrate")
         fi
         ;;
     *)
         vcodec="libx264"
-        video_args=(-c:v libx264 -b:v "$bitrate" -preset veryfast)
+        video_args=(-c:v libx264 -b:v "$bitrate" -preset veryfast "${sw_threads[@]}")
         ;;
 esac
 

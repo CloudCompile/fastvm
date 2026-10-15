@@ -42,6 +42,11 @@ chown abc:abc /config/backups /config/recordings /config/.fastvm /var/log/fastvm
 if [[ -x /fastvm-scripts/gpu-detect.sh ]]; then
     FASTVM_DATA_ROOT=/config /fastvm-scripts/gpu-detect.sh detect >/dev/null 2>&1 || true
 fi
+# 4b. Host performance profile: measure CPU/RAM and derive software-render and
+# compositor settings for small (2-core / 8 GB) hosts. Best-effort.
+if [[ -x /fastvm-scripts/perf-profile.sh ]]; then
+    FASTVM_DATA_ROOT=/config /fastvm-scripts/perf-profile.sh apply >/dev/null 2>&1 || true
+fi
 if [[ "${FASTVM_GPU_SELFTEST:-true}" == "true" ]] && [[ -x /fastvm-scripts/gpu-self-test.sh ]]; then
     FASTVM_DATA_ROOT=/config /fastvm-scripts/gpu-self-test.sh >/dev/null 2>&1 || true
 fi

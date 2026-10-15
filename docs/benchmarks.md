@@ -15,3 +15,12 @@ docker stats --no-stream FastVM
 
 CI should publish measurements as artifacts instead of hard-coding startup
 claims in marketing documentation.
+
+## Host performance profile
+
+`scripts/perf-profile.sh` classifies the host from its measured CPU/RAM and
+derives software-render, encoder-thread, and compositor settings (see
+`docs/performance.md`). Its `bench` mode times a fixed `libx264` encode at the
+derived thread count versus the library default so the clamp can be checked
+locally; the classifier itself is pinned by the `validate-perf-profile` CI job
+using the `FASTVM_PERF_FORCE_*` test hooks, with no small host required.

@@ -44,6 +44,7 @@ Key settings:
 - `FASTVM_GPU_KEEP_COMPOSITING` — keep desktop compositing even with GPU rasterization (forces CPU/llvmpipe rendering)
 - `DISABLE_DRI` — set to `1` to stop KasmVNC from enabling DRI3 (use on compute-only accelerators like AMD Instinct MI300X); FastVM auto-detects these via `compute_only` in `gpu.json`
 - `DRINODE` — DRM render node for multi-GPU hosts (default `/dev/dri/renderD128`)
+- `FASTVM_PERF_PROFILE` — host performance profile: `auto` (default), `constrained`, `balanced`, `performance`. Auto-measures the container's real CPU/RAM, then clamps llvmpipe (`LP_NUM_THREADS`), frees a core for the recorder (`FASTVM_PERF_ENCODE_THREADS`), and turns off desktop compositing on small hosts. This is what makes a 2-core / 8 GB / no-GPU Codespace usable. See `docs/performance.md`
 
 ## Architecture
 
