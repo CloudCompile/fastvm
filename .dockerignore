@@ -4,11 +4,7 @@
 node_modules
 dashboard/node_modules
 dashboard/test
-scripts
-presets
-fastvm-os
 docs
-installable-apps
 __pycache__
 *.pyc
 data
