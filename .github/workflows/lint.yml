@@ -80,6 +80,42 @@ jobs:
           grep -q 'docs/app-bundles.md' CLAUDE.md
           grep -q 'webcam' docs/roadmap.md
 
+  validate-discord-tuning:
+    name: Validate Discord tuning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax-check
+        run: bash -n scripts/discord-tune.sh root/startwm-singleapp.sh
+      - name: Flags adapt to the machine (no GPU)
+        run: |
+          set -euo pipefail
+          # A 2-core / 8 GB CPU-only box must not enable the GPU stack and must
+          # clamp the raster threads to the CPU budget.
+          out="$(bash -c 'source <(sed "/^main \"\$@\"/d" scripts/discord-tune.sh); build_flags 2 none')"
+          echo "$out"
+          grep -q -- '--disable-gpu' <<<"$out"
+          grep -q -- '--num-raster-threads=1' <<<"$out"
+          grep -q -- '--renderer-process-limit=2' <<<"$out"
+          grep -q -- '--disable-dev-shm-usage' <<<"$out"
+          # Chromium only honours the last --enable-features, so there must be
+          # exactly one and it must carry the voice features.
+          [[ "$(grep -o -- '--enable-features' <<<"$out" | wc -l)" -eq 1 ]]
+          grep -q 'WebRtcAllowInputVolumeAdjustment' <<<"$out"
+          ! grep -q 'VaapiVideoDecoder' <<<"$out"
+      - name: Flags enable hardware decode with a graphics GPU
+        run: |
+          set -euo pipefail
+          out="$(bash -c 'source <(sed "/^main \"\$@\"/d" scripts/discord-tune.sh); build_flags 4 graphics')"
+          echo "$out"
+          grep -q 'VaapiVideoDecoder' <<<"$out"
+          ! grep -q -- '--disable-gpu' <<<"$out"
+      - name: Session augments discord autostart
+        run: |
+          set -euo pipefail
+          grep -q 'discord-tune.sh flags' root/startwm-singleapp.sh
+          grep -q 'discord-tune.sh report' root/startwm-singleapp.sh
+
   validate-audio:
     name: Validate audio setup
     runs-on: ubuntu-latest
