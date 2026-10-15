@@ -67,6 +67,134 @@ pub fn single_app_tag(name: &str) -> Result<String, String> {
     Ok(format!("{name}-latest"))
 }
 
+/// Human label for a desktop token (`xfce4` -> `XFCE4`).
+pub fn desktop_label(desktop: &str) -> String {
+    match desktop {
+        "xfce4" => "XFCE4",
+        "kde" => "KDE Plasma",
+        "gnome" => "GNOME",
+        "cinnamon" => "Cinnamon",
+        "lxqt" => "LXQt",
+        "i3" => "i3",
+        "budgie" => "Budgie",
+        "mate" => "MATE",
+        "lxde" => "LXDE",
+        "fluxbox" => "Fluxbox",
+        "unity" => "Unity",
+        "enlightenment" => "Enlightenment",
+        "icewm" => "IceWM",
+        "awesome" => "Awesome",
+        "ukui" => "UKUI",
+        "bspwm" => "bspwm",
+        "gnome-flashback" => "GNOME Flashback",
+        "wmaker" => "Window Maker",
+        "herbstluftwm" => "herbstluftwm",
+        "jwm" => "JWM",
+        "fvwm" => "FVWM",
+        "xmonad" => "xmonad",
+        "sugar" => "Sugar",
+        "dwm" => "dwm",
+        "ratpoison" => "Ratpoison",
+        "blackbox" => "Blackbox",
+        "pop-os" => "Pop!_OS",
+        "pekwm" => "PekWM",
+        "spectrwm" => "spectrwm",
+        "sawfish" => "Sawfish",
+        "openbox" => "Openbox",
+        "afterstep" => "AfterStep",
+        "ctwm" => "CTWM",
+        "twm" => "twm",
+        "nixos" => "NixOS",
+        "pearos" => "pearOS",
+        other => other,
+    }
+    .to_string()
+}
+
+/// Human label for a preset token (`content-creation` -> `Content Creation`).
+pub fn preset_label(preset: &str) -> String {
+    match preset {
+        "none" => "",
+        "minimal" => "Minimal",
+        "gaming" => "Gaming",
+        "development" => "Development",
+        "office" => "Office",
+        "content-creation" => "Content Creation",
+        other => other,
+    }
+    .to_string()
+}
+
+/// Human label for a distro flavor token (`ubuntu-studio` -> `Ubuntu Studio`).
+pub fn flavor_label(flavor: &str) -> String {
+    match flavor {
+        "fastvm-os" => "FastVM OS",
+        "ubuntu-studio" => "Ubuntu Studio",
+        "ubuntu-kylin" => "Ubuntu Kylin",
+        "ubuntu-budgie" => "Ubuntu Budgie",
+        "ubuntu-edubuntu" => "Ubuntu Edubuntu",
+        "xubuntu" => "Xubuntu",
+        "lubuntu" => "Lubuntu",
+        "kubuntu" => "Kubuntu",
+        "ubuntu-mate" => "Ubuntu MATE",
+        "ubuntu-unity" => "Ubuntu Unity",
+        "pop-os" => "Pop!_OS",
+        "linuxmint" => "Linux Mint",
+        "kali" => "Kali Linux",
+        "parrot" => "Parrot Security OS",
+        "nixos" => "NixOS",
+        "pearos" => "pearOS",
+        other => other,
+    }
+    .to_string()
+}
+
+/// Human label for a single-app token (`vscode` -> `VSCodium only`).
+pub fn single_app_label(name: &str) -> String {
+    match name {
+        "browser" => "Browser only",
+        "discord" => "Discord only",
+        "vscode" => "VSCodium only",
+        "terminal" => "Terminal only",
+        other => other,
+    }
+    .to_string()
+}
+
+/// Marketplace category for a preset overlay.
+pub fn preset_category(preset: &str) -> &'static str {
+    match preset {
+        "gaming" => "Gaming",
+        "development" => "Development",
+        "office" => "Office",
+        "content-creation" => "Content Creation",
+        "minimal" => "Minimal",
+        _ => "Desktops",
+    }
+}
+
+/// Suggested RAM for a preset overlay.
+pub fn preset_ram(preset: &str) -> &'static str {
+    match preset {
+        "gaming" => "4 GB",
+        "content-creation" => "3 GB",
+        "development" | "office" => "2 GB",
+        "minimal" => "512 MB",
+        _ => "1 GB",
+    }
+}
+
+/// Tags highlighted in the marketplace (the curated subset).
+pub const FEATURED_TAGS: &[&str] = &[
+    "xfce4-minimal-latest",
+    "kde-gaming-latest",
+    "xfce4-development-latest",
+    "kde-content-creation-latest",
+    "kali-latest",
+    "pearos-latest",
+];
+
+
 /// Fully-qualified image reference.
 pub fn image_ref(tag: &str) -> String {
     format!("{REGISTRY}:{tag}")
@@ -75,6 +203,98 @@ pub fn image_ref(tag: &str) -> String {
 /// Total published variants (desktop x preset + single-app + flavor).
 pub fn variant_count() -> usize {
     DESKTOPS.len() * PRESETS.len() + SINGLE_APPS.len() + FLAVORS.len()
+}
+
+/// Build a listing for a `desktop` x `preset` image.
+pub fn desktop_app(desktop: &str, preset: &str) -> App {
+    let tag = desktop_tag(desktop, preset).unwrap_or_default();
+    let d = desktop_label(desktop);
+    let p = preset_label(preset);
+    let name = if p.is_empty() { d.clone() } else { format!("{d} · {p}") };
+    let gpu = preset == "gaming";
+    let tagline = match preset {
+        "gaming" => format!("{d} tuned for gaming — Steam, Wine, and DXVK"),
+        "development" => format!("{d} with common developer toolchains preinstalled"),
+        "office" => format!("{d} with document and productivity apps"),
+        "content-creation" => format!("{d} with creative tooling"),
+        "minimal" => format!("{d}, trimmed to the essentials"),
+        _ => format!("{d}, stock configuration"),
+    };
+    App {
+        id: tag.clone(),
+        name,
+        tagline,
+        category: preset_category(preset).to_string(),
+        kind: if preset == "none" { "desktop" } else { "preset" }.to_string(),
+        desktop: Some(desktop.to_string()),
+        preset: Some(preset.to_string()),
+        flavor: None,
+        ram: preset_ram(preset).to_string(),
+        gpu,
+        featured: FEATURED_TAGS.contains(&tag.as_str()),
+        image: image_ref(&tag),
+    }
+}
+
+/// Build a listing for a distro-flavor image.
+pub fn flavor_app(flavor: &str) -> App {
+    let tag = flavor_tag(flavor).unwrap_or_default();
+    App {
+        id: tag.clone(),
+        name: flavor_label(flavor),
+        tagline: format!("{} distro experience", flavor_label(flavor)),
+        category: "Distros".to_string(),
+        kind: "flavor".to_string(),
+        desktop: None,
+        preset: None,
+        flavor: Some(flavor.to_string()),
+        ram: "1.5 GB".to_string(),
+        gpu: false,
+        featured: FEATURED_TAGS.contains(&tag.as_str()),
+        image: image_ref(&tag),
+    }
+}
+
+/// Build a listing for a single-application image.
+pub fn single_app(name: &str) -> App {
+    let tag = single_app_tag(name).unwrap_or_default();
+    App {
+        id: tag.clone(),
+        name: single_app_label(name),
+        tagline: "A single app, no desktop environment".to_string(),
+        category: "Minimal".to_string(),
+        kind: "single".to_string(),
+        desktop: None,
+        preset: None,
+        flavor: None,
+        ram: "256 MB".to_string(),
+        gpu: false,
+        featured: FEATURED_TAGS.contains(&tag.as_str()),
+        image: image_ref(&tag),
+    }
+}
+
+/// Every published variant (236): desktop x preset + flavors + single apps.
+pub fn all_variants() -> Vec<App> {
+    let mut out = Vec::with_capacity(variant_count());
+    for d in DESKTOPS {
+        for p in PRESETS {
+            out.push(desktop_app(d, p));
+        }
+    }
+    for f in FLAVORS {
+        out.push(flavor_app(f));
+    }
+    for s in SINGLE_APPS {
+        out.push(single_app(s));
+    }
+    out
+}
+
+/// Look up one variant by image tag.
+#[cfg(test)]
+pub fn find_app(tag: &str) -> Option<App> {
+    all_variants().into_iter().find(|a| a.id == tag)
 }
 
 /// A marketplace listing.
@@ -156,8 +376,9 @@ pub fn build_run_args(spec: &RunSpec) -> Result<Vec<String>, String> {
     Ok(args)
 }
 
-/// Curated marketplace. Mirrors the published image catalog.
-pub fn marketplace() -> Vec<App> {
+/// Curated, hand-written listings. These override the generated name/tagline
+/// for the highlighted apps so the marketplace reads well.
+pub fn curated() -> Vec<App> {
     fn app(
         id: &str,
         name: &str,
@@ -232,6 +453,23 @@ pub fn marketplace() -> Vec<App> {
         app("vscode-latest", "VSCodium only", "Just the editor, no desktop", "Minimal", "single", "256 MB", false, false),
         app("terminal-latest", "Terminal only", "A bare terminal, no desktop", "Minimal", "single", "128 MB", false, false),
     ]
+}
+
+/// The marketplace listing: every published variant, with the curated entries'
+/// hand-written names and taglines preferred where they overlap.
+pub fn marketplace() -> Vec<App> {
+    let curated = curated();
+    let mut out = all_variants();
+    for app in out.iter_mut() {
+        if let Some(over) = curated.iter().find(|c| c.id == app.id) {
+            app.name = over.name.clone();
+            app.tagline = over.tagline.clone();
+            app.category = over.category.clone();
+            app.ram = over.ram.clone();
+            app.gpu = over.gpu;
+        }
+    }
+    out
 }
 
 #[cfg(test)]
@@ -322,5 +560,48 @@ mod tests {
                 other => panic!("unexpected kind: {other}"),
             }
         }
+    }
+
+    #[test]
+    fn marketplace_lists_every_variant_exactly_once() {
+        let apps = marketplace();
+        assert_eq!(apps.len(), variant_count());
+        let mut ids: Vec<&str> = apps.iter().map(|a| a.id.as_str()).collect();
+        ids.sort_unstable();
+        let before = ids.len();
+        ids.dedup();
+        assert_eq!(before, ids.len(), "image tags must be unique");
+    }
+
+    #[test]
+    fn curated_names_win_over_generated_ones() {
+        let apps = marketplace();
+        let gaming = apps.iter().find(|a| a.id == "kde-gaming-latest").unwrap();
+        assert_eq!(gaming.name, "Gaming Rig");
+        assert!(gaming.gpu);
+        let pear = apps.iter().find(|a| a.id == "pearos-latest").unwrap();
+        assert_eq!(pear.name, "pearOS");
+        // A generated variant keeps its composed name.
+        let plain = apps.iter().find(|a| a.id == "spectrwm-none-latest").unwrap();
+        assert_eq!(plain.name, "spectrwm");
+        let min = apps.iter().find(|a| a.id == "spectrwm-minimal-latest").unwrap();
+        assert_eq!(min.name, "spectrwm · Minimal");
+    }
+
+    #[test]
+    fn find_app_resolves_generated_and_flavor_tags() {
+        assert!(find_app("spectrwm-office-latest").is_some());
+        assert!(find_app("kali-latest").is_some());
+        assert!(find_app("nope-latest").is_none());
+    }
+
+    #[test]
+    fn labels_read_well() {
+        assert_eq!(desktop_label("pearos"), "pearOS");
+        assert_eq!(desktop_label("gnome-flashback"), "GNOME Flashback");
+        assert_eq!(preset_label("content-creation"), "Content Creation");
+        assert_eq!(preset_label("none"), "");
+        assert_eq!(flavor_label("ubuntu-studio"), "Ubuntu Studio");
+        assert_eq!(single_app_label("vscode"), "VSCodium only");
     }
 }

@@ -8,9 +8,12 @@
     "build": "tauri build",
     "tauri": "tauri",
     "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "test:ui": "node --test test/*.test.js",
+    "test": "npm run test:rust && npm run test:ui && npm run verify",
     "verify": "node ../scripts/verify-catalog.js"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.12.0"
+    "@tauri-apps/cli": "^2.12.0",
+    "jsdom": "^30.1.3"
   }
 }

@@ -20,16 +20,21 @@ terminal required. Runs on Linux, Windows, and macOS.
 
 ## Features
 
-- **Marketplace catalog** — 36 desktops × 6 presets, 16 distro flavors, and 4
-  single-app images (236 published variants), grouped by category and searchable.
+- **Full catalog** — every published variant (36 desktops × 6 presets, 16 distro
+  flavors, and 4 single-app images: 236 images), grouped by category and
+  searchable. A curated set carries hand-written names and taglines.
 - **One-click deploy** — pick an app, tweak ports / name / shared memory / GPU,
   and launch it. The container starts and the desktop opens in your browser.
+- **Exact command preview** — the `docker run` line is produced by the backend
+  (`preview_run_args`), so it always matches what a deploy executes. Copy it
+  with one click.
+- **GPU awareness** — the header shows the detected host GPU and the
+  passthrough toggle is only offered when a `/dev/dri` device exists.
 - **Instance manager** — see running containers with **Open / Dashboard / Logs /
-  Stop / Remove**.
-- **Live command preview** — see the exact `docker run` invocation before you
-  commit to it.
-- **Docker awareness** — the header shows the detected Docker version, or a clear
-  warning when Docker is missing.
+  Stop / Remove**, refreshed automatically, with live-tailing logs.
+- **Keyboard shortcuts** — `Ctrl/⌘+K` focuses search, `Esc` closes the log view.
+- **Docker awareness** — the header shows the detected Docker version, or a
+  clear warning when Docker is missing.
 
 ## Requirements
 
@@ -64,10 +69,13 @@ desktop-app/
     index.html
     styles.css
     renderer.js            marketplace UI + one-click deploy
+  test/
+    renderer.test.js       jsdom tests driving the real UI
   src-tauri/
     src/main.rs            thin entry point
     src/lib.rs             Tauri builder + command registration
     src/catalog.rs         image catalog, marketplace model, docker run builder
+    src/gpu.rs             host GPU detection (/sys/class/drm, /dev/dri)
     src/docker.rs          Docker CLI wrapper + pure parsers
     src/commands.rs        the commands the frontend may call
     capabilities/default.json
@@ -91,9 +99,13 @@ the commands in `commands.rs`. Those commands are the entire attack surface.
 ## Tests
 
 ```bash
-npm run test:rust                              # 13 Rust unit tests
-node ../scripts/verify-catalog.js              # catalog in sync with CI matrix
+npm test                          # everything below, in order
+npm run test:rust                 # 27 Rust unit tests
+npm run test:ui                   # 10 jsdom frontend tests
+npm run verify                    # catalog in sync with the CI build matrix
 ```
 
 The pure logic (tag builders, `docker run` args, `docker ps` parsing, port
-selection, tag validation) is unit-tested without needing Docker or a display.
+selection, tag validation, GPU vendor mapping) is unit-tested without needing
+Docker or a display. The frontend tests load the real `index.html` + `renderer.js`
+into jsdom with a stubbed `invoke` bridge and drive the UI the way a user would.
