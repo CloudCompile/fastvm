@@ -97,6 +97,23 @@ test('system status surfaces the host performance profile', async () => {
     assert.equal(system.body.perf.compositing_off, true);
 });
 
+test('system status surfaces the host environment report', async () => {
+    fs.mkdirSync(path.join(dataRoot, '.fastvm'), { recursive: true });
+    fs.writeFileSync(
+        path.join(dataRoot, '.fastvm', 'environment.json'),
+        JSON.stringify({
+            kind: 'codespaces', cloud: 'gcp', kvm: false, shm_mb: 64, cpus: 2, memory_mb: 8192,
+            notices: [{ id: 'no-kvm', severity: 'info', message: 'no kvm' }],
+        }),
+    );
+
+    const system = await request('GET', '/api/system/status', undefined, 'test-token');
+    assert.equal(system.status, 200);
+    assert.equal(system.body.environment.kind, 'codespaces');
+    assert.equal(system.body.environment.kvm, false);
+    assert.equal(system.body.environment.notices[0].id, 'no-kvm');
+});
+
 test('gpu endpoints flag compute-only accelerators', async () => {
     fs.mkdirSync(path.join(dataRoot, '.fastvm'), { recursive: true });
     fs.writeFileSync(

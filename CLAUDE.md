@@ -47,6 +47,7 @@ Key settings:
 - `FASTVM_PERF_PROFILE` — host performance profile: `auto` (default), `constrained`, `balanced`, `performance`. Auto-measures the container's real CPU/RAM, then clamps llvmpipe (`LP_NUM_THREADS`), frees a core for the recorder (`FASTVM_PERF_ENCODE_THREADS`), and turns off desktop compositing on small hosts. This is what makes a 2-core / 8 GB / no-GPU Codespace usable. See `docs/performance.md`
 - `FASTVM_IMAGE` — prebuilt image reference to run instead of building locally (empty = build). `./fastvm-install.sh --pull` derives the published tag from `FASTVM_DE`/`FASTVM_PRESET` and sets this. Used by `.devcontainer/devcontainer.json` so a Codespace starts in ~1 min. See `--print-image` / `--no-build`.
 - `FASTVM_CONFIG` — path to an alternate config file (default `./config.env`); lets CI and multi-config setups avoid clobbering the real config
+- `FASTVM_SHM_SIZE` — size of the container's `/dev/shm` (default `4gb`). Chromium/Electron apps keep render surfaces there; the Docker default of 64 MB makes them crash or stutter. `scripts/env-report.sh` warns when the host's own `/dev/shm` is under 512 MB
 
 ## Architecture
 

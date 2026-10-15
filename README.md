@@ -107,6 +107,11 @@ Change the desktop or preset by editing `FASTVM_DE` / `FASTVM_PRESET` (and
 `FASTVM_IMAGE`) in `.devcontainer/devcontainer.json`. A 2-core / 8 GB Codespace
 works because FastVM auto-tunes itself for small hosts (`docs/performance.md`).
 
+The image is pulled in `onCreateCommand`, so a **prebuild** snapshots it and a
+prebuilt Codespace starts with no pull at all. Codespaces has no `/dev/kvm`
+(emulators run in software) and is CPU-only; FastVM detects this at start and
+reports it at `/api/system/status`. See `docs/codespaces.md` for the full guide.
+
 ## 📦 **Every Deployment Option**
 
 This is the complete, copy-paste catalog of every way to deploy FastVM. All published images live on GitHub Container Registry under `ghcr.io/cloudcompile/fastvm`. Each command is self-contained.

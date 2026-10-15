@@ -47,6 +47,12 @@ fi
 if [[ -x /fastvm-scripts/perf-profile.sh ]]; then
     FASTVM_DATA_ROOT=/config /fastvm-scripts/perf-profile.sh apply >/dev/null 2>&1 || true
 fi
+# 4c. Environment report: host kind (Codespaces/cloud/VM), /dev/kvm availability
+# and /dev/shm size, so the dashboard and logs can explain what this host can and
+# cannot do. Best-effort.
+if [[ -x /fastvm-scripts/env-report.sh ]]; then
+    FASTVM_DATA_ROOT=/config /fastvm-scripts/env-report.sh write >/dev/null 2>&1 || true
+fi
 if [[ "${FASTVM_GPU_SELFTEST:-true}" == "true" ]] && [[ -x /fastvm-scripts/gpu-self-test.sh ]]; then
     FASTVM_DATA_ROOT=/config /fastvm-scripts/gpu-self-test.sh >/dev/null 2>&1 || true
 fi

@@ -21,6 +21,13 @@ function readPerf() {
     try { return JSON.parse(fs.readFileSync(PERF_FILE, 'utf8')); } catch { return null; }
 }
 
+// Host environment (Codespaces/cloud, /dev/kvm, /dev/shm) written by
+// scripts/env-report.sh at container init. Absent until the first boot.
+const ENV_FILE = path.join(STATE_DIR, 'environment.json');
+function readEnv() {
+    try { return JSON.parse(fs.readFileSync(ENV_FILE, 'utf8')); } catch { return null; }
+}
+
 function requestAction(type, res) {
     fs.mkdirSync(STATE_DIR, { recursive: true });
     const action = { type, requested_at: new Date().toISOString(), status: 'requested' };
@@ -35,6 +42,7 @@ router.get('/status', (_req, res) => res.json({
     preset: process.env.FASTVM_PRESET || 'none',
     gpu: gpu.readGpu(),
     perf: readPerf(),
+    environment: readEnv(),
     pending_action: readAction(),
 }));
 

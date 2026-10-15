@@ -10,7 +10,8 @@
   //   Dashboard         : port 3001
   //
   // Change the desktop/preset by editing FASTVM_DE / FASTVM_PRESET (and
-  // FASTVM_IMAGE) below; see docs/performance.md for small-machine tuning.
+  // FASTVM_IMAGE) below; see docs/performance.md for small-machine tuning and
+  // docs/codespaces.md for the full guide.
   "name": "FastVM Desktop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
 
@@ -49,9 +50,22 @@
     }
   },
 
-  // --pull uses the FASTVM_IMAGE above; if the pull fails the installer falls
-  // back to a local build so the Codespace still comes up.
-  "postCreateCommand": "./fastvm-install.sh --pull",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-azuretools.vscode-docker"]
+    }
+  },
+
+  // onCreate runs during prebuild and is snapshotted, so prebuilding this repo
+  // makes the (large) image pull free on every future Codespace. Pull only -
+  // starting a container here would be discarded at prebuild time.
+  "onCreateCommand": "docker pull \"$(./fastvm-install.sh --print-image | tail -1)\"",
+
+  // postCreate runs once per Codespace: the image is already present, so this
+  // just starts FastVM. It falls back to a build if the pull did not happen.
+  "postCreateCommand": "./fastvm-install.sh --no-build || ./fastvm-install.sh",
+
+  // postStart runs on every resume (idle timeout, reload). Idempotent.
   "postStartCommand": "docker compose up -d",
 
   "remoteUser": "vscode"

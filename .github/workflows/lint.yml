@@ -175,8 +175,11 @@ jobs:
           cfg = json.loads(re.sub(r'//.*', '', stripped))
           assert cfg['features']['ghcr.io/devcontainers/features/docker-in-docker:2']
           assert 3000 in cfg['forwardPorts'] and 3001 in cfg['forwardPorts']
+          assert cfg['hostRequirements']['cpus'] == 2  # keep the free tier creatable
           assert 'xfce4-none-latest' in cfg['containerEnv']['FASTVM_IMAGE']
-          assert '--pull' in cfg['postCreateCommand']
+          assert 'docker pull' in cfg['onCreateCommand']       # cached by prebuilds
+          assert '--no-build' in cfg['postCreateCommand']
+          assert 'docker compose up' in cfg['postStartCommand']
           print('devcontainer.json ok')
           PY
       - name: The derived image tag exists in the registry
@@ -189,6 +192,20 @@ jobs:
             "https://ghcr.io/v2/cloudcompile/fastvm/tags/list" \
             | python3 -c "import sys,json;t=set(json.load(sys.stdin)['tags']);sys.exit(0 if '$tag' in t else 1)"
           echo "$ref is published"
+
+      - name: Environment report detects Codespaces and warns about limits
+        run: |
+          set -euo pipefail
+          bash -n scripts/env-report.sh
+          out="$(CODESPACES=true FASTVM_DATA_ROOT="$(mktemp -d)" bash scripts/env-report.sh json)"
+          echo "$out"
+          python3 - "$out" <<'PY'
+          import json, sys
+          env = json.loads(sys.argv[1])
+          assert env['kind'] == 'codespaces', env['kind']
+          ids = {n['id'] for n in env['notices']}
+          assert 'codespaces' in ids and 'no-kvm' in ids, ids
+          PY
 
   validate-discord-tuning:
     name: Validate Discord tuning
