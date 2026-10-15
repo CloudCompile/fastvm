@@ -211,6 +211,23 @@ docker run --rm --device /dev/dri:/dev/dri \
 time. NVIDIA does not need packages in the image: the toolkit injects the driver
 from the host at runtime.
 
+## 7. Desktop app
+
+The Tauri desktop app (`desktop-app/`) mirrors all of the above without you
+having to remember the flags:
+
+- It detects the host GPU (render node, `/dev/kfd`, NVIDIA container toolkit,
+  compute-only parts) and offers only the modes the host can actually use.
+- The recommended mode is preselected, and picking it injects the matching
+  device flags **and** the container-side environment from this document
+  (`FASTVM_GPU_HW`, `FASTVM_RECORDING_ENCODER`, `DISABLE_DRI`,
+  `NVIDIA_DRIVER_CAPABILITIES`). Any `-e` you add in *Advanced options* is
+  appended after, so it overrides the mode default.
+- The previewed `docker run` and generated `docker-compose.yml` both include the
+  mode's devices and environment.
+- **Verify in container** shows the exact `rocm-smi` / `nvidia-smi` / `vainfo` /
+  `glxinfo` commands to confirm the GPU is in use.
+
 ## Limitations
 
 - **Compute-only accelerators** (AMD Instinct/CDNA, e.g. MI300X; NVIDIA compute

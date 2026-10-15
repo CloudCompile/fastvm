@@ -8,6 +8,8 @@
 
 use serde::Serialize;
 
+use crate::gpu::GpuMode;
+
 /// Registry prefix for every published image.
 pub const REGISTRY: &str = "ghcr.io/cloudcompile/fastvm";
 
@@ -327,6 +329,8 @@ pub struct RunSpec {
     pub memory: Option<String>,
     pub cpus: Option<String>,
     pub gpu: bool,
+    /// Acceleration flags to add; overrides the legacy `gpu` bool when not `Off`.
+    pub gpu_mode: GpuMode,
     pub env: Vec<String>,
     pub volumes: Vec<String>,
 }
@@ -360,9 +364,21 @@ pub fn build_run_args(spec: &RunSpec) -> Result<Vec<String>, String> {
         args.push("--cpus".into());
         args.push(cpus.clone());
     }
-    if spec.gpu {
-        args.push("--device".into());
-        args.push("/dev/dri".into());
+    // An explicit mode wins; otherwise fall back to the legacy boolean so older
+    // callers (and the `gpu` field) keep working.
+    let mode = if spec.gpu_mode != GpuMode::Off {
+        spec.gpu_mode
+    } else if spec.gpu {
+        GpuMode::Drm
+    } else {
+        GpuMode::Off
+    };
+    args.extend(mode.run_flags().into_iter().map(String::from));
+    // Mode-implied env (hardware rendering, encoder) goes first so a user's own
+    // `-e` value later on the command line still wins.
+    for (k, v) in mode.env() {
+        args.push("-e".into());
+        args.push(format!("{k}={v}"));
     }
     for e in &spec.env {
         args.push("-e".into());
@@ -374,6 +390,74 @@ pub fn build_run_args(spec: &RunSpec) -> Result<Vec<String>, String> {
     }
     args.push(spec.image.clone());
     Ok(args)
+}
+
+/// Render the same spec as a `docker-compose.yml` service.
+///
+/// Kept next to `build_run_args` so the two never drift: both read the same
+/// `RunSpec`, and both pick GPU flags from `GpuMode`.
+pub fn build_compose(spec: &RunSpec) -> Result<String, String> {
+    if spec.image.is_empty() {
+        return Err("image is required".to_string());
+    }
+    let host_port = if spec.host_port == 0 { DESKTOP_PORT } else { spec.host_port };
+    let mode = if spec.gpu_mode != GpuMode::Off {
+        spec.gpu_mode
+    } else if spec.gpu {
+        GpuMode::Drm
+    } else {
+        GpuMode::Off
+    };
+
+    let mut y = String::from("services:\n  fastvm:\n");
+    y.push_str(&format!("    image: {}\n", spec.image));
+    if let Some(name) = &spec.name {
+        y.push_str(&format!("    container_name: {name}\n"));
+    }
+    y.push_str("    ports:\n");
+    y.push_str(&format!("      - \"{host_port}:{DESKTOP_PORT}\"\n"));
+    if spec.dashboard_port != 0 {
+        y.push_str(&format!("      - \"{}:{DASHBOARD_PORT}\"\n", spec.dashboard_port));
+    }
+    if let Some(shm) = &spec.shm_size {
+        y.push_str(&format!("    shm_size: {shm}\n"));
+    }
+    if let Some(mem) = &spec.memory {
+        y.push_str(&format!("    mem_limit: {mem}\n"));
+    }
+    if let Some(cpus) = &spec.cpus {
+        y.push_str(&format!("    cpus: \"{cpus}\"\n"));
+    }
+    match mode {
+        GpuMode::Nvidia => {
+            y.push_str("    deploy:\n      resources:\n        reservations:\n          devices:\n");
+            y.push_str("            - driver: nvidia\n              count: all\n              capabilities: [gpu]\n");
+        }
+        GpuMode::Drm | GpuMode::Rocm => {
+            y.push_str("    devices:\n      - /dev/dri\n");
+            if mode == GpuMode::Rocm {
+                y.push_str("      - /dev/kfd\n    group_add:\n      - keep-groups\n");
+            }
+        }
+        GpuMode::Off => {}
+    }
+    let mode_env = mode.env();
+    if !spec.env.is_empty() || !mode_env.is_empty() {
+        y.push_str("    environment:\n");
+        for (k, v) in &mode_env {
+            y.push_str(&format!("      - {k}={v}\n"));
+        }
+        for e in &spec.env {
+            y.push_str(&format!("      - {e}\n"));
+        }
+    }
+    if !spec.volumes.is_empty() {
+        y.push_str("    volumes:\n");
+        for v in &spec.volumes {
+            y.push_str(&format!("      - {v}\n"));
+        }
+    }
+    Ok(y)
 }
 
 /// Curated, hand-written listings. These override the generated name/tagline
@@ -524,7 +608,9 @@ mod tests {
             build_run_args(&spec).unwrap(),
             vec![
                 "run", "-d", "--name", "FastVM-pearOS", "-p", "3000:3000", "-p", "3001:8099",
-                "--shm-size", "4gb", "--device", "/dev/dri", "-e", "TZ=Etc/UTC", "x:pearos-latest"
+                "--shm-size", "4gb", "--device", "/dev/dri",
+                "-e", "FASTVM_GPU_HW=true", "-e", "FASTVM_RECORDING_ENCODER=vaapi",
+                "-e", "TZ=Etc/UTC", "x:pearos-latest"
             ]
         );
     }
@@ -532,6 +618,139 @@ mod tests {
     #[test]
     fn run_args_require_image() {
         assert!(build_run_args(&RunSpec::default()).is_err());
+    }
+
+    #[test]
+    fn compose_renders_ports_and_image() {
+        let spec = RunSpec {
+            image: image_ref("xfce4-none-latest"),
+            host_port: 3000,
+            dashboard_port: 3001,
+            name: Some("FastVM".into()),
+            shm_size: Some("4gb".into()),
+            ..Default::default()
+        };
+        let y = build_compose(&spec).unwrap();
+        assert!(y.contains("services:\n  fastvm:\n"));
+        assert!(y.contains("image: ghcr.io/cloudcompile/fastvm:xfce4-none-latest"));
+        assert!(y.contains("container_name: FastVM"));
+        assert!(y.contains("- \"3000:3000\""));
+        assert!(y.contains("- \"3001:8099\""));
+        assert!(y.contains("shm_size: 4gb"));
+    }
+
+    #[test]
+    fn compose_uses_the_right_gpu_stanza_per_mode() {
+        let base = |mode| RunSpec {
+            image: "x:pearos-latest".into(),
+            gpu_mode: mode,
+            ..Default::default()
+        };
+        let nv = build_compose(&base(GpuMode::Nvidia)).unwrap();
+        assert!(nv.contains("driver: nvidia"));
+        assert!(nv.contains("capabilities: [gpu]"));
+        assert!(nv.contains("NVIDIA_DRIVER_CAPABILITIES=compute,video,utility"));
+        let rocm = build_compose(&base(GpuMode::Rocm)).unwrap();
+        assert!(rocm.contains("- /dev/dri"));
+        assert!(rocm.contains("- /dev/kfd"));
+        assert!(rocm.contains("group_add:\n      - keep-groups"));
+        assert!(rocm.contains("DISABLE_DRI=1"));
+        let drm = build_compose(&base(GpuMode::Drm)).unwrap();
+        assert!(drm.contains("- /dev/dri"));
+        assert!(drm.contains("FASTVM_GPU_HW=true"));
+        let off = build_compose(&base(GpuMode::Off)).unwrap();
+        assert!(!off.contains("/dev/dri"));
+        assert!(!off.contains("nvidia"));
+        assert!(!off.contains("environment:"));
+    }
+
+    #[test]
+    fn compose_renders_env_and_volumes() {
+        let spec = RunSpec {
+            image: "x:pearos-latest".into(),
+            env: vec!["TZ=Etc/UTC".into()],
+            volumes: vec!["/tmp/work:/work".into()],
+            memory: Some("4g".into()),
+            cpus: Some("2".into()),
+            ..Default::default()
+        };
+        let y = build_compose(&spec).unwrap();
+        assert!(y.contains("environment:\n      - TZ=Etc/UTC"));
+        assert!(y.contains("volumes:\n      - /tmp/work:/work"));
+        assert!(y.contains("mem_limit: 4g"));
+        assert!(y.contains("cpus: \"2\""));
+    }
+
+    #[test]
+    fn compose_requires_image() {
+        assert!(build_compose(&RunSpec::default()).is_err());
+    }
+
+    #[test]
+    fn gpu_modes_add_the_right_flags() {
+        let base = |mode| RunSpec {
+            image: "x:pearos-latest".into(),
+            gpu_mode: mode,
+            ..Default::default()
+        };
+        assert_eq!(
+            build_run_args(&base(GpuMode::Nvidia)).unwrap(),
+            vec![
+                "run", "-d", "-p", "3000:3000", "--gpus", "all",
+                "-e", "NVIDIA_DRIVER_CAPABILITIES=compute,video,utility", "-e", "FASTVM_RECORDING_ENCODER=nvenc",
+                "x:pearos-latest"
+            ]
+        );
+        assert_eq!(
+            build_run_args(&base(GpuMode::Rocm)).unwrap(),
+            vec![
+                "run", "-d", "-p", "3000:3000", "--device", "/dev/dri", "--device", "/dev/kfd",
+                "--group-add", "keep-groups",
+                "-e", "DISABLE_DRI=1", "-e", "FASTVM_GPU_HW=false", "-e", "FASTVM_RECORDING_ENCODER=software",
+                "x:pearos-latest"
+            ]
+        );
+        assert_eq!(
+            build_run_args(&base(GpuMode::Drm)).unwrap(),
+            vec![
+                "run", "-d", "-p", "3000:3000", "--device", "/dev/dri",
+                "-e", "FASTVM_GPU_HW=true", "-e", "FASTVM_RECORDING_ENCODER=vaapi",
+                "x:pearos-latest"
+            ]
+        );
+        assert_eq!(
+            build_run_args(&base(GpuMode::Off)).unwrap(),
+            vec!["run", "-d", "-p", "3000:3000", "x:pearos-latest"]
+        );
+    }
+
+    #[test]
+    fn user_env_overrides_mode_env() {
+        // Mode env comes first; the user's own `-e` is appended after, so Docker
+        // (last value wins) honours the user.
+        let spec = RunSpec {
+            image: "x:pearos-latest".into(),
+            gpu_mode: GpuMode::Drm,
+            env: vec!["FASTVM_RECORDING_ENCODER=qsv".into()],
+            ..Default::default()
+        };
+        let args = build_run_args(&spec).unwrap();
+        let first = args.iter().position(|a| a == "FASTVM_RECORDING_ENCODER=vaapi").unwrap();
+        let last = args.iter().position(|a| a == "FASTVM_RECORDING_ENCODER=qsv").unwrap();
+        assert!(first < last, "mode env must precede the user override");
+    }
+
+    #[test]
+    fn explicit_gpu_mode_wins_over_legacy_bool() {
+        let spec = RunSpec {
+            image: "x:pearos-latest".into(),
+            gpu: true,
+            gpu_mode: GpuMode::Nvidia,
+            ..Default::default()
+        };
+        let args = build_run_args(&spec).unwrap();
+        assert!(args.contains(&"--gpus".to_string()));
+        assert!(!args.contains(&"--device".to_string()));
     }
 
     #[test]

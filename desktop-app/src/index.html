@@ -13,7 +13,7 @@
       <input id="search" type="search" placeholder="Search 236 desktops, distros, presets…" autocomplete="off" aria-label="Search the marketplace" />
     </div>
     <div class="statuses">
-      <div class="status" id="gpu-status" title="Host graphics hardware">GPU…</div>
+      <button class="status" id="gpu-status" title="Host graphics hardware" aria-haspopup="dialog">GPU…</button>
       <div class="status" id="docker-status" title="Docker daemon">Checking Docker…</div>
     </div>
   </header>
@@ -24,6 +24,13 @@
     <section class="store">
       <div class="store-head">
         <span id="result-count" class="muted"></span>
+        <label class="sort-wrap">Sort
+          <select id="sort" aria-label="Sort apps">
+            <option value="featured">Featured</option>
+            <option value="name">Name (A→Z)</option>
+            <option value="ram">Lightest first</option>
+          </select>
+        </label>
       </div>
       <div class="grid" id="grid" role="list"></div>
       <p class="empty hidden" id="no-results">No apps match your search.</p>
@@ -41,7 +48,10 @@
   <section class="instances-bar">
     <div class="instances-head">
       <h2>Running instances <span class="muted" id="instance-count"></span></h2>
-      <button class="ghost" id="refresh">Refresh</button>
+      <div class="head-actions">
+        <button class="ghost" id="stop-all">Stop all</button>
+        <button class="ghost" id="refresh">Refresh</button>
+      </div>
     </div>
     <div class="instances-list" id="instances"></div>
   </section>

@@ -19,19 +19,31 @@ let APPS = [];
 let FILTER = 'All';
 let SELECTED = null;
 let DOCKER_OK = false;
-let HOST_GPU = { present: false, vendor: 'none', render_node: null, devices: [] };
+let HOST_GPU = { present: false, vendor: 'none', render_node: null, devices: [], modes: ['off'], recommended: 'off', toolkit: false, kfd: false };
 let LAST_CMD = '';
 let INSTANCES_TIMER = null;
 let LOGS_TIMER = null;
 let PREVIEW_SEQ = 0;
+let SORT = 'featured';
+let FAVORITES = new Set();
+let LAST_INSTANCES = [];
+let STATS = {};
 
 const INSTANCES_REFRESH_MS = 5000;
 const LOGS_REFRESH_MS = 3000;
+const FAVORITES_KEY = 'fastvm.favorites';
 
 const CATEGORY_ORDER = [
   'Featured', 'Desktops', 'Gaming', 'Development', 'Content Creation',
   'Office', 'Security', 'Distros', 'Minimal', 'All',
 ];
+
+const RAM_MB = (s) => {
+  const m = /([\d.]+)\s*(GB|MB)/i.exec(String(s || ''));
+  if (!m) return 99999;
+  const n = parseFloat(m[1]);
+  return /gb/i.test(m[2]) ? n * 1024 : n;
+};
 
 function toast(message, isError) {
   const el = $('toast');
@@ -67,16 +79,37 @@ async function copyText(text, label) {
   }
 }
 
-// ------------------------------------------------------------------ status
+// ----------------------------------------------------------------- favorites
+
+function loadFavorites() {
+  try {
+    const raw = window.localStorage && window.localStorage.getItem(FAVORITES_KEY);
+    if (raw) FAVORITES = new Set(JSON.parse(raw));
+  } catch { /* ignore malformed or unavailable storage */ }
+}
+
+function saveFavorites() {
+  try {
+    if (window.localStorage) window.localStorage.setItem(FAVORITES_KEY, JSON.stringify([...FAVORITES]));
+  } catch { /* ignore */ }
+}
+
+function toggleFavorite(id) {
+  if (FAVORITES.has(id)) FAVORITES.delete(id);
+  else FAVORITES.add(id);
+  saveFavorites();
+  renderGrid();
+}
+
+// -------------------------------------------------------------------- status
 
 function renderGpuStatus() {
   const el = $('gpu-status');
   if (HOST_GPU.present) {
     const vendor = HOST_GPU.vendor && HOST_GPU.vendor !== 'none' ? HOST_GPU.vendor : 'GPU';
-    el.textContent = `GPU: ${vendor}`;
-    el.title = HOST_GPU.render_node
-      ? `Detected ${vendor} — ${HOST_GPU.render_node}`
-      : `Detected ${vendor} — /dev/dri`;
+    const modes = (HOST_GPU.modes || []).filter((m) => m !== 'off').map((m) => m.toUpperCase());
+    el.textContent = `GPU: ${vendor}${modes.length ? ' · ' + modes[0] : ''}`;
+    el.title = 'Click for GPU details';
     el.className = 'status ok';
   } else {
     el.textContent = 'No GPU';
@@ -85,13 +118,51 @@ function renderGpuStatus() {
   }
 }
 
-// ------------------------------------------------------------------ catalog
+function showGpuDetails() {
+  if (!HOST_GPU.present) {
+    toast('No graphics device detected on this host', true);
+    return;
+  }
+  const modes = (HOST_GPU.modes || []).map((m) => m.toUpperCase()).join(', ');
+  const lines = [
+    `Vendor: ${HOST_GPU.vendor}`,
+    HOST_GPU.render_node ? `Render node: ${HOST_GPU.render_node}` : 'Render node: (none)',
+    `Acceleration modes: ${modes}`,
+    `ROCm compute (/dev/kfd): ${HOST_GPU.kfd ? 'present' : 'absent'}`,
+    `NVIDIA container toolkit: ${HOST_GPU.toolkit ? 'present' : 'not detected'}`,
+  ];
+  if (HOST_GPU.compute_only) {
+    lines.push('Compute-only accelerator: no graphics engine — desktop renders on CPU');
+  }
+  toast(lines.join('  •  '));
+}
+
+/// Show, in a modal, the in-container commands that prove the selected GPU mode
+/// is working. The list is produced by the Rust backend (`gpu_verify`).
+async function showGpuVerify() {
+  const mode = ($('gpu-mode') && $('gpu-mode').value) || 'off';
+  let steps;
+  try {
+    steps = await invoke('gpu_verify', { mode });
+  } catch (err) {
+    toast(`Could not load verification steps: ${err}`, true);
+    return;
+  }
+  openModal(
+    `Verify GPU (${gpuModeLabel(mode)})`,
+    `<p class="hint">Run these inside the container to confirm the GPU is in use:</p>
+     <pre class="verify">${steps.map(escapeHtml).join('\n')}</pre>
+     <p class="hint">Tip: <code>docker exec -it &lt;container&gt; bash</code> first.</p>`,
+  );
+}
+
+// -------------------------------------------------------------------- catalog
 
 function renderTabs() {
   const cats = new Set(APPS.map((a) => a.category));
   const tabs = CATEGORY_ORDER.filter((c) => {
     if (c === 'All') return true;
-    if (c === 'Featured') return APPS.some((a) => a.featured);
+    if (c === 'Featured') return APPS.some((a) => a.featured) || FAVORITES.size > 0;
     return cats.has(c);
   });
   const nav = $('tabs');
@@ -109,9 +180,9 @@ function renderTabs() {
 
 function visibleApps() {
   const q = $('search').value.trim().toLowerCase();
-  return APPS.filter((a) => {
+  let apps = APPS.filter((a) => {
     const inFilter = FILTER === 'All'
-      || (FILTER === 'Featured' ? a.featured : a.category === FILTER);
+      || (FILTER === 'Featured' ? (a.featured || FAVORITES.has(a.id)) : a.category === FILTER);
     const inSearch = !q
       || a.name.toLowerCase().includes(q)
       || a.tagline.toLowerCase().includes(q)
@@ -119,6 +190,14 @@ function visibleApps() {
       || a.category.toLowerCase().includes(q);
     return inFilter && inSearch;
   });
+  apps = apps.slice().sort((a, b) => {
+    if (SORT === 'name') return a.name.localeCompare(b.name);
+    if (SORT === 'ram') return RAM_MB(a.ram) - RAM_MB(b.ram);
+    // Featured: starred/favorites first, then featured, then name.
+    const score = (x) => (FAVORITES.has(x.id) ? 2 : 0) + (x.featured ? 1 : 0);
+    return score(b) - score(a) || a.name.localeCompare(b.name);
+  });
+  return apps;
 }
 
 function renderGrid() {
@@ -128,14 +207,19 @@ function renderGrid() {
   $('no-results').classList.toggle('hidden', apps.length > 0);
   $('result-count').textContent = apps.length ? `${apps.length} of ${APPS.length} images` : '';
   for (const a of apps) {
+    const fav = FAVORITES.has(a.id);
     const card = document.createElement('div');
     card.className = 'card' + (SELECTED && SELECTED.id === a.id ? ' selected' : '');
     card.setAttribute('role', 'listitem');
     card.tabIndex = 0;
+    card.dataset.id = a.id;
     card.innerHTML = `
       <div class="head">
         <span class="title">${escapeHtml(a.name)}</span>
-        ${a.featured ? '<span class="chip featured">★ Featured</span>' : ''}
+        <span class="head-right">
+          <button class="star ${fav ? 'on' : ''}" data-id="${escapeHtml(a.id)}" title="${fav ? 'Unstar' : 'Star'}" aria-label="Toggle favorite" aria-pressed="${fav}">${fav ? '★' : '☆'}</button>
+          ${a.featured ? '<span class="chip featured">★</span>' : ''}
+        </span>
       </div>
       <div class="tagline">${escapeHtml(a.tagline)}</div>
       <div class="foot">
@@ -145,13 +229,15 @@ function renderGrid() {
       </div>
       <button class="install" data-id="${escapeHtml(a.id)}">Deploy</button>`;
     card.addEventListener('click', (e) => {
-      if (e.target.classList.contains('install')) return;
+      if (e.target.classList.contains('install') || e.target.classList.contains('star')) return;
       select(a);
     });
     card.addEventListener('keydown', (e) => {
+      if (e.target !== card) return;
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(a); }
     });
     card.querySelector('.install').addEventListener('click', () => select(a, true));
+    card.querySelector('.star').addEventListener('click', () => toggleFavorite(a.id));
     grid.appendChild(card);
   }
 }
@@ -164,8 +250,21 @@ function select(app, deployNow) {
   body.classList.remove('hidden');
 
   const gpuAvailable = HOST_GPU.present;
-  const gpuHint = gpuAvailable ? `Host GPU: ${escapeHtml(HOST_GPU.vendor)}` : 'No /dev/dri on this host';
-  const gpuChecked = (app.gpu && gpuAvailable) ? 'checked' : '';
+  const modes = (HOST_GPU.modes || ['off']).filter((m) => m !== 'off');
+  const recommended = HOST_GPU.recommended && HOST_GPU.recommended !== 'off'
+    ? HOST_GPU.recommended
+    : (modes[0] || 'off');
+  const modeOptions = ['off', ...modes]
+    .map((m) => `<option value="${m}"${(app.gpu && m === recommended) || (!app.gpu && m === 'off') ? ' selected' : ''}>${gpuModeLabel(m)}</option>`)
+    .join('');
+  const gpuHint = gpuAvailable
+    ? `Host: ${escapeHtml(HOST_GPU.vendor)}${modes.length ? ' · ' + modes.map((m) => m.toUpperCase()).join('/') : ''}`
+    : 'No /dev/dri on this host';
+  // The backend computes the warning (toolkit missing, compute-only, …) so the
+  // UI never has to re-derive host facts.
+  const warn = gpuAvailable && HOST_GPU.warning
+    ? `<p class="warn">${escapeHtml(HOST_GPU.warning)}</p>`
+    : '';
 
   body.innerHTML = `
     <h2>${escapeHtml(app.name)}</h2>
@@ -182,29 +281,59 @@ function select(app, deployNow) {
       <label class="field"><span>Container name</span><input id="name" type="text" placeholder="FastVM" /></label>
       <label class="field"><span>Shared memory</span><input id="shm" type="text" value="${app.gpu ? '4gb' : '2gb'}" /></label>
     </div>
-    <label class="checkbox ${gpuAvailable ? '' : 'disabled'}">
-      <input id="gpu" type="checkbox" ${gpuChecked} ${gpuAvailable ? '' : 'disabled'} />
-      GPU passthrough (/dev/dri) <span class="hint">${gpuHint}</span>
-    </label>
+    <div class="field">
+      <span>GPU acceleration</span>
+      <select id="gpu-mode" ${gpuAvailable ? '' : 'disabled'}>${modeOptions}</select>
+      <span class="hint">${gpuHint}</span>
+      <button class="ghost tiny" id="gpu-verify" ${gpuAvailable ? '' : 'disabled'}>Verify in container</button>
+    </div>
+    ${warn}
+    <details class="advanced">
+      <summary>Advanced options</summary>
+      <div class="grid2">
+        <label class="field"><span>Memory limit</span><input id="memory" type="text" placeholder="e.g. 4g" /></label>
+        <label class="field"><span>CPU limit</span><input id="cpus" type="text" placeholder="e.g. 2" /></label>
+      </div>
+      <label class="field"><span>Environment (one KEY=VALUE per line)</span><textarea id="env" rows="2" placeholder="TZ=Etc/UTC"></textarea></label>
+      <label class="field"><span>Volumes (one host:container per line)</span><textarea id="volumes" rows="2" placeholder="/home/me/work:/work"></textarea></label>
+    </details>
     <div class="preview-head">
       <span>Command</span>
+      <span class="fmt-toggle" role="tablist" aria-label="Preview format">
+        <button class="fmt active" id="fmt-run" role="tab" aria-selected="true">docker run</button>
+        <button class="fmt" id="fmt-compose" role="tab" aria-selected="false">compose</button>
+      </span>
       <button class="ghost tiny" id="copy-cmd">Copy</button>
     </div>
     <div class="preview" id="preview">…</div>
     <button class="primary" id="deploy">⚡ Deploy ${escapeHtml(app.name)}</button>
     <p class="result" id="deploy-result"></p>`;
 
-  for (const id of ['host-port', 'dash-port', 'name', 'shm', 'gpu']) {
+  for (const id of ['host-port', 'dash-port', 'name', 'shm', 'gpu-mode', 'memory', 'cpus', 'env', 'volumes']) {
     $(id).addEventListener('input', updatePreview);
     $(id).addEventListener('change', updatePreview);
   }
   $('copy-image').addEventListener('click', () => copyText(app.image, 'Image'));
   $('copy-cmd').addEventListener('click', () => copyText(LAST_CMD, 'Command'));
+  $('fmt-run').addEventListener('click', () => setFormat('run'));
+  $('fmt-compose').addEventListener('click', () => setFormat('compose'));
+  $('gpu-verify').addEventListener('click', showGpuVerify);
   $('deploy').addEventListener('click', deploySelected);
   updatePreview();
 
   if (deployNow) deploySelected();
 }
+
+function gpuModeLabel(mode) {
+  return {
+    off: 'Off (no passthrough)',
+    drm: 'DRM — /dev/dri (Intel/AMD graphics)',
+    rocm: 'ROCm — AMD compute (/dev/dri + /dev/kfd)',
+    nvidia: 'NVIDIA — --gpus all',
+  }[mode] || mode;
+}
+
+const lines = (v) => String(v || '').split('\n').map((s) => s.trim()).filter(Boolean);
 
 function currentRequest() {
   return {
@@ -213,11 +342,26 @@ function currentRequest() {
     dashboardPort: Number($('dash-port').value) || 0,
     name: $('name').value || null,
     shmSize: $('shm').value || null,
-    gpu: $('gpu').checked,
+    gpuMode: $('gpu-mode').value || 'off',
+    memory: $('memory').value || null,
+    cpus: $('cpus').value || null,
+    env: lines($('env').value),
+    volumes: lines($('volumes').value),
   };
 }
 
 let previewTimer = null;
+let FORMAT = 'run';
+
+function setFormat(fmt) {
+  FORMAT = fmt;
+  const run = $('fmt-run');
+  const comp = $('fmt-compose');
+  if (run) { run.classList.toggle('active', fmt === 'run'); run.setAttribute('aria-selected', String(fmt === 'run')); }
+  if (comp) { comp.classList.toggle('active', fmt === 'compose'); comp.setAttribute('aria-selected', String(fmt === 'compose')); }
+  doPreview();
+}
+
 function updatePreview() {
   clearTimeout(previewTimer);
   previewTimer = setTimeout(doPreview, 120);
@@ -226,12 +370,13 @@ function updatePreview() {
 async function doPreview() {
   if (!SELECTED) return;
   const seq = ++PREVIEW_SEQ;
+  const cmd = FORMAT === 'compose' ? 'preview_compose' : 'preview_run_args';
   try {
-    const cmd = await invoke('preview_run_args', { req: currentRequest() });
+    const text = await invoke(cmd, { req: currentRequest() });
     if (seq !== PREVIEW_SEQ) return; // a newer request superseded this one
-    LAST_CMD = cmd;
+    LAST_CMD = text;
     const el = $('preview');
-    if (el) el.textContent = cmd;
+    if (el) el.textContent = text;
   } catch (err) {
     const el = $('preview');
     if (el) el.textContent = `(preview unavailable: ${err})`;
@@ -278,20 +423,23 @@ async function refreshInstances() {
     list.innerHTML = `<div class="empty">Could not list containers: ${escapeHtml(err)}</div>`;
     return;
   }
+  LAST_INSTANCES = rows;
   $('instance-count').textContent = rows.length ? `· ${rows.length}` : '';
   if (rows.length === 0) {
     list.innerHTML = '<div class="empty">No instances yet. Deploy one from the store above.</div>';
+    STATS = {};
     return;
   }
   list.innerHTML = '';
   for (const c of rows) {
     const up = /^up/i.test(c.status);
+    const stat = STATS[c.id];
     const row = document.createElement('div');
     row.className = 'row';
     row.innerHTML = `
       <div>
         <div class="name">${escapeHtml(c.name)} <span class="pill ${up ? 'up' : ''}">${escapeHtml(c.state)}</span></div>
-        <div class="meta">${escapeHtml(c.image)} · ${escapeHtml(c.status)}</div>
+        <div class="meta">${escapeHtml(c.image)} · ${escapeHtml(c.status)}${stat ? ` · <span class="stat">${escapeHtml(stat.cpu)} CPU · ${escapeHtml(stat.mem)}</span>` : ''}</div>
       </div>
       <div class="actions"></div>`;
     const actions = row.querySelector('.actions');
@@ -302,6 +450,16 @@ async function refreshInstances() {
     actions.appendChild(ghost('Remove', async () => { await invoke('remove_instance', { id: c.id }); refreshInstances(); }));
     list.appendChild(row);
   }
+}
+
+async function refreshStats() {
+  const running = LAST_INSTANCES.filter((c) => /^up/i.test(c.status));
+  if (running.length === 0) { STATS = {}; return; }
+  try {
+    const stats = await invoke('container_stats', { ids: running.map((c) => c.id) });
+    STATS = {};
+    for (const s of stats) STATS[s.id] = s;
+  } catch { /* stats are best-effort */ }
 }
 
 function ghost(label, onClick) {
@@ -341,15 +499,39 @@ function closeModal() {
   LOGS_TIMER = null;
 }
 
+/// Open the shared modal with arbitrary (already-escaped) HTML. Stops any log
+/// tailing so the two never fight over the body.
+function openModal(title, html) {
+  clearInterval(LOGS_TIMER);
+  LOGS_TIMER = null;
+  $('modal-title').textContent = title;
+  $('modal-body').innerHTML = html;
+  $('modal').classList.remove('hidden');
+}
+
 // --------------------------------------------------------------------- init
 
 function startInstancePolling() {
   clearInterval(INSTANCES_TIMER);
-  INSTANCES_TIMER = setInterval(() => {
+  INSTANCES_TIMER = setInterval(async () => {
     // Don't churn while the user is reading logs or the window is hidden.
     if (!$('modal').classList.contains('hidden') || document.hidden) return;
-    refreshInstances();
+    await refreshInstances();
+    await refreshStats();
+    // Re-render so the fresh stats show up.
+    renderInstanceStats();
   }, INSTANCES_REFRESH_MS);
+}
+
+function renderInstanceStats() {
+  const rows = [...$('instances').querySelectorAll('.row')];
+  LAST_INSTANCES.forEach((c, i) => {
+    const stat = STATS[c.id];
+    const meta = rows[i] && rows[i].querySelector('.meta');
+    if (meta && stat && !meta.querySelector('.stat')) {
+      meta.insertAdjacentHTML('beforeend', ` · <span class="stat">${escapeHtml(stat.cpu)} CPU · ${escapeHtml(stat.mem)}</span>`);
+    }
+  });
 }
 
 function bindShortcuts() {
@@ -360,14 +542,25 @@ function bindShortcuts() {
       $('search').select();
     } else if (e.key === 'Escape' && !$('modal').classList.contains('hidden')) {
       closeModal();
+    } else if (e.key === '/' && e.target === document.body) {
+      e.preventDefault();
+      $('search').focus();
     }
   });
 }
 
 async function init() {
+  loadFavorites();
   $('search').addEventListener('input', renderGrid);
-  $('refresh').addEventListener('click', refreshInstances);
+  $('sort').addEventListener('change', (e) => { SORT = e.target.value; renderGrid(); });
+  $('refresh').addEventListener('click', async () => { await refreshInstances(); await refreshStats(); renderInstanceStats(); });
+  $('stop-all').addEventListener('click', async () => {
+    const n = await invoke('stop_all_instances');
+    toast(`Stopped ${n} instance${n === 1 ? '' : 's'}`);
+    await refreshInstances();
+  });
   $('modal-close').addEventListener('click', closeModal);
+  $('gpu-status').addEventListener('click', showGpuDetails);
   bindShortcuts();
 
   try {
@@ -390,7 +583,9 @@ async function init() {
   } catch (err) {
     toast(`Could not load marketplace: ${err}`, true);
   }
-  refreshInstances();
+  await refreshInstances();
+  await refreshStats();
+  renderInstanceStats();
   startInstancePolling();
 }
 

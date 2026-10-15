@@ -28,11 +28,32 @@ terminal required. Runs on Linux, Windows, and macOS.
 - **Exact command preview** — the `docker run` line is produced by the backend
   (`preview_run_args`), so it always matches what a deploy executes. Copy it
   with one click.
-- **GPU awareness** — the header shows the detected host GPU and the
-  passthrough toggle is only offered when a `/dev/dri` device exists.
+- **GPU awareness** — the header shows the detected host GPU and its available
+  acceleration modes; the passthrough selector is only offered when a `/dev/dri`
+  device exists.
+- **GPU acceleration modes** — pick the right flags for the host: **DRM**
+  (`--device /dev/dri`) for Intel/AMD graphics, **ROCm** (`/dev/dri` + `/dev/kfd`
+  + `--group-add keep-groups`) for AMD compute, or **NVIDIA** (`--gpus all`) when
+  the container toolkit is present. The recommended mode is preselected.
+- **Mode-aware environment** — each mode also sets the container-side variables
+  from `docs/gpu.md` (`FASTVM_GPU_HW`, `FASTVM_RECORDING_ENCODER`, `DISABLE_DRI`,
+  `NVIDIA_DRIVER_CAPABILITIES`) so the desktop and encoder actually use the
+  device. Your own `-e` values are appended after and therefore win.
+- **Host warnings** — the backend flags missing NVIDIA container toolkit and
+  compute-only accelerators (e.g. MI300X) in the details panel.
+- **Verify in container** — a button shows the `nvidia-smi` / `rocm-smi` /
+  `vainfo` commands that prove the chosen mode is delivering the GPU.
+- **Compose output** — the same deploy renders as a `docker-compose.yml` service
+  (with the GPU stanza and environment) alongside the `docker run` command.
+- **Advanced run options** — set memory and CPU limits, environment variables,
+  and bind mounts; all flow into the previewed command.
 - **Instance manager** — see running containers with **Open / Dashboard / Logs /
-  Stop / Remove**, refreshed automatically, with live-tailing logs.
-- **Keyboard shortcuts** — `Ctrl/⌘+K` focuses search, `Esc` closes the log view.
+  Stop / Remove**, refreshed automatically, with live CPU/memory stats and
+  live-tailing logs. **Stop all** shuts down every running instance at once.
+- **Favorites & sorting** — star apps (persisted locally) and sort by Featured,
+  name, or lightest-first.
+- **Keyboard shortcuts** — `Ctrl/⌘+K` or `/` focuses search, `Esc` closes the
+  log view.
 - **Docker awareness** — the header shows the detected Docker version, or a
   clear warning when Docker is missing.
 
@@ -75,7 +96,7 @@ desktop-app/
     src/main.rs            thin entry point
     src/lib.rs             Tauri builder + command registration
     src/catalog.rs         image catalog, marketplace model, docker run builder
-    src/gpu.rs             host GPU detection (/sys/class/drm, /dev/dri)
+    src/gpu.rs             host GPU detection + acceleration modes (DRM/ROCm/NVIDIA)
     src/docker.rs          Docker CLI wrapper + pure parsers
     src/commands.rs        the commands the frontend may call
     capabilities/default.json
@@ -100,12 +121,14 @@ the commands in `commands.rs`. Those commands are the entire attack surface.
 
 ```bash
 npm test                          # everything below, in order
-npm run test:rust                 # 27 Rust unit tests
-npm run test:ui                   # 10 jsdom frontend tests
+npm run test:rust                 # 36 Rust unit tests
+npm run test:ui                   # 16 jsdom frontend tests
 npm run verify                    # catalog in sync with the CI build matrix
 ```
 
-The pure logic (tag builders, `docker run` args, `docker ps` parsing, port
-selection, tag validation, GPU vendor mapping) is unit-tested without needing
-Docker or a display. The frontend tests load the real `index.html` + `renderer.js`
-into jsdom with a stubbed `invoke` bridge and drive the UI the way a user would.
+The pure logic (tag builders, `docker run` args for every GPU mode, `docker ps`
+and `docker stats` parsing, port selection, tag validation, GPU vendor mapping,
+mode selection) is unit-tested without needing Docker or a display. The frontend
+tests load the real `index.html` + `renderer.js` into jsdom with a stubbed
+`invoke` bridge and drive the UI the way a user would (search, sort, star,
+select, pick a GPU mode, set advanced options, open logs).

@@ -80,6 +80,36 @@ pub fn next_free_port(used: &[u16], start: u16) -> u16 {
     p
 }
 
+/// A live resource sample for one container.
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct Stats {
+    pub id: String,
+    /// e.g. `1.24%`.
+    pub cpu: String,
+    /// e.g. `256MiB / 8GiB`.
+    pub mem: String,
+}
+
+/// Parse one `docker stats --no-stream --format '{{json .}}'` line.
+pub fn parse_stats_line(line: &str) -> Option<Stats> {
+    let trimmed = line.trim();
+    if trimmed.is_empty() || !trimmed.starts_with('{') {
+        return None;
+    }
+    let v: serde_json::Value = serde_json::from_str(trimmed).ok()?;
+    let get = |k: &str| v.get(k).and_then(|x| x.as_str()).unwrap_or("").to_string();
+    let id = {
+        let i = get("ID");
+        if i.is_empty() { get("Container") } else { i }
+    };
+    Some(Stats { id, cpu: get("CPUPerc"), mem: get("MemUsage") })
+}
+
+/// Parse a full `docker stats` listing.
+pub fn parse_stats(output: &str) -> Vec<Stats> {
+    output.lines().filter_map(parse_stats_line).collect()
+}
+
 /// Result of a Docker invocation.
 pub struct Output {
     pub code: i32,
@@ -134,6 +164,25 @@ pub fn list() -> Result<Vec<Instance>, String> {
     Ok(parse_ps(&out.stdout))
 }
 
+/// One-shot resource sample for the given container ids.
+pub fn stats(ids: &[String]) -> Result<Vec<Stats>, String> {
+    if ids.is_empty() {
+        return Ok(vec![]);
+    }
+    let mut args: Vec<String> = vec![
+        "stats".into(),
+        "--no-stream".into(),
+        "--format".into(),
+        "{{json .}}".into(),
+    ];
+    args.extend(ids.iter().cloned());
+    let out = docker(&args);
+    if !out.ok() {
+        return Err(out.stderr.trim().to_string());
+    }
+    Ok(parse_stats(&out.stdout))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -168,5 +217,21 @@ mod tests {
     fn next_free_port_skips_used() {
         assert_eq!(next_free_port(&[3000, 3001], 3000), 3002);
         assert_eq!(next_free_port(&[], 3000), 3000);
+    }
+
+    #[test]
+    fn parses_stats_line() {
+        let line = r#"{"ID":"abc123","CPUPerc":"1.24%","MemUsage":"256MiB / 8GiB"}"#;
+        let s = parse_stats_line(line).unwrap();
+        assert_eq!(s.id, "abc123");
+        assert_eq!(s.cpu, "1.24%");
+        assert_eq!(s.mem, "256MiB / 8GiB");
+    }
+
+    #[test]
+    fn stats_ignore_non_json_lines() {
+        assert!(parse_stats_line("").is_none());
+        assert!(parse_stats_line("not json").is_none());
+        assert_eq!(parse_stats("nope\n").len(), 0);
     }
 }

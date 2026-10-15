@@ -5,7 +5,17 @@ use tauri::command;
 
 use crate::catalog::{self, App, RunSpec};
 use crate::docker::{self, Instance};
-use crate::gpu::{self, GpuInfo};
+use crate::gpu::{self, GpuInfo, GpuMode};
+
+/// Parse a GPU mode coming from the frontend.
+fn parse_gpu_mode(s: Option<&str>) -> GpuMode {
+    match s.unwrap_or("off").to_ascii_lowercase().as_str() {
+        "drm" => GpuMode::Drm,
+        "rocm" => GpuMode::Rocm,
+        "nvidia" => GpuMode::Nvidia,
+        _ => GpuMode::Off,
+    }
+}
 
 /// The full marketplace listing plus Docker availability and host GPU state.
 #[derive(Serialize)]
@@ -50,6 +60,30 @@ pub struct PreviewRequest {
     pub name: Option<String>,
     pub shm_size: Option<String>,
     pub gpu: Option<bool>,
+    /// One of `off`, `drm`, `rocm`, `nvidia`; wins over `gpu` when set.
+    pub gpu_mode: Option<String>,
+    pub memory: Option<String>,
+    pub cpus: Option<String>,
+    pub env: Option<Vec<String>>,
+    pub volumes: Option<Vec<String>>,
+}
+
+/// Turn a preview request into a validated run spec.
+fn spec_from_preview(req: &PreviewRequest) -> RunSpec {
+    let image = if req.tag.contains(':') { req.tag.clone() } else { catalog::image_ref(&req.tag) };
+    RunSpec {
+        image,
+        host_port: req.host_port.unwrap_or(0),
+        dashboard_port: req.dashboard_port.unwrap_or(0),
+        name: req.name.clone().filter(|s| !s.is_empty()),
+        shm_size: req.shm_size.clone().filter(|s| !s.is_empty()),
+        memory: req.memory.clone().filter(|s| !s.is_empty()),
+        cpus: req.cpus.clone().filter(|s| !s.is_empty()),
+        gpu: req.gpu.unwrap_or(false),
+        gpu_mode: parse_gpu_mode(req.gpu_mode.as_deref()),
+        env: req.env.clone().unwrap_or_default(),
+        volumes: req.volumes.clone().unwrap_or_default(),
+    }
 }
 
 /// The exact `docker run` invocation a deploy would use, as a single string.
@@ -58,18 +92,24 @@ pub struct PreviewRequest {
 /// `deploy` actually runs - both go through `catalog::build_run_args`.
 #[command]
 pub fn preview_run_args(req: PreviewRequest) -> Result<String, String> {
-    let image = if req.tag.contains(':') { req.tag.clone() } else { catalog::image_ref(&req.tag) };
-    let spec = RunSpec {
-        image,
-        host_port: req.host_port.unwrap_or(0),
-        dashboard_port: req.dashboard_port.unwrap_or(0),
-        name: req.name.filter(|s| !s.is_empty()),
-        shm_size: req.shm_size.filter(|s| !s.is_empty()),
-        gpu: req.gpu.unwrap_or(false),
-        ..Default::default()
-    };
-    let args = catalog::build_run_args(&spec)?;
+    let args = catalog::build_run_args(&spec_from_preview(&req))?;
     Ok(format!("docker {}", args.join(" ")))
+}
+
+/// The same deploy, rendered as a `docker-compose.yml` service.
+#[command]
+pub fn preview_compose(req: PreviewRequest) -> Result<String, String> {
+    catalog::build_compose(&spec_from_preview(&req))
+}
+
+/// Commands to run inside a deployed container to confirm the chosen GPU mode
+/// is really delivering the device.
+#[command]
+pub fn gpu_verify(mode: String) -> Vec<String> {
+    gpu::verification_steps(parse_gpu_mode(Some(&mode)))
+        .into_iter()
+        .map(String::from)
+        .collect()
 }
 
 /// List FastVM containers, newest first.
@@ -94,6 +134,10 @@ pub struct DeployRequest {
     pub memory: Option<String>,
     pub cpus: Option<String>,
     pub gpu: Option<bool>,
+    /// One of `off`, `drm`, `rocm`, `nvidia`; wins over `gpu` when set.
+    pub gpu_mode: Option<String>,
+    pub env: Option<Vec<String>>,
+    pub volumes: Option<Vec<String>>,
 }
 
 #[derive(Serialize)]
@@ -127,19 +171,21 @@ pub fn deploy(req: DeployRequest) -> Result<DeployResult, String> {
         .dashboard_port
         .unwrap_or_else(|| docker::next_free_port(&used, 3001));
 
-    let image = catalog::image_ref(&req.tag);
-    let spec = RunSpec {
-        image: image.clone(),
-        host_port,
-        dashboard_port,
-        name: req.name.clone().filter(|s| !s.is_empty()),
+    let preview = PreviewRequest {
+        tag: req.tag.clone(),
+        host_port: Some(host_port),
+        dashboard_port: Some(dashboard_port),
+        name: req.name.clone(),
         shm_size: req.shm_size.clone(),
+        gpu: req.gpu,
+        gpu_mode: req.gpu_mode.clone(),
         memory: req.memory.clone(),
         cpus: req.cpus.clone(),
-        gpu: req.gpu.unwrap_or(false),
-        env: vec![],
-        volumes: vec![],
+        env: req.env.clone(),
+        volumes: req.volumes.clone(),
     };
+    let spec = spec_from_preview(&preview);
+    let image = spec.image.clone();
     let args = catalog::build_run_args(&spec)?;
     let out = docker::docker(&args);
     Ok(DeployResult {
@@ -169,6 +215,30 @@ pub fn remove_instance(id: String) -> Result<(), String> {
 pub fn instance_logs(id: String) -> Result<String, String> {
     let out = docker::docker(&["logs".into(), "--tail".into(), "300".into(), id]);
     Ok(format!("{}{}", out.stdout, out.stderr))
+}
+
+/// One-shot CPU/memory sample for the given container ids.
+#[command]
+pub fn container_stats(ids: Vec<String>) -> Result<Vec<docker::Stats>, String> {
+    docker::stats(&ids)
+}
+
+/// Stop every running FastVM container. Returns how many were stopped.
+#[command]
+pub fn stop_all_instances() -> Result<usize, String> {
+    let running: Vec<Instance> = docker::list()?
+        .into_iter()
+        .filter(|c| c.image.contains("fastvm") || c.name.starts_with("FastVM"))
+        .filter(|c| c.state.eq_ignore_ascii_case("running"))
+        .collect();
+    let mut stopped = 0;
+    for c in &running {
+        let out = docker::docker(&["stop".into(), c.id.clone()]);
+        if out.ok() {
+            stopped += 1;
+        }
+    }
+    Ok(stopped)
 }
 
 /// Whether a tag corresponds to a published image in the catalog.
@@ -222,6 +292,7 @@ mod tests {
             name: Some("FastVM-gaming".into()),
             shm_size: Some("4gb".into()),
             gpu: Some(true),
+            ..Default::default()
         })
         .unwrap();
         assert_eq!(got, expected);
@@ -248,6 +319,51 @@ mod tests {
         .unwrap();
         assert!(!got.contains("--name"));
         assert!(!got.contains("--shm-size"));
+    }
+
+    #[test]
+    fn preview_renders_gpu_modes() {
+        let nvidia = preview_run_args(PreviewRequest {
+            tag: "kde-gaming-latest".into(),
+            gpu_mode: Some("nvidia".into()),
+            ..Default::default()
+        })
+        .unwrap();
+        assert!(nvidia.contains("--gpus all"), "{nvidia}");
+
+        let rocm = preview_run_args(PreviewRequest {
+            tag: "kde-gaming-latest".into(),
+            gpu_mode: Some("rocm".into()),
+            ..Default::default()
+        })
+        .unwrap();
+        assert!(rocm.contains("--device /dev/kfd"), "{rocm}");
+    }
+
+    #[test]
+    fn preview_renders_env_volumes_and_limits() {
+        let got = preview_run_args(PreviewRequest {
+            tag: "xfce4-none-latest".into(),
+            memory: Some("4g".into()),
+            cpus: Some("2".into()),
+            env: Some(vec!["TZ=Etc/UTC".into()]),
+            volumes: Some(vec!["/tmp/work:/work".into()]),
+            ..Default::default()
+        })
+        .unwrap();
+        assert!(got.contains("--memory 4g"));
+        assert!(got.contains("--cpus 2"));
+        assert!(got.contains("-e TZ=Etc/UTC"));
+        assert!(got.contains("-v /tmp/work:/work"));
+    }
+
+    #[test]
+    fn gpu_mode_strings_parse() {
+        assert_eq!(parse_gpu_mode(Some("nvidia")), GpuMode::Nvidia);
+        assert_eq!(parse_gpu_mode(Some("ROCM")), GpuMode::Rocm);
+        assert_eq!(parse_gpu_mode(Some("drm")), GpuMode::Drm);
+        assert_eq!(parse_gpu_mode(Some("bogus")), GpuMode::Off);
+        assert_eq!(parse_gpu_mode(None), GpuMode::Off);
     }
 
     #[test]
