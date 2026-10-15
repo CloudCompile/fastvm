@@ -5,14 +5,16 @@ use tauri::command;
 
 use crate::catalog::{self, App, RunSpec};
 use crate::docker::{self, Instance};
+use crate::gpu::{self, GpuInfo};
 
-/// The full marketplace listing plus Docker availability.
+/// The full marketplace listing plus Docker availability and host GPU state.
 #[derive(Serialize)]
 pub struct Marketplace {
     pub apps: Vec<App>,
     pub variant_count: usize,
     pub docker_available: bool,
     pub docker_version: Option<String>,
+    pub gpu: GpuInfo,
 }
 
 #[command]
@@ -23,12 +25,51 @@ pub fn marketplace() -> Marketplace {
         variant_count: catalog::variant_count(),
         docker_available: version.is_some(),
         docker_version: version,
+        gpu: gpu::detect(),
     }
+}
+
+/// Host GPU detection, for the UI to gate the passthrough toggle.
+#[command]
+pub fn detect_gpu() -> GpuInfo {
+    gpu::detect()
 }
 
 #[command]
 pub fn docker_version() -> Result<String, String> {
     docker::version()
+}
+
+/// Fields the frontend sends when building a command preview.
+#[derive(serde::Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PreviewRequest {
+    pub tag: String,
+    pub host_port: Option<u16>,
+    pub dashboard_port: Option<u16>,
+    pub name: Option<String>,
+    pub shm_size: Option<String>,
+    pub gpu: Option<bool>,
+}
+
+/// The exact `docker run` invocation a deploy would use, as a single string.
+///
+/// The frontend renders this verbatim so the preview can never drift from what
+/// `deploy` actually runs - both go through `catalog::build_run_args`.
+#[command]
+pub fn preview_run_args(req: PreviewRequest) -> Result<String, String> {
+    let image = if req.tag.contains(':') { req.tag.clone() } else { catalog::image_ref(&req.tag) };
+    let spec = RunSpec {
+        image,
+        host_port: req.host_port.unwrap_or(0),
+        dashboard_port: req.dashboard_port.unwrap_or(0),
+        name: req.name.filter(|s| !s.is_empty()),
+        shm_size: req.shm_size.filter(|s| !s.is_empty()),
+        gpu: req.gpu.unwrap_or(false),
+        ..Default::default()
+    };
+    let args = catalog::build_run_args(&spec)?;
+    Ok(format!("docker {}", args.join(" ")))
 }
 
 /// List FastVM containers, newest first.
@@ -147,7 +188,67 @@ fn is_known_tag(tag: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::is_known_tag;
+    use super::*;
+
+    fn preview(tag: &str) -> String {
+        preview_run_args(PreviewRequest { tag: tag.into(), ..Default::default() }).unwrap()
+    }
+
+    #[test]
+    fn preview_uses_default_ports() {
+        assert_eq!(
+            preview("xfce4-none-latest"),
+            "docker run -d -p 3000:3000 ghcr.io/cloudcompile/fastvm:xfce4-none-latest"
+        );
+    }
+
+    #[test]
+    fn preview_matches_the_deploy_arg_builder() {
+        // The whole point of the command: preview == what deploy runs.
+        let spec = RunSpec {
+            image: catalog::image_ref("kde-gaming-latest"),
+            host_port: 3000,
+            dashboard_port: 3001,
+            name: Some("FastVM-gaming".into()),
+            shm_size: Some("4gb".into()),
+            gpu: true,
+            ..Default::default()
+        };
+        let expected = format!("docker {}", catalog::build_run_args(&spec).unwrap().join(" "));
+        let got = preview_run_args(PreviewRequest {
+            tag: "kde-gaming-latest".into(),
+            host_port: Some(3000),
+            dashboard_port: Some(3001),
+            name: Some("FastVM-gaming".into()),
+            shm_size: Some("4gb".into()),
+            gpu: Some(true),
+        })
+        .unwrap();
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn preview_accepts_a_fully_qualified_image() {
+        let got = preview_run_args(PreviewRequest {
+            tag: "ghcr.io/cloudcompile/fastvm:pearos-latest".into(),
+            ..Default::default()
+        })
+        .unwrap();
+        assert!(got.ends_with("ghcr.io/cloudcompile/fastvm:pearos-latest"));
+    }
+
+    #[test]
+    fn preview_omits_blank_fields() {
+        let got = preview_run_args(PreviewRequest {
+            tag: "terminal-latest".into(),
+            name: Some(String::new()),
+            shm_size: Some(String::new()),
+            ..Default::default()
+        })
+        .unwrap();
+        assert!(!got.contains("--name"));
+        assert!(!got.contains("--shm-size"));
+    }
 
     #[test]
     fn accepts_real_tags() {

@@ -48,6 +48,20 @@ function extractRustList(text, constName) {
   return [...body.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 }
 
+/** Every `FASTVM_OS_FLAVOR=<value>` build-arg in the workflow. */
+function extractFlavorArgs(text) {
+  return [...text.matchAll(/FASTVM_OS_FLAVOR=([a-z0-9-]+)/g)].map((m) => m[1]);
+}
+
+/** `- name: <value>` entries inside the build-specials `matrix.include` block. */
+function extractSpecials(text) {
+  const start = text.indexOf('build-specials:');
+  if (start === -1) return [];
+  const end = text.indexOf('\n  build-', start + 1);
+  const block = text.slice(start, end === -1 ? undefined : end);
+  return [...block.matchAll(/^\s*-\s*name:\s*([a-z0-9-]+)\s*$/gm)].map((m) => m[1]);
+}
+
 function compare(actual, expected, label) {
   const missing = expected.filter((v) => !actual.includes(v));
   const extra = actual.filter((v) => !expected.includes(v));
@@ -61,6 +75,8 @@ function main() {
   const checks = [
     compare(extractRustList(rust, 'DESKTOPS') || [], extractMatrixList(workflow, 'desktop'), 'desktops'),
     compare(extractRustList(rust, 'PRESETS') || [], extractMatrixList(workflow, 'preset'), 'presets'),
+    compare(extractRustList(rust, 'FLAVORS') || [], extractFlavorArgs(workflow), 'flavors'),
+    compare(extractRustList(rust, 'SINGLE_APPS') || [], extractSpecials(workflow), 'single apps'),
   ];
 
   const mismatches = checks.filter((c) => !c.ok);

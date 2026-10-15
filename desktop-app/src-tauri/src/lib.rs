@@ -7,6 +7,7 @@
 mod catalog;
 mod commands;
 mod docker;
+mod gpu;
 
 /// Build and run the Tauri application.
 pub fn run() {
@@ -14,6 +15,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             commands::marketplace,
+            commands::detect_gpu,
+            commands::preview_run_args,
             commands::docker_version,
             commands::list_instances,
             commands::deploy,

@@ -10,20 +10,26 @@
   <header class="topbar">
     <div class="brand"><span class="logo">⚡</span> FastVM <span class="muted">Marketplace</span></div>
     <div class="search-wrap">
-      <input id="search" type="search" placeholder="Search desktops, distros, presets…" autocomplete="off" />
+      <input id="search" type="search" placeholder="Search 236 desktops, distros, presets…" autocomplete="off" aria-label="Search the marketplace" />
     </div>
-    <div class="status" id="docker-status">Checking Docker…</div>
+    <div class="statuses">
+      <div class="status" id="gpu-status" title="Host graphics hardware">GPU…</div>
+      <div class="status" id="docker-status" title="Docker daemon">Checking Docker…</div>
+    </div>
   </header>
 
-  <nav class="tabs" id="tabs"></nav>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Categories"></nav>
 
   <main class="layout">
     <section class="store">
-      <div class="grid" id="grid"></div>
+      <div class="store-head">
+        <span id="result-count" class="muted"></span>
+      </div>
+      <div class="grid" id="grid" role="list"></div>
       <p class="empty hidden" id="no-results">No apps match your search.</p>
     </section>
 
-    <aside class="panel details" id="details">
+    <aside class="panel details" id="details" aria-live="polite">
       <div class="details-empty" id="details-empty">
         <div class="big">⚡</div>
         <p>Pick an app to see details and deploy it in one click.</p>
