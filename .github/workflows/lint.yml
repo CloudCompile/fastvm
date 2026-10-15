@@ -97,7 +97,12 @@ jobs:
           grep -q -- '--disable-gpu' <<<"$out"
           grep -q -- '--num-raster-threads=1' <<<"$out"
           grep -q -- '--renderer-process-limit=2' <<<"$out"
-          grep -q -- '--disable-dev-shm-usage' <<<"$out"
+          # --disable-dev-shm-usage is added only when /dev/shm is small. Force
+          # both branches so this does not depend on the runner's tmpfs size.
+          small="$(bash -c 'FASTVM_SHM_FORCE_MB=256; source <(sed "/^main \"\$@\"/d" scripts/discord-tune.sh); build_flags 2 none')"
+          big="$(bash -c 'FASTVM_SHM_FORCE_MB=4096; source <(sed "/^main \"\$@\"/d" scripts/discord-tune.sh); build_flags 2 none')"
+          grep -q -- '--disable-dev-shm-usage' <<<"$small"
+          ! grep -q -- '--disable-dev-shm-usage' <<<"$big"
           # Chromium only honours the last --enable-features, so there must be
           # exactly one and it must carry the voice features.
           [[ "$(grep -o -- '--enable-features' <<<"$out" | wc -l)" -eq 1 ]]

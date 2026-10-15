@@ -97,6 +97,12 @@ gpu_kind() {
 }
 
 shm_mb() {
+    # Overridable so tests can exercise both the small- and large-/dev/shm
+    # branches without depending on the host's tmpfs size.
+    if [[ -n "${FASTVM_SHM_FORCE_MB:-}" ]]; then
+        echo "${FASTVM_SHM_FORCE_MB}"
+        return
+    fi
     df -Pm /dev/shm 2>/dev/null | awk 'NR==2{print $2}' || echo 0
 }
 
