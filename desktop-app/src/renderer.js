@@ -28,10 +28,14 @@ let SORT = 'featured';
 let FAVORITES = new Set();
 let LAST_INSTANCES = [];
 let STATS = {};
+let DOCKER_HOST = { kind: 'local', target: '', label: 'local' };
+let PROFILES = {};
+let CUSTOM_APP = null;
 
 const INSTANCES_REFRESH_MS = 5000;
 const LOGS_REFRESH_MS = 3000;
 const FAVORITES_KEY = 'fastvm.favorites';
+const PROFILES_KEY = 'fastvm.profiles';
 
 const CATEGORY_ORDER = [
   'Featured', 'Desktops', 'Gaming', 'Development', 'Content Creation',
@@ -101,6 +105,79 @@ function toggleFavorite(id) {
   renderGrid();
 }
 
+// ------------------------------------------------------------------ profiles
+
+function loadProfiles() {
+  try {
+    const raw = window.localStorage && window.localStorage.getItem(PROFILES_KEY);
+    if (raw) PROFILES = JSON.parse(raw) || {};
+  } catch { PROFILES = {}; }
+}
+
+function saveProfiles() {
+  try {
+    if (window.localStorage) window.localStorage.setItem(PROFILES_KEY, JSON.stringify(PROFILES));
+  } catch { /* ignore */ }
+}
+
+function appProfiles(id) {
+  return PROFILES[id] || [];
+}
+
+/** Snapshot every deploy field (except the image itself) under a name. */
+function saveProfile() {
+  if (!SELECTED) return;
+  const name = ($('profile-name').value || '').trim();
+  if (!name) { toast('Name the profile first', true); return; }
+  const values = currentRequest();
+  delete values.tag;
+  delete values.allowCustom;
+  const list = appProfiles(SELECTED.id).filter((p) => p.name !== name);
+  list.push({ name, values });
+  PROFILES[SELECTED.id] = list;
+  saveProfiles();
+  $('profile-name').value = '';
+  renderProfileOptions(name);
+  toast(`Saved profile “${name}”`);
+}
+
+function applyProfile(name) {
+  if (!SELECTED || !name) return;
+  const p = appProfiles(SELECTED.id).find((x) => x.name === name);
+  if (!p) return;
+  const v = p.values || {};
+  if (v.hostPort != null) $('host-port').value = v.hostPort;
+  if (v.dashboardPort != null) $('dash-port').value = v.dashboardPort;
+  $('name').value = v.name || '';
+  $('shm').value = v.shmSize || '';
+  if ($('gpu-mode')) $('gpu-mode').value = v.gpuMode || 'off';
+  if ($('encoder') && v.encoder) $('encoder').value = v.encoder;
+  $('memory').value = v.memory || '';
+  $('cpus').value = v.cpus || '';
+  $('env').value = (v.env || []).join('\n');
+  $('volumes').value = (v.volumes || []).join('\n');
+  updatePreview();
+  toast(`Applied profile “${name}”`);
+}
+
+function deleteProfile(name) {
+  if (!SELECTED || !name) return;
+  PROFILES[SELECTED.id] = appProfiles(SELECTED.id).filter((p) => p.name !== name);
+  saveProfiles();
+  renderProfileOptions();
+}
+
+function renderProfileOptions(selected) {
+  const sel = $('profile-select');
+  if (!sel) return;
+  const list = SELECTED ? appProfiles(SELECTED.id) : [];
+  sel.innerHTML = `<option value="">Saved profiles…</option>`
+    + list.map((p) => `<option value="${escapeHtml(p.name)}"${p.name === selected ? ' selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+  const empty = list.length === 0;
+  $('profile-load').disabled = empty;
+  $('profile-delete').disabled = empty;
+}
+
 // -------------------------------------------------------------------- status
 
 function renderGpuStatus() {
@@ -116,6 +193,19 @@ function renderGpuStatus() {
     el.title = 'No /dev/dri graphics device detected on this host';
     el.className = 'status';
   }
+}
+
+/** Reflect which Docker daemon the CLI is pointed at. */
+function renderHostStatus() {
+  const el = $('host-status');
+  if (!el) return;
+  const remote = DOCKER_HOST.kind !== 'local' && DOCKER_HOST.kind !== 'unix';
+  el.textContent = DOCKER_HOST.kind === 'local' ? 'Docker: local'
+    : `Docker: ${DOCKER_HOST.label}`;
+  el.title = remote
+    ? `Containers deploy to ${DOCKER_HOST.target} (from DOCKER_HOST/DOCKER_CONTEXT)`
+    : 'Docker daemon on this machine';
+  el.className = 'status' + (remote ? ' warn' : '');
 }
 
 function showGpuDetails() {
@@ -261,6 +351,9 @@ function select(app, deployNow) {
   const body = $('details-body');
   body.classList.remove('hidden');
 
+  // A custom image has no vendor/GPU metadata; render a focused form instead.
+  if (app && app.custom) { renderCustomDetails(app, deployNow); return; }
+
   const gpuAvailable = HOST_GPU.present;
   const modes = (HOST_GPU.modes || ['off']).filter((m) => m !== 'off');
   const recommended = HOST_GPU.recommended && HOST_GPU.recommended !== 'off'
@@ -324,6 +417,18 @@ function select(app, deployNow) {
       <label class="field"><span>Environment (one KEY=VALUE per line)</span><textarea id="env" rows="2" placeholder="TZ=Etc/UTC"></textarea></label>
       <label class="field"><span>Volumes (one host:container per line)</span><textarea id="volumes" rows="2" placeholder="/home/me/work:/work"></textarea></label>
     </details>
+    <details class="profiles">
+      <summary>Saved profiles</summary>
+      <div class="profile-row">
+        <input id="profile-name" type="text" placeholder="Profile name" aria-label="Profile name" />
+        <button class="ghost tiny" id="profile-save">Save</button>
+      </div>
+      <div class="profile-row">
+        <select id="profile-select" aria-label="Saved profiles"></select>
+        <button class="ghost tiny" id="profile-load">Apply</button>
+        <button class="ghost tiny" id="profile-delete">Delete</button>
+      </div>
+    </details>
     <div class="preview-head">
       <span>Command</span>
       <span class="fmt-toggle" role="tablist" aria-label="Preview format">
@@ -346,8 +451,57 @@ function select(app, deployNow) {
   $('fmt-compose').addEventListener('click', () => setFormat('compose'));
   $('gpu-verify').addEventListener('click', showGpuVerify);
   $('deploy').addEventListener('click', deploySelected);
+  $('profile-save').addEventListener('click', saveProfile);
+  $('profile-load').addEventListener('click', () => applyProfile($('profile-select').value));
+  $('profile-delete').addEventListener('click', () => deleteProfile($('profile-select').value));
+  renderProfileOptions();
   updatePreview();
 
+  if (deployNow) deploySelected();
+}
+
+/** Focused deploy form for an arbitrary image reference (no vendor metadata). */
+function renderCustomDetails(app, deployNow) {
+  const body = $('details-body');
+  body.innerHTML = `
+    <h2>Custom image</h2>
+    <div class="sub">Deploy any container image by reference — private registries included.</div>
+    <label class="field"><span>Image reference</span>
+      <input id="custom-ref" type="text" value="${escapeHtml(app.image)}" placeholder="ghcr.io/me/app:tag" />
+      <span class="hint">e.g. <code>ghcr.io/me/app:1.2</code>, <code>registry.local:5000/team/img</code></span>
+    </label>
+    <div class="grid2">
+      <label class="field"><span>Desktop port</span><input id="host-port" type="number" value="3000" min="1" /></label>
+      <label class="field"><span>Dashboard port</span><input id="dash-port" type="number" value="3001" min="0" /></label>
+    </div>
+    <div class="grid2">
+      <label class="field"><span>Container name</span><input id="name" type="text" placeholder="FastVM" /></label>
+      <label class="field"><span>Shared memory</span><input id="shm" type="text" value="2gb" /></label>
+    </div>
+    <details class="advanced">
+      <summary>Advanced options</summary>
+      <div class="grid2">
+        <label class="field"><span>Memory limit</span><input id="memory" type="text" placeholder="e.g. 4g" /></label>
+        <label class="field"><span>CPU limit</span><input id="cpus" type="text" placeholder="e.g. 2" /></label>
+      </div>
+      <label class="field"><span>Environment (one KEY=VALUE per line)</span><textarea id="env" rows="2" placeholder="TZ=Etc/UTC"></textarea></label>
+      <label class="field"><span>Volumes (one host:container per line)</span><textarea id="volumes" rows="2" placeholder="/home/me/work:/work"></textarea></label>
+    </details>
+    <div class="preview-head">
+      <span>Command</span>
+      <button class="ghost tiny" id="copy-cmd">Copy</button>
+    </div>
+    <div class="preview" id="preview">…</div>
+    <button class="primary" id="deploy">⚡ Deploy custom image</button>
+    <p class="result" id="deploy-result"></p>`;
+
+  for (const id of ['custom-ref', 'host-port', 'dash-port', 'name', 'shm', 'memory', 'cpus', 'env', 'volumes']) {
+    $(id).addEventListener('input', () => { CUSTOM_APP.image = $('custom-ref').value; updatePreview(); });
+    $(id).addEventListener('change', () => { CUSTOM_APP.image = $('custom-ref').value; updatePreview(); });
+  }
+  $('copy-cmd').addEventListener('click', () => copyText(LAST_CMD, 'Command'));
+  $('deploy').addEventListener('click', deploySelected);
+  updatePreview();
   if (deployNow) deploySelected();
 }
 
@@ -372,19 +526,25 @@ function encoderLabel(enc) {
 const lines = (v) => String(v || '').split('\n').map((s) => s.trim()).filter(Boolean);
 
 function currentRequest() {
-  return {
-    tag: SELECTED.id,
+  const custom = !!(SELECTED && SELECTED.custom);
+  const req = {
+    tag: custom ? ($('custom-ref').value || '').trim() : SELECTED.id,
     hostPort: Number($('host-port').value) || 0,
     dashboardPort: Number($('dash-port').value) || 0,
     name: $('name').value || null,
     shmSize: $('shm').value || null,
-    gpuMode: $('gpu-mode').value || 'off',
-    encoder: $('encoder').value || null,
     memory: $('memory').value || null,
     cpus: $('cpus').value || null,
     env: lines($('env').value),
     volumes: lines($('volumes').value),
   };
+  if (custom) {
+    req.allowCustom = true;
+  } else {
+    req.gpuMode = $('gpu-mode').value || 'off';
+    req.encoder = $('encoder').value || null;
+  }
+  return req;
 }
 
 let previewTimer = null;
@@ -431,7 +591,8 @@ async function deploySelected() {
     const res = await invoke('deploy', { req: currentRequest() });
     if (res.ok) {
       out.className = 'result ok';
-      out.textContent = `Running. Desktop at http://localhost:${res.host_port}`;
+      const how = res.pulled === false ? 'image already local' : res.pulled ? 'image pulled' : '';
+      out.textContent = `Running${how ? ` (${how})` : ''}. Desktop at http://localhost:${res.host_port}`;
       toast(`Deployed ${SELECTED.name}`);
       openUrl(`http://localhost:${res.host_port}`);
       refreshInstances();
@@ -450,6 +611,14 @@ async function deploySelected() {
 }
 
 // ---------------------------------------------------------------- instances
+
+/** Open the focused form for deploying an arbitrary image reference. */
+function openCustomImage() {
+  CUSTOM_APP = { id: '__custom__', name: 'Custom image', image: '', custom: true };
+  select(CUSTOM_APP);
+  const ref = $('custom-ref');
+  if (ref) ref.focus();
+}
 
 async function refreshInstances() {
   const list = $('instances');
@@ -588,8 +757,10 @@ function bindShortcuts() {
 
 async function init() {
   loadFavorites();
+  loadProfiles();
   $('search').addEventListener('input', renderGrid);
   $('sort').addEventListener('change', (e) => { SORT = e.target.value; renderGrid(); });
+  $('custom-image').addEventListener('click', openCustomImage);
   $('refresh').addEventListener('click', async () => { await refreshInstances(); await refreshStats(); renderInstanceStats(); });
   $('stop-all').addEventListener('click', async () => {
     const n = await invoke('stop_all_instances');
@@ -605,6 +776,7 @@ async function init() {
     APPS = mp.apps;
     DOCKER_OK = mp.docker_available;
     HOST_GPU = mp.gpu || HOST_GPU;
+    if (mp.docker_host) DOCKER_HOST = mp.docker_host;
 
     const status = $('docker-status');
     if (mp.docker_available) {
@@ -614,6 +786,7 @@ async function init() {
       status.textContent = 'Docker not found';
       status.className = 'status err';
     }
+    renderHostStatus();
     renderGpuStatus();
     renderTabs();
     renderGrid();

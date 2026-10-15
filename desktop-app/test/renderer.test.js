@@ -60,6 +60,7 @@ const NO_GPU = {
 async function boot({
   gpu = AMD_GPU,
   docker = { available: true, version: '27.3.1' },
+  dockerHost = { kind: 'local', target: '', label: 'local' },
   instances = [{ id: 'abc', name: 'FastVM-pearOS', image: 'ghcr.io/cloudcompile/fastvm:pearos-latest', state: 'running', status: 'Up 2 minutes', desktop_port: 3000, dashboard_port: 3001 }],
   stats = [{ id: 'abc', cpu: '1.24%', mem: '256MiB / 8GiB' }],
 } = {}) {
@@ -81,7 +82,7 @@ async function boot({
         calls.push({ cmd, args });
         switch (cmd) {
           case 'marketplace':
-            return { apps: APPS, variant_count: 236, docker_available: docker.available, docker_version: docker.available ? docker.version : null, gpu };
+            return { apps: APPS, variant_count: 236, docker_available: docker.available, docker_version: docker.available ? docker.version : null, docker_host: dockerHost, gpu };
           case 'preview_run_args': {
             const r = args.req;
             const out = ['docker', 'run', '-d'];
@@ -105,7 +106,8 @@ async function boot({
             for (const e of modeEnv) out.push('-e', e);
             for (const e of r.env || []) out.push('-e', e);
             for (const v of r.volumes || []) out.push('-v', v);
-            out.push(`ghcr.io/cloudcompile/fastvm:${r.tag}`);
+            // Custom refs go through verbatim; catalog tags get the registry.
+            out.push(r.allowCustom ? r.tag : `ghcr.io/cloudcompile/fastvm:${r.tag}`);
             return out.join(' ');
           }
           case 'list_instances':
@@ -346,4 +348,49 @@ test('clicking the GPU status shows host details', async () => {
   doc.getElementById('gpu-status').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   const toast = doc.getElementById('toast');
   assert.match(toast.textContent, /ROCm compute/);
+});
+
+test('the header reports a remote Docker host', async () => {
+  const { doc } = await boot({ dockerHost: { kind: 'ssh', target: 'me@homelab', label: 'remote · ssh me@homelab' } });
+  const host = doc.getElementById('host-status');
+  assert.match(host.textContent, /ssh me@homelab/);
+  assert.ok(host.classList.contains('warn'));
+
+  const local = await boot();
+  assert.match(local.doc.getElementById('host-status').textContent, /local/);
+});
+
+test('saving and applying a deploy profile round-trips the fields', async () => {
+  const { window, doc } = await boot();
+  clickCard(window, doc, 'pearOS');
+  await new Promise((r) => setTimeout(r, 200));
+  doc.getElementById('memory').value = '4g';
+  doc.getElementById('env').value = 'TZ=Etc/UTC';
+  doc.getElementById('profile-name').value = 'big';
+  doc.getElementById('profile-save').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  assert.ok(window.localStorage.getItem('fastvm.profiles').includes('big'));
+
+  // Change the fields, then re-apply the profile and expect them back.
+  doc.getElementById('memory').value = '1g';
+  doc.getElementById('env').value = '';
+  const opt = [...doc.getElementById('profile-select').options].find((o) => o.value === 'big');
+  assert.ok(opt, 'profile appears in the picker');
+  doc.getElementById('profile-select').value = 'big';
+  doc.getElementById('profile-load').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  assert.equal(doc.getElementById('memory').value, '4g');
+  assert.equal(doc.getElementById('env').value, 'TZ=Etc/UTC');
+});
+
+test('the custom image entry deploys a raw reference', async () => {
+  const { window, doc, calls } = await boot();
+  doc.getElementById('custom-image').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  doc.getElementById('custom-ref').value = 'ghcr.io/me/app:1.2';
+  doc.getElementById('custom-ref').dispatchEvent(new window.Event('input'));
+  await new Promise((r) => setTimeout(r, 200));
+  assert.match(doc.getElementById('preview').textContent, /ghcr\.io\/me\/app:1\.2/);
+  const last = calls.filter((c) => c.cmd === 'preview_run_args').pop();
+  assert.equal(last.args.req.allowCustom, true);
+  assert.equal(last.args.req.tag, 'ghcr.io/me/app:1.2');
+  // No vendor-only fields are shown for a custom image.
+  assert.equal(doc.getElementById('gpu-mode'), null);
 });

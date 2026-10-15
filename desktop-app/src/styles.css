@@ -52,7 +52,16 @@ button.status { cursor: pointer; }
 .status:hover { border-color: var(--accent); }
 .status.ok { color: var(--ok); border-color: rgba(52, 211, 153, 0.4); }
 .status.err { color: var(--err); border-color: rgba(248, 113, 113, 0.4); }
+.status.warn { color: #fbbf24; border-color: rgba(251, 191, 36, 0.45); }
 .statuses { display: flex; gap: 8px; align-items: center; }
+
+.store-actions { display: flex; align-items: center; gap: 10px; }
+.profiles { margin: 4px 0 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+.profiles summary { cursor: pointer; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
+.profiles summary:hover { color: var(--text); }
+.profile-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.profile-row input, .profile-row select { flex: 1; min-width: 0; }
+.profile-row button { white-space: nowrap; }
 
 .store-head { display: flex; justify-content: space-between; align-items: center; padding: 0 2px 8px; font-size: 12px; }
 .sort-wrap { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }

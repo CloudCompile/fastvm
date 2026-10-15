@@ -16,6 +16,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::marketplace,
             commands::detect_gpu,
+            commands::docker_host,
             commands::preview_run_args,
             commands::preview_compose,
             commands::gpu_verify,

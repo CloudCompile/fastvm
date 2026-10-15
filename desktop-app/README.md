@@ -51,6 +51,17 @@ terminal required. Runs on Linux, Windows, and macOS.
   (with the GPU stanza and environment) alongside the `docker run` command.
 - **Advanced run options** — set memory and CPU limits, environment variables,
   and bind mounts; all flow into the previewed command.
+- **Deploy profiles** — snapshot the whole deploy config (ports, GPU mode,
+  encoder, limits, env, volumes) under a name per app and re-apply it later.
+  Stored locally; handy for "the way I always run this one".
+- **Custom images** — a **＋ Custom image** entry deploys any container image by
+  reference (`ghcr.io/me/app:tag`, a private registry), not just catalog tags.
+  The reference is validated in the backend before it reaches Docker.
+- **Remote Docker hosts** — the header shows where the CLI actually deploys. If
+  `DOCKER_HOST` / `DOCKER_CONTEXT` point at an `ssh://` or `tcp://` daemon, the
+  app says so (and warns) instead of silently shipping containers elsewhere.
+- **Visible pull** — deploy pulls the image first and reports whether it was
+  downloaded or already local, so the long first-run wait is no longer a stall.
 - **Instance manager** — see running containers with **Open / Dashboard / Logs /
   Stop / Remove**, refreshed automatically, with live CPU/memory stats and
   live-tailing logs. **Stop all** shuts down every running instance at once.

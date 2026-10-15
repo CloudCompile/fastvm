@@ -14,6 +14,7 @@
     </div>
     <div class="statuses">
       <button class="status" id="gpu-status" title="Host graphics hardware" aria-haspopup="dialog">GPU…</button>
+      <div class="status" id="host-status" title="Docker host">Docker…</div>
       <div class="status" id="docker-status" title="Docker daemon">Checking Docker…</div>
     </div>
   </header>
@@ -24,13 +25,16 @@
     <section class="store">
       <div class="store-head">
         <span id="result-count" class="muted"></span>
-        <label class="sort-wrap">Sort
-          <select id="sort" aria-label="Sort apps">
-            <option value="featured">Featured</option>
-            <option value="name">Name (A→Z)</option>
-            <option value="ram">Lightest first</option>
-          </select>
-        </label>
+        <div class="store-actions">
+          <button class="ghost tiny" id="custom-image" title="Deploy any container image by reference">＋ Custom image</button>
+          <label class="sort-wrap">Sort
+            <select id="sort" aria-label="Sort apps">
+              <option value="featured">Featured</option>
+              <option value="name">Name (A→Z)</option>
+              <option value="ram">Lightest first</option>
+            </select>
+          </label>
+        </div>
       </div>
       <div class="grid" id="grid" role="list"></div>
       <p class="empty hidden" id="no-results">No apps match your search.</p>

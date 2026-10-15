@@ -123,6 +123,72 @@ impl Output {
     }
 }
 
+/// Which Docker daemon the CLI talks to, and how.
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct DockerHost {
+    /// `local`, `unix`, `tcp`, `ssh`, or `context`.
+    pub kind: String,
+    /// The value shown to the user (socket path, `tcp://…`, `ssh://…`, or name).
+    pub target: String,
+    /// Human-readable summary for the header.
+    pub label: String,
+}
+
+impl DockerHost {
+    fn local() -> Self {
+        DockerHost {
+            kind: "local".into(),
+            target: String::new(),
+            label: "local".into(),
+        }
+    }
+}
+
+/// Classify a `DOCKER_HOST` value into a [`DockerHost`]. Pure, for testing.
+///
+/// The Docker CLI accepts several schemes; we only need to tell the user where
+/// their containers actually run, so this is a display-level classification.
+pub fn classify_host(raw: &str) -> DockerHost {
+    let raw = raw.trim();
+    if raw.is_empty() {
+        return DockerHost::local();
+    }
+    let (kind, target) = if let Some(rest) = raw.strip_prefix("ssh://") {
+        ("ssh", rest)
+    } else if let Some(rest) = raw.strip_prefix("tcp://") {
+        ("tcp", rest)
+    } else if let Some(rest) = raw.strip_prefix("http://") {
+        ("tcp", rest)
+    } else if let Some(rest) = raw.strip_prefix("https://") {
+        ("tcp", rest)
+    } else if let Some(rest) = raw.strip_prefix("unix://") {
+        ("unix", rest)
+    } else {
+        ("unix", raw)
+    };
+    let label = match kind {
+        "ssh" => format!("remote · ssh {target}"),
+        "tcp" => format!("remote · tcp {target}"),
+        _ => "local socket".to_string(),
+    };
+    DockerHost { kind: kind.into(), target: target.to_string(), label }
+}
+
+/// The daemon the CLI will use, from `DOCKER_HOST` / `DOCKER_CONTEXT`.
+pub fn host() -> DockerHost {
+    if let Ok(h) = std::env::var("DOCKER_HOST") {
+        if !h.trim().is_empty() {
+            return classify_host(&h);
+        }
+    }
+    if let Ok(c) = std::env::var("DOCKER_CONTEXT") {
+        if !c.trim().is_empty() && c != "default" {
+            return DockerHost { kind: "context".into(), target: c.clone(), label: format!("context · {c}") };
+        }
+    }
+    DockerHost::local()
+}
+
 /// Run the Docker CLI with an explicit argument vector.
 pub fn docker(args: &[String]) -> Output {
     match Command::new("docker").args(args).output() {
@@ -162,6 +228,12 @@ pub fn list() -> Result<Vec<Instance>, String> {
         return Err(out.stderr.trim().to_string());
     }
     Ok(parse_ps(&out.stdout))
+}
+
+/// Pull an image, returning the CLI output. Deploy pulls first so the long
+/// first-run download is visible (and reported) before the container starts.
+pub fn pull(image: &str) -> Output {
+    docker(&["pull".into(), image.to_string()])
 }
 
 /// One-shot resource sample for the given container ids.
@@ -233,5 +305,24 @@ mod tests {
         assert!(parse_stats_line("").is_none());
         assert!(parse_stats_line("not json").is_none());
         assert_eq!(parse_stats("nope\n").len(), 0);
+    }
+
+    #[test]
+    fn classifies_local_and_remote_hosts() {
+        assert_eq!(classify_host("").kind, "local");
+        assert_eq!(classify_host("  ").kind, "local");
+
+        let unix = classify_host("unix:///var/run/docker.sock");
+        assert_eq!(unix.kind, "unix");
+        assert_eq!(unix.target, "/var/run/docker.sock");
+
+        let ssh = classify_host("ssh://me@homelab");
+        assert_eq!(ssh.kind, "ssh");
+        assert_eq!(ssh.target, "me@homelab");
+        assert!(ssh.label.contains("homelab"));
+
+        let tcp = classify_host("tcp://10.0.0.5:2375");
+        assert_eq!(tcp.kind, "tcp");
+        assert_eq!(tcp.target, "10.0.0.5:2375");
     }
 }

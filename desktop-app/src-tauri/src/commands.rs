@@ -24,6 +24,8 @@ pub struct Marketplace {
     pub variant_count: usize,
     pub docker_available: bool,
     pub docker_version: Option<String>,
+    /// Where the Docker CLI is actually talking (`local`, `ssh`, `tcp`, …).
+    pub docker_host: docker::DockerHost,
     pub gpu: GpuInfo,
 }
 
@@ -35,8 +37,17 @@ pub fn marketplace() -> Marketplace {
         variant_count: catalog::variant_count(),
         docker_available: version.is_some(),
         docker_version: version,
+        docker_host: docker::host(),
         gpu: gpu::detect(),
     }
+}
+
+/// The Docker daemon the CLI is configured to use (from `DOCKER_HOST` /
+/// `DOCKER_CONTEXT`). Lets the UI say "remote · ssh homelab" instead of
+/// silently deploying to a different machine than the user expects.
+#[command]
+pub fn docker_host() -> docker::DockerHost {
+    docker::host()
 }
 
 /// Host GPU detection, for the UI to gate the passthrough toggle.
@@ -68,11 +79,34 @@ pub struct PreviewRequest {
     pub cpus: Option<String>,
     pub env: Option<Vec<String>>,
     pub volumes: Option<Vec<String>>,
+    /// Allow a free-form image reference (private registry, `ghcr.io/me/x:tag`)
+    /// instead of a catalog tag. Only honored for the custom marketplace entry.
+    pub allow_custom: Option<bool>,
+}
+
+/// Whether a free-form image reference is safe to pass to Docker.
+///
+/// Allows a registry host, path, and tag/digest (`ghcr.io/me/app:1.2`,
+/// `registry:5000/x@sha256:…`) but rejects anything with whitespace, shell
+/// metacharacters, or a leading `-` (which Docker would read as a flag).
+pub fn is_custom_ref(s: &str) -> bool {
+    let s = s.trim();
+    if s.is_empty() || s.starts_with('-') || s.len() > 512 {
+        return false;
+    }
+    s.chars().all(|c| {
+        c.is_ascii_alphanumeric() || matches!(c, '/' | ':' | '.' | '_' | '-' | '@' | '+')
+    }) && s.contains(|c: char| c.is_ascii_alphanumeric())
 }
 
 /// Turn a preview request into a validated run spec.
 fn spec_from_preview(req: &PreviewRequest) -> RunSpec {
-    let image = if req.tag.contains(':') { req.tag.clone() } else { catalog::image_ref(&req.tag) };
+    let custom = req.allow_custom.unwrap_or(false);
+    let image = if req.tag.contains(':') || custom {
+        req.tag.clone()
+    } else {
+        catalog::image_ref(&req.tag)
+    };
     RunSpec {
         image,
         host_port: req.host_port.unwrap_or(0),
@@ -95,6 +129,9 @@ fn spec_from_preview(req: &PreviewRequest) -> RunSpec {
 /// `deploy` actually runs - both go through `catalog::build_run_args`.
 #[command]
 pub fn preview_run_args(req: PreviewRequest) -> Result<String, String> {
+    if req.allow_custom.unwrap_or(false) && !is_custom_ref(&req.tag) {
+        return Err(format!("invalid image reference: {}", req.tag));
+    }
     let args = catalog::build_run_args(&spec_from_preview(&req))?;
     Ok(format!("docker {}", args.join(" ")))
 }
@@ -102,6 +139,9 @@ pub fn preview_run_args(req: PreviewRequest) -> Result<String, String> {
 /// The same deploy, rendered as a `docker-compose.yml` service.
 #[command]
 pub fn preview_compose(req: PreviewRequest) -> Result<String, String> {
+    if req.allow_custom.unwrap_or(false) && !is_custom_ref(&req.tag) {
+        return Err(format!("invalid image reference: {}", req.tag));
+    }
     catalog::build_compose(&spec_from_preview(&req))
 }
 
@@ -143,6 +183,8 @@ pub struct DeployRequest {
     pub encoder: Option<String>,
     pub env: Option<Vec<String>>,
     pub volumes: Option<Vec<String>>,
+    /// Allow a free-form image reference (see [`PreviewRequest::allow_custom`]).
+    pub allow_custom: Option<bool>,
 }
 
 #[derive(Serialize)]
@@ -153,14 +195,23 @@ pub struct DeployResult {
     pub host_port: u16,
     pub dashboard_port: u16,
     pub args: Vec<String>,
+    /// `pulled` when the image was downloaded, `cached` when it was already
+    /// present. `None` if the pull was skipped.
+    pub pulled: Option<bool>,
     pub error: Option<String>,
 }
 
 /// One-click deploy: build the run args, start the container, return the URLs.
 #[command]
 pub fn deploy(req: DeployRequest) -> Result<DeployResult, String> {
-    // Reject unknown tags early instead of starting a doomed pull.
-    if !is_known_tag(&req.tag) {
+    let custom = req.allow_custom.unwrap_or(false);
+    // Reject unknown tags early instead of starting a doomed pull. A custom
+    // entry may name any valid image reference.
+    if custom {
+        if !is_custom_ref(&req.tag) {
+            return Err(format!("invalid image reference: {}", req.tag));
+        }
+    } else if !is_known_tag(&req.tag) {
         return Err(format!("unknown image tag: {}", req.tag));
     }
 
@@ -189,9 +240,29 @@ pub fn deploy(req: DeployRequest) -> Result<DeployResult, String> {
         cpus: req.cpus.clone(),
         env: req.env.clone(),
         volumes: req.volumes.clone(),
+        allow_custom: req.allow_custom,
     };
     let spec = spec_from_preview(&preview);
     let image = spec.image.clone();
+
+    // Pull first so the (potentially long) first-run download is reported
+    // separately from the container start, instead of a silent stall in `run`.
+    let pulled = match docker::pull(&image) {
+        out if out.ok() => Some(!out.stdout.contains("Image is up to date")),
+        out => {
+            return Ok(DeployResult {
+                ok: false,
+                container_id: String::new(),
+                image,
+                host_port,
+                dashboard_port,
+                args: vec![],
+                pulled: Some(false),
+                error: Some(out.stderr.trim().to_string()),
+            })
+        }
+    };
+
     let args = catalog::build_run_args(&spec)?;
     let out = docker::docker(&args);
     Ok(DeployResult {
@@ -201,6 +272,7 @@ pub fn deploy(req: DeployRequest) -> Result<DeployResult, String> {
         host_port,
         dashboard_port,
         args,
+        pulled,
         error: if out.ok() { None } else { Some(out.stderr.trim().to_string()) },
     })
 }
@@ -378,6 +450,47 @@ mod tests {
         assert!(is_known_tag("xfce4-none-latest"));
         assert!(is_known_tag("kde-gaming-latest"));
         assert!(is_known_tag("browser-latest"));
+    }
+
+    #[test]
+    fn accepts_safe_custom_refs() {
+        assert!(is_custom_ref("ghcr.io/me/app:1.2"));
+        assert!(is_custom_ref("registry.local:5000/team/img@sha256:abc123"));
+        assert!(is_custom_ref("ubuntu:22.04"));
+        assert!(is_custom_ref("myimg"));
+    }
+
+    #[test]
+    fn rejects_dangerous_custom_refs() {
+        assert!(!is_custom_ref(""));
+        assert!(!is_custom_ref("   "));
+        assert!(!is_custom_ref("--privileged"));
+        assert!(!is_custom_ref("img; rm -rf /"));
+        assert!(!is_custom_ref("img $(whoami)"));
+        assert!(!is_custom_ref("img\ntag"));
+    }
+
+    #[test]
+    fn custom_preview_uses_the_raw_reference() {
+        let got = preview_run_args(PreviewRequest {
+            tag: "ghcr.io/me/app:1.2".into(),
+            allow_custom: Some(true),
+            ..Default::default()
+        })
+        .unwrap();
+        assert!(got.ends_with("ghcr.io/me/app:1.2"), "{got}");
+        // No catalog registry prefix was prepended.
+        assert!(!got.contains("cloudcompile/fastvm:ghcr.io"));
+    }
+
+    #[test]
+    fn custom_preview_rejects_a_bad_reference() {
+        let err = preview_run_args(PreviewRequest {
+            tag: "--rm".into(),
+            allow_custom: Some(true),
+            ..Default::default()
+        });
+        assert!(err.is_err());
     }
 
     #[test]
