@@ -1,78 +1,27 @@
 // Performance metrics: CPU%, memory, disk usage, network.
-// Reads /proc directly so we don't need a heavyweight dependency.
+//
+// Sampling and broadcast are decoupled: history is filled by the broadcast
+// loop, which only runs work while at least one WebSocket client is connected,
+// and a reading is reused for a short window so concurrent REST requests and
+// the broadcaster share one /proc pass instead of each doing their own.
 
 'use strict';
 const express = require('express');
-const fs = require('fs');
-const { execFileSync } = require('child_process');
 const gpu = require('./gpu');
+const { readCpu, readMem, readDisk, readNet } = require('./perf-core');
 
 const router = express.Router();
-const HISTORY_LEN = 720; // ~1h at 5s cadence
-const history = []; // [{ts, cpu, mem, disk, net}]
+const HISTORY_LEN = 120; // ~10 min at the 5s broadcast cadence
 
-let lastCpu = null;
-function readCpu() {
-    const line = fs.readFileSync('/proc/stat', 'utf8').split('\n')[0];
-    const parts = line.trim().split(/\s+/).slice(1).map(Number);
-    const total = parts.reduce((a, b) => a + b, 0);
-    const idle = parts[3] + (parts[4] || 0);
-    if (!lastCpu) { lastCpu = { total, idle }; return 0; }
-    const dt = total - lastCpu.total;
-    const di = idle - lastCpu.idle;
-    lastCpu = { total, idle };
-    return dt > 0 ? Math.round(((dt - di) * 100) / dt) : 0;
-}
-
-function readMem() {
-    const m = fs.readFileSync('/proc/meminfo', 'utf8');
-    const get = (k) => {
-        const re = new RegExp(`^${k}:\\s+(\\d+)\\s+kB`, 'm');
-        const match = m.match(re);
-        return match ? parseInt(match[1], 10) * 1024 : 0;
-    };
-    const total = get('MemTotal');
-    const avail = get('MemAvailable');
-    return { total, used: total - avail, pct: total ? Math.round(((total - avail) * 100) / total) : 0 };
-}
-
-function readDisk(path) {
-    try {
-        const out = execFileSync('df', ['-PB1', path], { encoding: 'utf8' });
-        const cols = out.trim().split('\n')[1].split(/\s+/);
-        const total = parseInt(cols[1], 10);
-        const used = parseInt(cols[2], 10);
-        return { total, used, pct: total ? Math.round((used * 100) / total) : 0 };
-    } catch {
-        return { total: 0, used: 0, pct: 0 };
-    }
-}
-
-let lastNet = null;
-function readNet() {
-    let rx = 0, tx = 0;
-    try {
-        const lines = fs.readFileSync('/proc/net/dev', 'utf8').split('\n').slice(2);
-        for (const l of lines) {
-            const m = l.trim().match(/^([^:]+):\s+(\d+)(?:\s+\d+){7}\s+(\d+)/);
-            if (!m) continue;
-            const iface = m[1].trim();
-            if (iface === 'lo') continue;
-            rx += parseInt(m[2], 10);
-            tx += parseInt(m[3], 10);
-        }
-    } catch {}
-    if (!lastNet) { lastNet = { rx, tx, ts: Date.now() }; return { rx_bps: 0, tx_bps: 0 }; }
-    const dt = (Date.now() - lastNet.ts) / 1000;
-    const rxBps = dt > 0 ? Math.round((rx - lastNet.rx) / dt) : 0;
-    const txBps = dt > 0 ? Math.round((tx - lastNet.tx) / dt) : 0;
-    lastNet = { rx, tx, ts: Date.now() };
-    return { rx_bps: rxBps, tx_bps: txBps };
-}
+const history = [];
+let lastSample = null;
+let lastSampleAtMs = 0;
+let lastHistoryAtMs = 0;
 
 function sample() {
-    const sample = {
-        ts: Date.now(),
+    const ts = Date.now();
+    const value = {
+        ts,
         cpu: readCpu(),
         mem: readMem(),
         disk: readDisk(process.env.FASTVM_DATA_ROOT || '/config'),
@@ -80,21 +29,45 @@ function sample() {
         net: readNet(),
         gpu: gpu.readGpu(),
     };
-    history.push(sample);
-    if (history.length > HISTORY_LEN) history.shift();
-    return sample;
+    lastSample = value;
+    lastSampleAtMs = ts;
+    return value;
 }
 
-router.get('/current', (_req, res) => res.json(history[history.length - 1] || sample()));
+// Reuse a fresh reading (within half a broadcast interval) so a REST request
+// landing in the same tick as the broadcaster does not re-read /proc.
+function currentSample() {
+    const now = Date.now();
+    if (lastSample && now - lastSampleAtMs < 2500) return lastSample;
+    return sample();
+}
+
+// Append to history at most once per broadcast interval, so REST polling
+// cannot flood the ring buffer.
+function tick() {
+    const now = Date.now();
+    if (lastSample && now - lastHistoryAtMs < 4500) return lastSample;
+    const value = sample();
+    lastHistoryAtMs = now;
+    history.push(value);
+    if (history.length > HISTORY_LEN) history.shift();
+    return value;
+}
+
+router.get('/current', (_req, res) => res.json(currentSample()));
 router.get('/history', (_req, res) => res.json(history));
 
 function startBroadcaster(wss, intervalMs) {
     const id = setInterval(() => {
-        const s = sample();
-        const payload = JSON.stringify({ type: 'metrics', data: s });
+        // Nothing to compute or send when nobody is listening.
+        const clients = [];
         for (const client of wss.clients) {
-            if (client.readyState === 1) client.send(payload);
+            if (client.readyState === 1) clients.push(client);
         }
+        if (clients.length === 0) return;
+
+        const payload = JSON.stringify({ type: 'metrics', data: tick() });
+        for (const client of clients) client.send(payload);
     }, intervalMs);
     return () => clearInterval(id);
 }

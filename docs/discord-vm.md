@@ -9,10 +9,15 @@ straight into the filesystem.
 
 ```bash
 docker run -d --name fastvm-discord -p 3000:3000 \
+  --shm-size=2g \
   ghcr.io/cloudcompile/fastvm:discord-latest
 ```
 
 Open <http://localhost:3000>. Discord launches fullscreen in an openbox session.
+
+> The `--shm-size` is not optional. Chromium keeps render surfaces in
+> `/dev/shm`; the Docker default is 64 MB, which makes Discord fall back to
+> slow paths or crash on video. Keep it at least 512 MB; 2 GB is comfortable.
 
 ## What is actually installed
 

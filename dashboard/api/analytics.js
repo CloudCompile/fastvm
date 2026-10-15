@@ -8,6 +8,14 @@ const router = express.Router();
 
 const DATA_ROOT = process.env.FASTVM_DATA_ROOT || '/config';
 const ANALYTICS_FILE = path.join(DATA_ROOT, '.fastvm', 'analytics.json');
+const FLUSH_MS = 2000;
+
+// The parsed record is held in memory; disk writes are coalesced so a burst of
+// API requests does not mean a burst of synchronous writes.
+let cache = null;
+let dirty = false;
+let lastFlush = 0;
+let flushTimer = null;
 
 // Initialize analytics file if it doesn't exist
 function ensureAnalyticsFile() {
@@ -40,11 +48,10 @@ function ensureAnalyticsFile() {
   }
 }
 
-function readAnalytics() {
+function loadFromDisk() {
+  ensureAnalyticsFile();
   try {
-    ensureAnalyticsFile();
-    const data = fs.readFileSync(ANALYTICS_FILE, 'utf8');
-    return JSON.parse(data);
+    return JSON.parse(fs.readFileSync(ANALYTICS_FILE, 'utf8'));
   } catch (e) {
     console.error(`[analytics] failed to read analytics: ${e.message}`);
     return {
@@ -57,12 +64,36 @@ function readAnalytics() {
   }
 }
 
-function writeAnalytics(data) {
+function readAnalytics() {
+  if (!cache) cache = loadFromDisk();
+  return cache;
+}
+
+function flush() {
+  if (!dirty || !cache) return;
   try {
     ensureAnalyticsFile();
-    fs.writeFileSync(ANALYTICS_FILE, JSON.stringify(data, null, 2), 'utf8');
+    fs.writeFileSync(ANALYTICS_FILE, JSON.stringify(cache, null, 2), 'utf8');
+    dirty = false;
   } catch (e) {
     console.error(`[analytics] failed to write analytics: ${e.message}`);
+  }
+}
+
+function writeAnalytics(data) {
+  cache = data;
+  dirty = true;
+  const now = Date.now();
+  if (now - lastFlush >= FLUSH_MS) {
+    flush();
+    lastFlush = now;
+  } else if (!flushTimer) {
+    flushTimer = setTimeout(() => {
+      flushTimer = null;
+      flush();
+      lastFlush = Date.now();
+    }, FLUSH_MS - (now - lastFlush));
+    if (flushTimer.unref) flushTimer.unref();
   }
 }
 
@@ -104,6 +135,7 @@ function trackSessionEnd() {
   }
 
   writeAnalytics(analytics);
+  flush(); // synchronous: the process is about to exit
   console.log(`[analytics] session ended: ${sessionId} (active: ${analytics.activeSessionCount})`);
   sessionId = null;
 }

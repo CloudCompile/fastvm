@@ -68,6 +68,10 @@ function errorResponse(res, status, message, code) {
 
 // ---------------------------------------------------------------- app setup
 const app = express();
+// API responses are live and must never be served as a stale 304, so disable
+// ETag generation for dynamic responses (static assets keep their own ETag).
+app.disable('etag');
+app.disable('x-powered-by');
 app.use(express.json({ limit: '12mb' }));
 app.use(express.static(path.join(__dirname), { index: 'index.html' }));
 

@@ -97,4 +97,22 @@ test('gpu endpoints flag compute-only accelerators', async () => {
     assert.equal(metrics.body.recommended_encoder, 'software');
 });
 
+test('performance current reuses a recent reading', async () => {
+    const first = await request('GET', '/api/performance/current', undefined, 'test-token');
+    const second = await request('GET', '/api/performance/current', undefined, 'test-token');
+    assert.equal(first.status, 200);
+    assert.equal(second.status, 200);
+    // Both requests land inside the reuse window, so they share one reading.
+    assert.equal(first.body.ts, second.body.ts);
+});
+
+test('history does not grow on rapid polling', async () => {
+    const before = (await request('GET', '/api/performance/history', undefined, 'test-token')).body.length;
+    for (let i = 0; i < 5; i += 1) {
+        await request('GET', '/api/performance/current', undefined, 'test-token');
+    }
+    const after = (await request('GET', '/api/performance/history', undefined, 'test-token')).body.length;
+    assert.equal(after, before);
+});
+
 test.after(() => server.close());

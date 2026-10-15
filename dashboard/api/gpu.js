@@ -13,11 +13,23 @@ const router = express.Router();
 const DATA_ROOT = process.env.FASTVM_DATA_ROOT || '/config';
 const GPU_JSON = path.join(DATA_ROOT, '.fastvm', 'gpu.json');
 
+const NVIDIA_TTL_MS = 5000;
+// Capabilities are cached by file mtime: re-read only when the detector
+// rewrites gpu.json. This stays correct if the file changes (unlike a fixed
+// TTL) while avoiding a parse on every sample.
+let capsCache = { mtimeMs: null, value: null };
+let nvidiaCache = { ts: 0, value: [] };
+
 function readCapabilities() {
+    let mtimeMs = -1;
+    try { mtimeMs = fs.statSync(GPU_JSON).mtimeMs; } catch {}
+    if (capsCache.value && capsCache.mtimeMs === mtimeMs) return capsCache.value;
+
+    let value;
     try {
-        return JSON.parse(fs.readFileSync(GPU_JSON, 'utf8'));
+        value = JSON.parse(fs.readFileSync(GPU_JSON, 'utf8'));
     } catch {
-        return {
+        value = {
             detected: false,
             vendor: 'none',
             render_node: '',
@@ -25,15 +37,20 @@ function readCapabilities() {
             recommended_encoder: 'software',
         };
     }
+    capsCache = { mtimeMs, value };
+    return value;
 }
 
 function readNvidiaStats() {
+    const now = Date.now();
+    if (now - nvidiaCache.ts < NVIDIA_TTL_MS) return nvidiaCache.value;
+    let value = [];
     try {
         const out = execFileSync('nvidia-smi', [
             '--query-gpu=index,name,utilization.gpu,memory.used,memory.total,temperature.gpu',
             '--format=csv,noheader,nounits',
-        ], { encoding: 'utf8', timeout: 4000 });
-        return out.trim().split('\n').filter(Boolean).map((line) => {
+        ], { encoding: 'utf8', timeout: 3000 });
+        value = out.trim().split('\n').filter(Boolean).map((line) => {
             const [index, name, util, memUsed, memTotal, temp] = line.split(',').map((s) => s.trim());
             return {
                 index: parseInt(index, 10),
@@ -45,8 +62,10 @@ function readNvidiaStats() {
             };
         });
     } catch {
-        return [];
+        value = [];
     }
+    nvidiaCache = { ts: now, value };
+    return value;
 }
 
 // Compact snapshot used by the WebSocket broadcaster.
