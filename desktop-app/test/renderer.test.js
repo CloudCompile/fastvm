@@ -36,17 +36,24 @@ const APPS = [
 ];
 
 const AMD_GPU = {
-  present: true, vendor: 'amd', render_node: '/dev/dri/renderD128', devices: [],
-  kfd: true, toolkit: false, modes: ['rocm', 'drm', 'off'], recommended: 'rocm',
+  present: true, vendor: 'amd', render_node: '/dev/dri/renderD128',
+  devices: [{ node: 'card0', vendor: 'amd', driver: 'amdgpu', vram_bytes: 17_179_869_184 }],
+  kfd: true, toolkit: false, modes: ['rocm', 'drm', 'off'], encoders: ['vaapi', 'software'], recommended: 'rocm',
 };
 const NVIDIA_GPU = {
-  present: true, vendor: 'nvidia', render_node: '/dev/dri/renderD128', devices: [],
-  kfd: false, toolkit: false, modes: ['nvidia', 'drm', 'off'], recommended: 'nvidia',
+  present: true, vendor: 'nvidia', render_node: '/dev/dri/renderD128',
+  devices: [{ node: 'card0', vendor: 'nvidia', driver: 'nvidia', vram_bytes: null }],
+  kfd: false, toolkit: false, modes: ['nvidia', 'drm', 'off'], encoders: ['nvenc', 'software'], recommended: 'nvidia',
   warning: 'NVIDIA container toolkit not detected — install it and run `nvidia-ctk runtime configure --runtime=docker` before using --gpus',
+};
+const INTEL_GPU = {
+  present: true, vendor: 'intel', render_node: '/dev/dri/renderD128',
+  devices: [{ node: 'card0', vendor: 'intel', driver: 'i915', vram_bytes: null }],
+  kfd: false, toolkit: false, modes: ['drm', 'off'], encoders: ['qsv', 'vaapi', 'software'], recommended: 'drm',
 };
 const NO_GPU = {
   present: false, vendor: 'none', render_node: null, devices: [],
-  kfd: false, toolkit: false, modes: ['off'], recommended: 'off',
+  kfd: false, toolkit: false, modes: ['off'], encoders: ['software'], recommended: 'off',
 };
 
 /** Build a jsdom window with the app loaded and the Tauri bridge stubbed. */
@@ -88,11 +95,12 @@ async function boot({
             if (mode === 'nvidia') out.push('--gpus', 'all');
             else if (mode === 'rocm') out.push('--device', '/dev/dri', '--device', '/dev/kfd', '--group-add', 'keep-groups');
             else if (mode === 'drm') out.push('--device', '/dev/dri');
-            // Mirror the backend's mode-implied env.
+            // Mirror the backend's mode-implied env; drm/nvidia honour the encoder.
+            const enc = r.encoder || ({ drm: 'vaapi', nvidia: 'nvenc', rocm: 'software' }[mode]);
             const modeEnv = {
-              drm: ['FASTVM_GPU_HW=true', 'FASTVM_RECORDING_ENCODER=vaapi'],
+              drm: ['FASTVM_GPU_HW=true', `FASTVM_RECORDING_ENCODER=${enc}`],
               rocm: ['DISABLE_DRI=1', 'FASTVM_GPU_HW=false', 'FASTVM_RECORDING_ENCODER=software'],
-              nvidia: ['NVIDIA_DRIVER_CAPABILITIES=compute,video,utility', 'FASTVM_RECORDING_ENCODER=nvenc'],
+              nvidia: ['NVIDIA_DRIVER_CAPABILITIES=compute,video,utility', `FASTVM_RECORDING_ENCODER=${enc}`],
             }[mode] || [];
             for (const e of modeEnv) out.push('-e', e);
             for (const e of r.env || []) out.push('-e', e);
@@ -239,6 +247,30 @@ test('advanced options flow into the preview', async () => {
   assert.match(cmd, /--memory 4g/);
   assert.match(cmd, /-e TZ=Etc\/UTC/);
   assert.match(cmd, /-v \/tmp\/work:\/work/);
+});
+
+test('the encoder selector defaults per vendor and flows into the preview', async () => {
+  const intel = await boot({ gpu: INTEL_GPU });
+  clickCard(intel.window, intel.doc, 'Gaming Rig');
+  await new Promise((r) => setTimeout(r, 200));
+  const sel = intel.doc.getElementById('encoder');
+  assert.deepEqual([...sel.options].map((o) => o.value), ['qsv', 'vaapi', 'software']);
+  assert.equal(sel.value, 'qsv', 'Intel defaults to Quick Sync');
+  assert.match(intel.doc.getElementById('preview').textContent, /FASTVM_RECORDING_ENCODER=qsv/);
+
+  // Choosing VA-API changes the injected env.
+  sel.value = 'vaapi';
+  sel.dispatchEvent(new intel.window.Event('change'));
+  await new Promise((r) => setTimeout(r, 200));
+  assert.match(intel.doc.getElementById('preview').textContent, /FASTVM_RECORDING_ENCODER=vaapi/);
+});
+
+test('host details list the device driver and VRAM', async () => {
+  const { window, doc } = await boot();
+  doc.getElementById('gpu-status').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const toast = doc.getElementById('toast');
+  assert.match(toast.textContent, /amdgpu/);
+  assert.match(toast.textContent, /16\.0 GB VRAM/);
 });
 
 test('the verify button opens a modal with backend steps', async () => {

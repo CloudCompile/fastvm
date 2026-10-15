@@ -331,6 +331,9 @@ pub struct RunSpec {
     pub gpu: bool,
     /// Acceleration flags to add; overrides the legacy `gpu` bool when not `Off`.
     pub gpu_mode: GpuMode,
+    /// Encoder to request (`vaapi`, `qsv`, `nvenc`, `software`). `None` uses the
+    /// mode's default. Ignored for `Off` and `Rocm`.
+    pub encoder: Option<String>,
     pub env: Vec<String>,
     pub volumes: Vec<String>,
 }
@@ -376,7 +379,7 @@ pub fn build_run_args(spec: &RunSpec) -> Result<Vec<String>, String> {
     args.extend(mode.run_flags().into_iter().map(String::from));
     // Mode-implied env (hardware rendering, encoder) goes first so a user's own
     // `-e` value later on the command line still wins.
-    for (k, v) in mode.env() {
+    for (k, v) in mode.env(spec.encoder.as_deref()) {
         args.push("-e".into());
         args.push(format!("{k}={v}"));
     }
@@ -441,7 +444,7 @@ pub fn build_compose(spec: &RunSpec) -> Result<String, String> {
         }
         GpuMode::Off => {}
     }
-    let mode_env = mode.env();
+    let mode_env = mode.env(spec.encoder.as_deref());
     if !spec.env.is_empty() || !mode_env.is_empty() {
         y.push_str("    environment:\n");
         for (k, v) in &mode_env {

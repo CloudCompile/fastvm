@@ -39,8 +39,12 @@ terminal required. Runs on Linux, Windows, and macOS.
   from `docs/gpu.md` (`FASTVM_GPU_HW`, `FASTVM_RECORDING_ENCODER`, `DISABLE_DRI`,
   `NVIDIA_DRIVER_CAPABILITIES`) so the desktop and encoder actually use the
   device. Your own `-e` values are appended after and therefore win.
+- **Encoder picker** — the video encoder (`nvenc`, `qsv`, `vaapi`, `software`) is
+  chosen per vendor: Intel defaults to Quick Sync, NVIDIA to NVENC, AMD to VA-API.
 - **Host warnings** — the backend flags missing NVIDIA container toolkit and
   compute-only accelerators (e.g. MI300X) in the details panel.
+- **Device details** — the GPU status click-through lists each card with its
+  kernel driver (`amdgpu`/`i915`/`nvidia`) and, where the kernel exposes it, VRAM.
 - **Verify in container** — a button shows the `nvidia-smi` / `rocm-smi` /
   `vainfo` commands that prove the chosen mode is delivering the GPU.
 - **Compose output** — the same deploy renders as a `docker-compose.yml` service

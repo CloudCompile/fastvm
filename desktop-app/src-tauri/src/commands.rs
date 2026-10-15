@@ -62,6 +62,8 @@ pub struct PreviewRequest {
     pub gpu: Option<bool>,
     /// One of `off`, `drm`, `rocm`, `nvidia`; wins over `gpu` when set.
     pub gpu_mode: Option<String>,
+    /// Encoder to request (`vaapi`, `qsv`, `nvenc`, `software`); defaults per mode.
+    pub encoder: Option<String>,
     pub memory: Option<String>,
     pub cpus: Option<String>,
     pub env: Option<Vec<String>>,
@@ -81,6 +83,7 @@ fn spec_from_preview(req: &PreviewRequest) -> RunSpec {
         cpus: req.cpus.clone().filter(|s| !s.is_empty()),
         gpu: req.gpu.unwrap_or(false),
         gpu_mode: parse_gpu_mode(req.gpu_mode.as_deref()),
+        encoder: req.encoder.clone().filter(|s| !s.is_empty()),
         env: req.env.clone().unwrap_or_default(),
         volumes: req.volumes.clone().unwrap_or_default(),
     }
@@ -136,6 +139,8 @@ pub struct DeployRequest {
     pub gpu: Option<bool>,
     /// One of `off`, `drm`, `rocm`, `nvidia`; wins over `gpu` when set.
     pub gpu_mode: Option<String>,
+    /// Encoder to request (`vaapi`, `qsv`, `nvenc`, `software`); defaults per mode.
+    pub encoder: Option<String>,
     pub env: Option<Vec<String>>,
     pub volumes: Option<Vec<String>>,
 }
@@ -179,6 +184,7 @@ pub fn deploy(req: DeployRequest) -> Result<DeployResult, String> {
         shm_size: req.shm_size.clone(),
         gpu: req.gpu,
         gpu_mode: req.gpu_mode.clone(),
+        encoder: req.encoder.clone(),
         memory: req.memory.clone(),
         cpus: req.cpus.clone(),
         env: req.env.clone(),

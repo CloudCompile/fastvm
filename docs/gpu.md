@@ -217,12 +217,16 @@ The Tauri desktop app (`desktop-app/`) mirrors all of the above without you
 having to remember the flags:
 
 - It detects the host GPU (render node, `/dev/kfd`, NVIDIA container toolkit,
-  compute-only parts) and offers only the modes the host can actually use.
+  compute-only parts) and offers only the modes the host can actually use. Each
+  card is reported with its kernel driver and, where exposed, VRAM.
 - The recommended mode is preselected, and picking it injects the matching
   device flags **and** the container-side environment from this document
   (`FASTVM_GPU_HW`, `FASTVM_RECORDING_ENCODER`, `DISABLE_DRI`,
   `NVIDIA_DRIVER_CAPABILITIES`). Any `-e` you add in *Advanced options* is
   appended after, so it overrides the mode default.
+- A video-encoder picker offers the encoders the vendor supports (`nvenc`,
+  `qsv`, `vaapi`, `software`), defaulting to Quick Sync on Intel, NVENC on
+  NVIDIA, and VA-API on AMD.
 - The previewed `docker run` and generated `docker-compose.yml` both include the
   mode's devices and environment.
 - **Verify in container** shows the exact `rocm-smi` / `nvidia-smi` / `vainfo` /

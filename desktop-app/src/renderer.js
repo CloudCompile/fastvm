@@ -19,7 +19,7 @@ let APPS = [];
 let FILTER = 'All';
 let SELECTED = null;
 let DOCKER_OK = false;
-let HOST_GPU = { present: false, vendor: 'none', render_node: null, devices: [], modes: ['off'], recommended: 'off', toolkit: false, kfd: false };
+let HOST_GPU = { present: false, vendor: 'none', render_node: null, devices: [], modes: ['off'], encoders: ['software'], recommended: 'off', toolkit: false, kfd: false };
 let LAST_CMD = '';
 let INSTANCES_TIMER = null;
 let LOGS_TIMER = null;
@@ -128,13 +128,25 @@ function showGpuDetails() {
     `Vendor: ${HOST_GPU.vendor}`,
     HOST_GPU.render_node ? `Render node: ${HOST_GPU.render_node}` : 'Render node: (none)',
     `Acceleration modes: ${modes}`,
+    `Encoders: ${(HOST_GPU.encoders || ['software']).join(', ')}`,
     `ROCm compute (/dev/kfd): ${HOST_GPU.kfd ? 'present' : 'absent'}`,
     `NVIDIA container toolkit: ${HOST_GPU.toolkit ? 'present' : 'not detected'}`,
   ];
+  for (const d of HOST_GPU.devices || []) {
+    const driver = d.driver ? ` (${d.driver})` : '';
+    const vram = d.vram_bytes ? ` · ${formatBytes(d.vram_bytes)}` : '';
+    lines.push(`  • ${d.node}: ${d.vendor}${driver}${vram}`);
+  }
   if (HOST_GPU.compute_only) {
     lines.push('Compute-only accelerator: no graphics engine — desktop renders on CPU');
   }
   toast(lines.join('  •  '));
+}
+
+function formatBytes(n) {
+  if (!n) return '';
+  const gb = n / 1024 ** 3;
+  return gb >= 1 ? `${gb.toFixed(1)} GB VRAM` : `${Math.round(n / 1024 ** 2)} MB VRAM`;
 }
 
 /// Show, in a modal, the in-container commands that prove the selected GPU mode
@@ -260,6 +272,16 @@ function select(app, deployNow) {
   const gpuHint = gpuAvailable
     ? `Host: ${escapeHtml(HOST_GPU.vendor)}${modes.length ? ' · ' + modes.map((m) => m.toUpperCase()).join('/') : ''}`
     : 'No /dev/dri on this host';
+  // Encoder choices come from the backend (vendor-aware, always ends software).
+  const encoders = HOST_GPU.encoders && HOST_GPU.encoders.length ? HOST_GPU.encoders : ['software'];
+  const defaultEncoder = {
+    nvidia: 'nvenc',
+    drm: encoders.includes('qsv') ? 'qsv' : 'vaapi',
+    rocm: 'software',
+  }[recommended] || 'software';
+  const encoderOptions = encoders
+    .map((e) => `<option value="${e}"${e === defaultEncoder ? ' selected' : ''}>${encoderLabel(e)}</option>`)
+    .join('');
   // The backend computes the warning (toolkit missing, compute-only, …) so the
   // UI never has to re-derive host facts.
   const warn = gpuAvailable && HOST_GPU.warning
@@ -287,6 +309,11 @@ function select(app, deployNow) {
       <span class="hint">${gpuHint}</span>
       <button class="ghost tiny" id="gpu-verify" ${gpuAvailable ? '' : 'disabled'}>Verify in container</button>
     </div>
+    <div class="field">
+      <span>Video encoder</span>
+      <select id="encoder" ${gpuAvailable ? '' : 'disabled'}>${encoderOptions}</select>
+      <span class="hint">Recording/streaming encoder; hardware frees the CPU.</span>
+    </div>
     ${warn}
     <details class="advanced">
       <summary>Advanced options</summary>
@@ -309,7 +336,7 @@ function select(app, deployNow) {
     <button class="primary" id="deploy">⚡ Deploy ${escapeHtml(app.name)}</button>
     <p class="result" id="deploy-result"></p>`;
 
-  for (const id of ['host-port', 'dash-port', 'name', 'shm', 'gpu-mode', 'memory', 'cpus', 'env', 'volumes']) {
+  for (const id of ['host-port', 'dash-port', 'name', 'shm', 'gpu-mode', 'encoder', 'memory', 'cpus', 'env', 'volumes']) {
     $(id).addEventListener('input', updatePreview);
     $(id).addEventListener('change', updatePreview);
   }
@@ -333,6 +360,15 @@ function gpuModeLabel(mode) {
   }[mode] || mode;
 }
 
+function encoderLabel(enc) {
+  return {
+    nvenc: 'NVENC (NVIDIA hardware)',
+    qsv: 'Quick Sync (Intel hardware)',
+    vaapi: 'VA-API (Intel/AMD hardware)',
+    software: 'Software (libx264, CPU)',
+  }[enc] || enc;
+}
+
 const lines = (v) => String(v || '').split('\n').map((s) => s.trim()).filter(Boolean);
 
 function currentRequest() {
@@ -343,6 +379,7 @@ function currentRequest() {
     name: $('name').value || null,
     shmSize: $('shm').value || null,
     gpuMode: $('gpu-mode').value || 'off',
+    encoder: $('encoder').value || null,
     memory: $('memory').value || null,
     cpus: $('cpus').value || null,
     env: lines($('env').value),

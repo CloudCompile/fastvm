@@ -51,23 +51,41 @@ impl GpuMode {
     /// Environment variables the mode should set so the *container* uses the
     /// device. These mirror the session helper in `docs/gpu.md`: `Rocm` disables
     /// DRI3 (no graphics engine on CDNA parts) and pins the encoder to software,
-    /// while `Drm` opts into hardware rendering and the VA-API encoder.
-    pub fn env(self) -> Vec<(&'static str, &'static str)> {
+    /// while `Drm` opts into hardware rendering and a hardware encoder.
+    ///
+    /// `encoder` overrides the mode's default encoder (e.g. `qsv` on Intel).
+    pub fn env(self, encoder: Option<&str>) -> Vec<(&'static str, String)> {
+        let enc = encoder
+            .filter(|e| !e.is_empty())
+            .or_else(|| self.default_encoder())
+            .unwrap_or("software")
+            .to_string();
         match self {
             GpuMode::Off => vec![],
             GpuMode::Drm => vec![
-                ("FASTVM_GPU_HW", "true"),
-                ("FASTVM_RECORDING_ENCODER", "vaapi"),
+                ("FASTVM_GPU_HW", "true".to_string()),
+                ("FASTVM_RECORDING_ENCODER", enc),
             ],
             GpuMode::Rocm => vec![
-                ("DISABLE_DRI", "1"),
-                ("FASTVM_GPU_HW", "false"),
-                ("FASTVM_RECORDING_ENCODER", "software"),
+                ("DISABLE_DRI", "1".to_string()),
+                ("FASTVM_GPU_HW", "false".to_string()),
+                // No VA-API on CDNA parts; the desktop encodes in software.
+                ("FASTVM_RECORDING_ENCODER", "software".to_string()),
             ],
             GpuMode::Nvidia => vec![
-                ("NVIDIA_DRIVER_CAPABILITIES", "compute,video,utility"),
-                ("FASTVM_RECORDING_ENCODER", "nvenc"),
+                ("NVIDIA_DRIVER_CAPABILITIES", "compute,video,utility".to_string()),
+                ("FASTVM_RECORDING_ENCODER", enc),
             ],
+        }
+    }
+
+    /// The encoder the mode prefers when the user does not pick one.
+    pub fn default_encoder(self) -> Option<&'static str> {
+        match self {
+            GpuMode::Off => None,
+            GpuMode::Drm => Some("vaapi"),
+            GpuMode::Rocm => Some("software"),
+            GpuMode::Nvidia => Some("nvenc"),
         }
     }
 
@@ -75,6 +93,26 @@ impl GpuMode {
     pub fn needs_toolkit(self) -> bool {
         self == GpuMode::Nvidia
     }
+}
+
+/// Encoders a set of devices can plausibly use, best first, always ending in
+/// `software`. Mirrors the table in `docs/gpu.md` §2: NVIDIA → `nvenc`,
+/// Intel → `qsv` then `vaapi`, AMD → `vaapi`.
+pub fn available_encoders(devices: &[GpuDevice], compute_only: bool) -> Vec<String> {
+    let has = |v: &str| devices.iter().any(|d| d.vendor == v);
+    let mut out = Vec::new();
+    if has("nvidia") {
+        out.push("nvenc".to_string());
+    }
+    if has("intel") {
+        out.push("qsv".to_string());
+        out.push("vaapi".to_string());
+    }
+    if has("amd") && !compute_only {
+        out.push("vaapi".to_string());
+    }
+    out.push("software".to_string());
+    out
 }
 
 /// The shell commands a user can run *inside a deployed container* to confirm a
@@ -105,6 +143,11 @@ pub struct GpuDevice {
     pub node: String,
     /// Vendor name: `amd`, `intel`, `nvidia`, `virtio`, or `unknown`.
     pub vendor: String,
+    /// Kernel driver from the device `uevent` (e.g. `amdgpu`, `i915`, `nvidia`),
+    /// when readable. A more precise signal than the PCI vendor id.
+    pub driver: Option<String>,
+    /// Total VRAM in bytes (AMD `mem_info_vram_total`), when readable.
+    pub vram_bytes: Option<u64>,
 }
 
 /// Summary of the host's graphics hardware and available acceleration modes.
@@ -124,6 +167,8 @@ pub struct GpuInfo {
     pub compute_only: bool,
     /// Acceleration modes this host can actually offer, best first.
     pub modes: Vec<GpuMode>,
+    /// Encoders this host can plausibly use, best first (always ends `software`).
+    pub encoders: Vec<String>,
     /// The mode to preselect in the UI.
     pub recommended: GpuMode,
     /// A human-readable warning about the recommended mode, if any (e.g. the
@@ -143,6 +188,7 @@ impl GpuInfo {
             toolkit: false,
             compute_only: false,
             modes: vec![GpuMode::Off],
+            encoders: vec!["software".to_string()],
             recommended: GpuMode::Off,
             warning: None,
         }
@@ -203,6 +249,7 @@ pub fn build_info(
     let compute_only = devices.is_empty() && render_node.is_some();
     let present = !devices.is_empty() || compute_only;
     let modes = available_modes(&devices, kfd, compute_only);
+    let encoders = available_encoders(&devices, compute_only);
     let recommended = modes.first().copied().unwrap_or(GpuMode::Off);
     // With no card node we cannot read a PCI vendor; `/dev/kfd` implies AMD.
     let vendor = if devices.is_empty() && kfd {
@@ -234,9 +281,28 @@ pub fn build_info(
         toolkit,
         compute_only,
         modes,
+        encoders,
         recommended,
         warning,
     }
+}
+
+/// Read the kernel driver for one card from its device `uevent`.
+fn read_card_driver(card: &Path) -> Option<String> {
+    let raw = fs::read_to_string(card.join("device/uevent")).ok()?;
+    raw.lines()
+        .find_map(|l| l.strip_prefix("DRIVER="))
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
+/// Read total VRAM in bytes (AMD exposes `mem_info_vram_total`), if present.
+fn read_card_vram(card: &Path) -> Option<u64> {
+    fs::read_to_string(card.join("device/mem_info_vram_total"))
+        .ok()?
+        .trim()
+        .parse::<u64>()
+        .ok()
 }
 
 /// Read the vendor id of one card directory, if readable.
@@ -259,8 +325,14 @@ fn scan_cards(drm: &Path) -> Vec<GpuDevice> {
         if !name.starts_with("card") || name.contains('-') {
             continue;
         }
-        if let Some(vendor) = read_card_vendor(&drm.join(&name)) {
-            out.push(GpuDevice { node: name, vendor });
+        let card = drm.join(&name);
+        if let Some(vendor) = read_card_vendor(&card) {
+            out.push(GpuDevice {
+                node: name,
+                vendor,
+                driver: read_card_driver(&card),
+                vram_bytes: read_card_vram(&card),
+            });
         }
     }
     out
@@ -306,6 +378,11 @@ pub fn detect_at(drm: &Path, dri: &Path, kfd: &Path) -> GpuInfo {
 mod tests {
     use super::*;
 
+    /// A minimal device with no driver/VRAM data, for tests that don't care.
+    fn dev(node: &str, vendor: &str) -> GpuDevice {
+        GpuDevice { node: node.into(), vendor: vendor.into(), driver: None, vram_bytes: None }
+    }
+
     #[test]
     fn vendor_ids_map_to_names() {
         assert_eq!(vendor_name("0x10de"), "nvidia");
@@ -318,10 +395,7 @@ mod tests {
 
     #[test]
     fn discrete_vendor_wins_over_integrated() {
-        let devices = vec![
-            GpuDevice { node: "card0".into(), vendor: "intel".into() },
-            GpuDevice { node: "card1".into(), vendor: "nvidia".into() },
-        ];
+        let devices = vec![dev("card0", "intel"), dev("card1", "nvidia")];
         assert_eq!(headline_vendor(&devices), "nvidia");
     }
 
@@ -349,7 +423,7 @@ mod tests {
 
     #[test]
     fn build_info_reports_presence_and_node() {
-        let devices = vec![GpuDevice { node: "card0".into(), vendor: "amd".into() }];
+        let devices = vec![dev("card0", "amd")];
         let info = build_info(devices, Some("/dev/dri/renderD128".into()), false, false);
         assert!(info.present);
         assert_eq!(info.vendor, "amd");
@@ -359,7 +433,7 @@ mod tests {
 
     #[test]
     fn nvidia_is_recommended_over_drm() {
-        let devices = vec![GpuDevice { node: "card0".into(), vendor: "nvidia".into() }];
+        let devices = vec![dev("card0", "nvidia")];
         let info = build_info(devices, None, false, true);
         assert_eq!(info.recommended, GpuMode::Nvidia);
         assert_eq!(info.modes, vec![GpuMode::Nvidia, GpuMode::Drm, GpuMode::Off]);
@@ -367,11 +441,32 @@ mod tests {
 
     #[test]
     fn rocm_requires_amd_and_kfd() {
-        let amd = vec![GpuDevice { node: "card0".into(), vendor: "amd".into() }];
+        let amd = vec![dev("card0", "amd")];
         assert_eq!(available_modes(&amd, true, false), vec![GpuMode::Rocm, GpuMode::Drm, GpuMode::Off]);
         assert_eq!(available_modes(&amd, false, false), vec![GpuMode::Drm, GpuMode::Off]);
-        let intel = vec![GpuDevice { node: "card0".into(), vendor: "intel".into() }];
+        let intel = vec![dev("card0", "intel")];
         assert_eq!(available_modes(&intel, true, false), vec![GpuMode::Drm, GpuMode::Off]);
+    }
+
+    #[test]
+    fn encoders_follow_the_vendor() {
+        assert_eq!(available_encoders(&[dev("card0", "nvidia")], false), vec!["nvenc", "software"]);
+        assert_eq!(available_encoders(&[dev("card0", "intel")], false), vec!["qsv", "vaapi", "software"]);
+        assert_eq!(available_encoders(&[dev("card0", "amd")], false), vec!["vaapi", "software"]);
+        // No VA-API on compute-only CDNA parts.
+        assert_eq!(available_encoders(&[dev("card0", "amd")], true), vec!["software"]);
+        assert_eq!(available_encoders(&[], false), vec!["software"]);
+    }
+
+    #[test]
+    fn intel_drm_prefers_qsv_when_asked() {
+        assert!(GpuMode::Drm
+            .env(Some("qsv"))
+            .contains(&("FASTVM_RECORDING_ENCODER", "qsv".to_string())));
+        // Default stays vaapi when no encoder is given.
+        assert!(GpuMode::Drm
+            .env(None)
+            .contains(&("FASTVM_RECORDING_ENCODER", "vaapi".to_string())));
     }
 
     #[test]
@@ -393,11 +488,11 @@ mod tests {
 
     #[test]
     fn mode_env_matches_the_gpu_doc() {
-        assert_eq!(GpuMode::Off.env(), Vec::<(&str, &str)>::new());
-        assert!(GpuMode::Drm.env().contains(&("FASTVM_RECORDING_ENCODER", "vaapi")));
-        assert!(GpuMode::Rocm.env().contains(&("DISABLE_DRI", "1")));
-        assert!(GpuMode::Rocm.env().contains(&("FASTVM_RECORDING_ENCODER", "software")));
-        assert!(GpuMode::Nvidia.env().contains(&("FASTVM_RECORDING_ENCODER", "nvenc")));
+        assert_eq!(GpuMode::Off.env(None), Vec::<(&str, String)>::new());
+        assert!(GpuMode::Drm.env(None).contains(&("FASTVM_RECORDING_ENCODER", "vaapi".to_string())));
+        assert!(GpuMode::Rocm.env(None).contains(&("DISABLE_DRI", "1".to_string())));
+        assert!(GpuMode::Rocm.env(None).contains(&("FASTVM_RECORDING_ENCODER", "software".to_string())));
+        assert!(GpuMode::Nvidia.env(None).contains(&("FASTVM_RECORDING_ENCODER", "nvenc".to_string())));
     }
 
     #[test]
