@@ -11,7 +11,7 @@ one click: open the repo in Codespaces and the XFCE4 desktop appears on port
 |------|---------|---------|
 | `onCreateCommand` | `docker pull <published image>` | Pulls the image. Runs at prebuild time and is snapshotted. |
 | `postCreateCommand` | `./fastvm-install.sh --no-build` | Starts FastVM. Falls back to a local build if the pull did not happen. |
-| `postStartCommand` | `docker compose up -d` | Recreates the container on every resume. Idempotent. |
+| `postStartCommand` | `docker compose up -d --no-recreate` | Starts the existing container on every resume. `--no-recreate` avoids reconciling compose config, which would otherwise recompute defaults and discard `config.env`. |
 
 The image is pulled, not built. Every desktop/preset is already published to
 `ghcr.io/cloudcompile/fastvm`, so this is the difference between a desktop in

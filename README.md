@@ -20,6 +20,7 @@ https://discord.gg/aahtG9n537
 <a href="https://github.com/CloudCompile/fastvm"><img src="https://img.shields.io/badge/📦%20IMAGES-236%20VARIANTS-a855f7?style=for-the-badge&labelColor=0a0e27" alt="Docker Images"></a>
 <a href="https://github.com/CloudCompile/fastvm/stargazers"><img src="https://img.shields.io/github/stars/cloudcompile/fastvm?style=for-the-badge&logo=starship&logoColor=white&color=ffd60a&labelColor=0a0e27" alt="GitHub Stars"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-MIT-ff006e?style=for-the-badge&labelColor=0a0e27" alt="License"></a>
+<a href="https://codespaces.new/CloudCompile/fastvm"><img src="https://img.shields.io/badge/OPEN%20IN-CODESPACES-181717?style=for-the-badge&logo=github&logoColor=white&labelColor=0a0e27" alt="Open in Codespaces"></a>
 
 <br/>
 

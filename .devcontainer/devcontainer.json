@@ -65,8 +65,11 @@
   // just starts FastVM. It falls back to a build if the pull did not happen.
   "postCreateCommand": "./fastvm-install.sh --no-build || ./fastvm-install.sh",
 
-  // postStart runs on every resume (idle timeout, reload). Idempotent.
-  "postStartCommand": "docker compose up -d",
+  // postStart runs on every resume (idle timeout, reload). --no-recreate starts
+  // the existing container without reconciling compose config: this shell does
+  // not source config.env, so a plain `up -d` would recompute defaults and
+  // silently recreate the container, discarding config.env customisations.
+  "postStartCommand": "docker compose up -d --no-recreate",
 
   "remoteUser": "vscode"
 }

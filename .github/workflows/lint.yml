@@ -180,6 +180,7 @@ jobs:
           assert 'docker pull' in cfg['onCreateCommand']       # cached by prebuilds
           assert '--no-build' in cfg['postCreateCommand']
           assert 'docker compose up' in cfg['postStartCommand']
+          assert '--no-recreate' in cfg['postStartCommand']  # resume must not clobber config.env
           print('devcontainer.json ok')
           PY
       - name: The derived image tag exists in the registry

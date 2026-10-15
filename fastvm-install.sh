@@ -312,6 +312,18 @@ build_image() {
 }
 
 # =============================================================================
+# Environment report
+# =============================================================================
+# Surfaces what the host can and cannot do (Codespaces/cloud/VM, /dev/kvm,
+# /dev/shm). Informational only — never blocks the install.
+show_environment() {
+    local reporter="${SCRIPT_DIR}/scripts/env-report.sh"
+    [[ -x "$reporter" ]] || return 0
+    log_step "Host environment"
+    FASTVM_DATA_ROOT="${SCRIPT_DIR}/data" bash "$reporter" report 2>/dev/null || true
+}
+
+# =============================================================================
 # Start
 # =============================================================================
 start_fastvm() {
@@ -339,7 +351,11 @@ start_fastvm() {
 wait_for_health() {
     log_step "Waiting for FastVM to be ready"
 
-    local max=30 attempt=0
+    # The container healthcheck has a 60s start_period during which Docker
+    # reports "starting", then it evaluates every 30s. Budget 180s (attempts of
+    # 2s) so a genuinely healthy container is reported healthy, not timed out.
+    local max=90
+    local attempt=0
     local container="${FASTVM_NAME:-FastVM}"
 
     while (( attempt < max )); do
@@ -364,7 +380,8 @@ wait_for_health() {
         echo -n "."; sleep 2
     done
 
-    echo ""; log_warn "Health check timed out — container may still be starting"
+    echo ""
+    log_warn "Health check still 'starting' after $(( max * 2 ))s — the desktop may just be slow on this host. Check: docker logs $container"
 }
 
 # =============================================================================
@@ -417,6 +434,7 @@ main() {
         exit 0
     fi
     check_prerequisites
+    show_environment
     generate_options_json
     prepare_directories
     build_image
