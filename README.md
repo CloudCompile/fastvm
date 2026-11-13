@@ -79,6 +79,7 @@ Startup time depends on the host, image, and selected applications. Measure it o
 - Dashboard: host port `3001` → container port `8099`.
 - Runtime data is persisted under `./data`, `./backups`, `./recordings`, and `./logs`.
 - `FASTVM_DE` and `FASTVM_PRESET` are build-time selections for published images; most feature toggles are runtime settings.
+- An optional Node.js server can run from `./data/node-app`, using host port `3002` by default.
 - Copy `config.env.example` to `config.env`, then run `scripts/validate-config.sh`.
 - The dashboard token is stored in `data/dashboard.token` and is never printed to logs. Prefer the `Authorization: Bearer` header; query-string tokens are disabled by default.
 - Compose uses `privileged: false` by default. Enable it only when the workload requires broad device access, and expose the service through HTTPS/authenticated proxying outside a trusted network.
@@ -86,6 +87,36 @@ Startup time depends on the host, image, and selected applications. Measure it o
 See `SECURITY.md`, `docs/image-catalog.md`, `docs/benchmarks.md`, `docs/gpu.md`,
 `docs/app-bundles.md`, `docs/discord-vm.md`, `docs/performance.md`, and
 `docs/roadmap.md` for operational guidance.
+
+### Optional Node.js server
+
+FastVM can run one user-provided Node.js server alongside the desktop and
+management dashboard. Put the application (including `package.json`) in
+`./data/node-app`, then enable it in `config.env`:
+
+```env
+FASTVM_NODE_SERVER_ENABLED=true
+FASTVM_NODE_SERVER_COMMAND='npm start'
+FASTVM_NODE_SERVER_PORT=3002
+FASTVM_NODE_SERVER_HOST_PORT=3002
+```
+
+The service sets `PORT` and `HOST=0.0.0.0` for the application, installs
+production dependencies on first start when `node_modules` is absent, and runs
+as the unprivileged `abc` user. Access it at `http://localhost:3002` (or the
+configured host port). The application port is published directly; use an
+authenticated HTTPS reverse proxy before exposing it beyond a trusted network.
+
+For a Node.js server without KasmVNC, the desktop, or the management dashboard,
+run the headless stack instead:
+
+```bash
+docker compose -f docker-compose.node.yml up -d
+```
+
+This uses the official Node.js 22 image and the same `./data/node-app`
+directory, but is an independent container. Stop it with
+`docker compose -f docker-compose.node.yml down`.
 
 ## ☁️ **GITHUB CODESPACES**
 

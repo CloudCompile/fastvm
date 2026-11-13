@@ -167,7 +167,7 @@ RUN set -eu && \
 # =============================================================================
 # Runtime Configuration
 # =============================================================================
-EXPOSE 3000 8099
+EXPOSE 3000 8099 3002
 VOLUME /config
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

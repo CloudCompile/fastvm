@@ -37,6 +37,9 @@ Key settings:
 - `FASTVM_APP_BUNDLE` — curated app set baked into the image: precedence `FASTVM_APP_BUNDLE` > preset > desktop default. Options: (empty=auto), none, browser, essentials, communication, gaming, development, office, content-creation. See `docs/app-bundles.md`
 - `FASTVM_APP_*` / `FASTVM_PROG_*` — toggle individual app installs (additive on top of the bundle)
 - `FASTVM_DASHBOARD_PORT` — internal port the Node.js dashboard listens on (default 8099 inside container, mapped to host 3001)
+- `FASTVM_NODE_SERVER_ENABLED` — opt-in user Node.js server from `/config/node-app`
+- `FASTVM_NODE_SERVER_COMMAND` — command used to start that server (default `npm start`)
+- `FASTVM_NODE_SERVER_PORT` / `FASTVM_NODE_SERVER_HOST_PORT` — container/host ports (default `3002`)
 - `FASTVM_RECORDING_ENCODER` — hardware encoder selection: `auto` (default), `nvenc`, `vaapi`, `qsv`, or `software`
 - `FASTVM_ENABLE_GPU_DRIVERS` / `FASTVM_GPU_SELFTEST` — build-time VA-API/Mesa drivers and startup encoder self-test
 - `FASTVM_GPU` — compose overlay selection for `./fastvm-install.sh`: `false` (default), `true|intel|amd`, or `nvidia`
@@ -54,8 +57,11 @@ Key settings:
 ### Port mapping
 - **3000** → KasmVNC web desktop (served by base image's nginx)
 - **3001** (host) → **8099** (container) → Node.js management dashboard
+- **3002** (host) → **3002** (container) → optional user Node.js server
 
 The base image's nginx handles port 3000. The dashboard bypasses it entirely and listens directly on 8099.
+For a true headless Node deployment, use `docker-compose.node.yml`; it uses
+the official Node.js image and does not start FastVM's desktop or dashboard.
 
 ### Dockerfile layers (in order)
 1. `root/` — KasmVNC config and WM startup scripts
@@ -76,6 +82,12 @@ API modules in `dashboard/api/`:
 - `recording.js` — screen recording control (wraps `scripts/screen-recorder.sh`)
 - `clipboard.js` — clipboard sync
 - `tasks.js` — scheduled task management
+
+### Optional Node.js server
+When `FASTVM_NODE_SERVER_ENABLED=true`, s6 starts the user project in
+`/config/node-app` as the unprivileged `abc` user. The configured command
+receives `PORT` and `HOST` environment variables and is exposed directly on
+the configured host port.
 
 ### Shell scripts (`scripts/`)
 All scripts source `scripts/lib-common.sh` for logging helpers (`log_info`, `log_success`, `log_warn`, `log_error`, `log_step`) and config loading (`load_fastvm_config`). Use `set -euo pipefail`.
