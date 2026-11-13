@@ -49,6 +49,7 @@ COPY scripts/render-options-json.py /render-options-json.py
 COPY installapps-parallel.sh /installapps-parallel.sh
 COPY installable-apps/ /installable-apps/
 RUN chmod +x /installapps-parallel.sh /render-options-json.py && \
+    apt-get update && \
     python3 /render-options-json.py /dev/null /options.json && \
     /installapps-parallel.sh && \
     rm -rf /installapps-parallel.sh /installable-apps /render-options-json.py
