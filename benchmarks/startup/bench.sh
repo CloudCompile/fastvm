@@ -169,28 +169,43 @@ LOGS_TAIL="$(docker logs --tail 10 fastvm-bench 2>&1 | tr '\n' ' ' | tail -c 500
 docker rm -f fastvm-bench > /dev/null 2>&1
 
 # ------------------------------------------------------------------ output
-{
-  echo "{"
-  echo "  \"mode\": \"$MODE\","
-  echo "  \"preset\": \"$PRESET\","
-  echo "  \"image\": \"$IMAGE_DIGEST\","
-  echo "  \"image_size_bytes\": ${IMAGE_SIZE:-0},"
-  echo "  \"idle_stats\": \"$IDLE_STATS\","
-  echo "  \"logs_tail\": \"${LOGS_TAIL//\"/\\\"}\","
-  echo "  \"host\": $HOST_INFO,"
-  first=1
-  for k in pull build create start_cold dash_cold start_stopped restart; do
-    v="${T[$k]:-missing}"
-    [[ $first -eq 0 ]] && echo ","
-    first=0
-    if [[ "$v" =~ ^[0-9.]+$ ]]; then
-      echo "  \"$k\": $v"
-    else
-      echo "  \"$k\": \"$v\""
-    fi
-  done
-  echo "}"
-} > "$OUT" 2>/dev/null
+export BENCH_MODE="$MODE" BENCH_PRESET="$PRESET" BENCH_IMAGE="$IMAGE_DIGEST"
+export BENCH_IMAGE_SIZE="${IMAGE_SIZE:-0}" BENCH_IDLE_STATS="$IDLE_STATS"
+export BENCH_LOGS_TAIL="$LOGS_TAIL" BENCH_HOST_INFO="$HOST_INFO"
+export BENCH_PULL="${T[pull]:-missing}" BENCH_BUILD="${T[build]:-missing}"
+export BENCH_CREATE="${T[create]:-missing}" BENCH_START_COLD="${T[start_cold]:-missing}"
+export BENCH_DASH_COLD="${T[dash_cold]:-missing}"
+export BENCH_START_STOPPED="${T[start_stopped]:-missing}" BENCH_RESTART="${T[restart]:-missing}"
+python3 - "$OUT" <<'PY'
+import json, os, sys
+
+def value(name):
+    raw = os.environ.get(name, "missing")
+    try:
+        return float(raw) if raw not in ("missing", "timeout", "fail") else raw
+    except ValueError:
+        return raw
+
+result = {
+    "mode": os.environ["BENCH_MODE"],
+    "preset": os.environ["BENCH_PRESET"],
+    "image": os.environ["BENCH_IMAGE"],
+    "image_size_bytes": int(os.environ.get("BENCH_IMAGE_SIZE", "0")),
+    "idle_stats": os.environ.get("BENCH_IDLE_STATS", "unknown"),
+    "logs_tail": os.environ.get("BENCH_LOGS_TAIL", ""),
+    "host": json.loads(os.environ["BENCH_HOST_INFO"]),
+}
+for key, env_name in (
+    ("pull", "BENCH_PULL"), ("build", "BENCH_BUILD"),
+    ("create", "BENCH_CREATE"), ("start_cold", "BENCH_START_COLD"),
+    ("dash_cold", "BENCH_DASH_COLD"),
+    ("start_stopped", "BENCH_START_STOPPED"), ("restart", "BENCH_RESTART"),
+):
+    result[key] = value(env_name)
+with open(sys.argv[1], "w") as f:
+    json.dump(result, f, indent=2)
+    f.write("\n")
+PY
 
 # Sanity: JSON must be valid
 python3 -c "import json;json.load(open('$OUT'))" || { log "JSON INVALID"; cat "$OUT"; exit 1; }
