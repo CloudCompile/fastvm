@@ -2,6 +2,9 @@ ARG FASTVM_BASE_IMAGE=ghcr.io/cloudcompile/fastvm-base:alpha
 FROM ${FASTVM_BASE_IMAGE}
 
 ARG FASTVM_PRESET=none
+ARG FASTVM_DE=XFCE4
+ARG FASTVM_OS_FLAVOR=standard
+ARG FASTVM_ENABLE_GPU_DRIVERS=true
 ARG FASTVM_APP_BUNDLE=
 ARG FASTVM_APP_WINE=false
 ARG FASTVM_APP_CHROME=false
@@ -24,6 +27,9 @@ ARG FASTVM_SINGLEAPP_CMD=
 ARG FASTVM_SINGLEAPP_SCRIPT=
 
 ENV FASTVM_PRESET=${FASTVM_PRESET} \
+    FASTVM_DE=${FASTVM_DE} \
+    FASTVM_OS_FLAVOR=${FASTVM_OS_FLAVOR} \
+    FASTVM_ENABLE_GPU_DRIVERS=${FASTVM_ENABLE_GPU_DRIVERS} \
     FASTVM_INSTALL_PARALLELISM=1 \
     FASTVM_APP_BUNDLE=${FASTVM_APP_BUNDLE} \
     FASTVM_APP_WINE=${FASTVM_APP_WINE} \
@@ -46,6 +52,9 @@ ENV FASTVM_PRESET=${FASTVM_PRESET} \
     FASTVM_SINGLEAPP_CMD=${FASTVM_SINGLEAPP_CMD} \
     FASTVM_SINGLEAPP_SCRIPT=${FASTVM_SINGLEAPP_SCRIPT}
 
+COPY fastvm-setup.sh /fastvm-setup.sh
+RUN chmod +x /fastvm-setup.sh && /fastvm-setup.sh && rm -f /fastvm-setup.sh
+
 COPY scripts/render-options-json.py /render-options-json.py
 COPY installapps-parallel.sh /installapps-parallel.sh
 COPY installable-apps/ /installable-apps/
@@ -57,3 +66,6 @@ RUN chmod +x /installapps-parallel.sh /render-options-json.py && \
       /var/lib/apt/lists/* /var/tmp/* /tmp/*
 
 COPY presets/ /opt/fastvm-presets/
+
+COPY fastvm-os/ /opt/fastvm-os/
+RUN chmod +x /opt/fastvm-os/install.sh && /opt/fastvm-os/install.sh "${FASTVM_OS_FLAVOR}"

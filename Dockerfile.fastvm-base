@@ -3,9 +3,6 @@ FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 ARG BUILD_DATE
 ARG VERSION=alpha
 ARG DEBIAN_FRONTEND=noninteractive
-ARG FASTVM_DE=XFCE4
-ARG FASTVM_OS_FLAVOR=standard
-ARG FASTVM_ENABLE_GPU_DRIVERS=true
 
 LABEL org.opencontainers.image.title="FastVM shared base (alpha)" \
       org.opencontainers.image.description="Shared XFCE4/FastVM runtime base for alpha preset images" \
@@ -13,10 +10,7 @@ LABEL org.opencontainers.image.title="FastVM shared base (alpha)" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}"
 
-ENV FASTVM_DE=${FASTVM_DE} \
-    FASTVM_OS_FLAVOR=${FASTVM_OS_FLAVOR} \
-    FASTVM_ENABLE_GPU_DRIVERS=${FASTVM_ENABLE_GPU_DRIVERS} \
-    NODE_ENV=production
+ENV NODE_ENV=production
 
 # Runtime files and scripts are shared by every preset image. The scripts are
 # copied before fastvm-setup.sh because setup uses gpu-session-env.sh when it
@@ -39,15 +33,9 @@ RUN set -eu && \
       xclip xsel cron zstd procps net-tools && \
     rm -rf /var/lib/apt/lists/*
 
-COPY fastvm-setup.sh /fastvm-setup.sh
-RUN chmod +x /fastvm-setup.sh && /fastvm-setup.sh && rm -f /fastvm-setup.sh
-
 COPY dashboard/ /opt/fastvm-dashboard/
 WORKDIR /opt/fastvm-dashboard
 RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
-
-COPY fastvm-os/ /opt/fastvm-os/
-RUN chmod +x /opt/fastvm-os/install.sh && /opt/fastvm-os/install.sh "${FASTVM_OS_FLAVOR}"
 
 RUN set -eu && \
     apt-get autoclean && apt-get autoremove -y && \
