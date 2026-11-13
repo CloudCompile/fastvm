@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "none",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:41ec8000b2a18cd5b3850b056c170852b41e74667fa85034dcb5a47b98d6a4e4",
+  "image_size_bytes": 3280184695,
+  "idle_stats": "185MiB / 7.771GiB 3.72%",
+  "logs_tail": "alytics] session started: session-1794614001826-5nbwrxtwn (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled  (xfwm4:419): dbind-WARNING **: 23:53:21.876: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfwm4:419): xfwm4-WARNING **: 23:53:21.986: Unsupported GL renderer (llvmpipe (LLVM 15.0.7, 256 bits)). ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 7957,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 82.14,
+  "build": "missing",
+  "create": 0.52,
+  "start_cold": 1.89,
+  "dash_cold": 1.9,
+  "start_stopped": 2.16,
+  "restart": 1.06,
+  "complete": true,
+  "wall_seconds": 121.8
+}

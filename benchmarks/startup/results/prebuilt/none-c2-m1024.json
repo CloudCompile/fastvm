@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "none",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:41ec8000b2a18cd5b3850b056c170852b41e74667fa85034dcb5a47b98d6a4e4",
+  "image_size_bytes": 3280184695,
+  "idle_stats": "239.5MiB / 976.3MiB 3.68%",
+  "logs_tail": "[mi] mieq: warning: overriding existing handler (nil) with 0x555fdb701f50 for event 3 [dashboard] starting on :8099 19 [ls.io-init] done. [analytics] session started: session-1794613989976-4f61ypbrg (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled /usr/bin/startxfce4: X server already running on display :1 ATTENTION: default value of option vblank_mode overridden by environment. ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 976,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 71.22,
+  "build": "missing",
+  "create": 0.09,
+  "start_cold": 2.55,
+  "dash_cold": 2.07,
+  "start_stopped": 1.06,
+  "restart": 1.06,
+  "complete": true,
+  "wall_seconds": 122.0
+}

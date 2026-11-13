@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "content-creation",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:7e46cfd87c6d99de4d8f32bb7323e346a38525a8a662d9acf8cccbbe44cc7eb4",
+  "image_size_bytes": 2979170701,
+  "idle_stats": "187.1MiB / 3.839GiB 4.09%",
+  "logs_tail": "286): xfce4-session-WARNING **: 23:53:05.939: failed to run script: Failed to execute child process \u201c/usr/bin/pm-is-supported\u201d (No such file or directory)  (xfce4-session:286): xfce4-session-WARNING **: 23:53:05.941: failed to run script: Failed to execute child process \u201c/usr/bin/pm-is-supported\u201d (No such file or directory)  (wrapper-2.0:484): Gtk-WARNING **: 23:53:05.957: Negative content width -3 (allocation 1, extents 2x2) while allocating gadget (node button, owner PulseaudioButton) ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 68.37,
+  "build": "missing",
+  "create": 0.25,
+  "start_cold": 1.59,
+  "dash_cold": 1.07,
+  "start_stopped": 1.04,
+  "restart": 1.56,
+  "complete": true,
+  "wall_seconds": 122.0
+}
