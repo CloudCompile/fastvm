@@ -211,16 +211,22 @@ def run_one(mode, preset, cpu, ram, template_id):
         while time.time() < deadline:
             time.sleep(30)
             chk = sbx.commands.run(
-                "cat /tmp/bench.done 2>/dev/null; "
-                "tail -1 /tmp/bench.log 2>/dev/null | head -c 200; "
-                "pgrep -f bench.sh > /dev/null && echo RUNNING || echo STOPPED",
+                "if [ -f /tmp/bench.done ]; then echo DONE; else echo RUNNING; fi; "
+                "tail -1 /tmp/bench.log 2>/dev/null | head -c 200",
                 timeout=120,
             )
             out = chk.stdout or ""
-            if "done" in out or "STOPPED" in out:
+            if "DONE" in out:
                 break
-        raw = sbx.files.read("/home/user/result.json")
-        result = json.loads(raw)
+        try:
+            raw = sbx.files.read("/home/user/result.json")
+            result = json.loads(raw)
+        except Exception:
+            log_text = sbx.files.read("/tmp/bench.log")
+            result = {
+                "mode": mode, "preset": preset,
+                "complete": False, "error": log_text[-4000:],
+            }
         numeric = all(isinstance(result.get(k), (int, float))
                       for k in ("start_cold", "start_stopped", "restart"))
         result["complete"] = numeric

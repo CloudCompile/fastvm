@@ -112,6 +112,7 @@ else
   IMAGE="fastvm:bench-xfce4-${PRESET}"
   t0="$(now)"
   if ! docker build -f Dockerfile.optimized -t "$IMAGE" \
+      --network host \
       --build-arg "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
       --build-arg "VERSION=bench" \
       --build-arg "FASTVM_DE=xfce4" \
