@@ -9,10 +9,16 @@ set -euo pipefail
 # =============================================================================
 JSON_FILE="/options.json"
 INSTALL_DIR="/installable-apps"
-# Use number of CPU cores, capped at 8, with a minimum of 3
-MAX_PARALLEL=$(nproc)
-[[ $MAX_PARALLEL -gt 8 ]] && MAX_PARALLEL=8
-[[ $MAX_PARALLEL -lt 3 ]] && MAX_PARALLEL=3
+# Package managers are not safe to run concurrently when two applications
+# touch dpkg/apt at the same time. Keep the historical parallel default for
+# now, but let image builders force a reliable serial install.
+if [[ -n "${FASTVM_INSTALL_PARALLELISM:-}" ]]; then
+    MAX_PARALLEL="$FASTVM_INSTALL_PARALLELISM"
+else
+    MAX_PARALLEL=$(nproc)
+    [[ $MAX_PARALLEL -gt 8 ]] && MAX_PARALLEL=8
+    [[ $MAX_PARALLEL -lt 3 ]] && MAX_PARALLEL=3
+fi
 
 # =============================================================================
 # Logging Functions
