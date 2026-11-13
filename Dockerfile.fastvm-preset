@@ -53,6 +53,7 @@ RUN chmod +x /installapps-parallel.sh /render-options-json.py && \
     apt-get update && \
     python3 /render-options-json.py /dev/null /options.json && \
     /installapps-parallel.sh && \
-    rm -rf /installapps-parallel.sh /installable-apps /render-options-json.py
+    rm -rf /installapps-parallel.sh /installable-apps /render-options-json.py \
+      /var/lib/apt/lists/* /var/tmp/* /tmp/*
 
 COPY presets/ /opt/fastvm-presets/
