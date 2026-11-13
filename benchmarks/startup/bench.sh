@@ -125,7 +125,8 @@ else
 fi
 
 IMAGE_SIZE="$(docker image inspect "$IMAGE" --format '{{.Size}}' 2>/dev/null || echo 0)"
-IMAGE_DIGEST="$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null || echo "$IMAGE")"
+IMAGE_DIGEST="$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null | tr -d '\n' || true)"
+[[ -n "$IMAGE_DIGEST" && "$IMAGE_DIGEST" != "<no value>" ]] || IMAGE_DIGEST="$IMAGE"
 
 # --------------------------------------------------------------- lifecycle
 docker rm -f fastvm-bench > /dev/null 2>&1
