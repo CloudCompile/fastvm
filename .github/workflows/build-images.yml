@@ -167,7 +167,6 @@ jobs:
             FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=${{ matrix.desktop }}
             FASTVM_PRESET=${{ matrix.preset }}
-            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
 
   build-specials:
     needs: build-base
@@ -247,7 +246,6 @@ jobs:
             FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=singleapp
             FASTVM_PRESET=none
-            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_SINGLEAPP_CMD=${{ matrix.autostart_cmd }}
             FASTVM_SINGLEAPP_SCRIPT=${{ matrix.app_script }}
 
@@ -287,7 +285,6 @@ jobs:
             FASTVM_DE=fastvm-os
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=fastvm-os
-            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
 
   # GPU-enabled variant: ships the VA-API/Mesa/Vulkan userspace drivers so the
   # same image can use hardware encode once device mapping is added at runtime
