@@ -29,6 +29,14 @@ jobs:
           ignore: DL3008,DL3003,SC2015
           failure-threshold: error
 
+  validate-compose:
+    name: Validate compose stacks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every compose file resolves (standalone or layered on base)
+        run: bash scripts/validate-compose.sh
+
   validate-json:
     name: Validate options.json
     runs-on: ubuntu-latest
