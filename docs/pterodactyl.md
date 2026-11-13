@@ -18,7 +18,7 @@ chmod +x app.py
 Configure a constrained profile:
 
 ```env
-FASTVM_PRESET=hidencloud-free-vps
+FASTVM_PRESET=none
 FASTVM_DE=LXQT
 FASTVM_PORT=3000
 FASTVM_DASHBOARD_HOST_PORT=3001

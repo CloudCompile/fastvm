@@ -52,7 +52,6 @@ default to `browser`, since they are chosen for minimalism.
 | `development` | `development` |
 | `office` | `office` |
 | `content-creation` | `content-creation` |
-| `hidencloud-free-vps` | `essentials` |
 
 ## Choosing a bundle
 

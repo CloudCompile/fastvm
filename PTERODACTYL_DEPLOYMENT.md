@@ -22,7 +22,7 @@ not create a daemon.
 Upload these files to your Pterodactyl server:
 - `app.py` — Main launcher
 - `requirements.txt` — Python dependencies
-- `config.env` — Configuration (with `FASTVM_PRESET=hidencloud-free-vps`)
+- `config.env` — Configuration (with `FASTVM_PRESET=none`)
 - `docker-compose.yml` — Container orchestration
 - All other FastVM files (Dockerfile.optimized, scripts, presets, etc.)
 
@@ -54,7 +54,7 @@ Edit `config.env`:
 
 ```bash
 # Essential settings (already optimized in preset)
-FASTVM_PRESET=hidencloud-free-vps
+FASTVM_PRESET=none
 FASTVM_PORT=3000
 FASTVM_DASHBOARD_HOST_PORT=3001
 
@@ -135,7 +135,8 @@ python3 app.py install
 
 ## ⚙️ Configuration Reference
 
-The `hidencloud-free-vps` preset includes:
+A constrained profile uses the `none` preset (or `minimal`) with explicit
+resource limits:
 
 | Setting | Value | Reason |
 |---------|-------|--------|
