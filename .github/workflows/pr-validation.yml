@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 env:
-  FASTVM_PR_BASE: ghcr.io/cloudcompile/fastvm:pr-base-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  REGISTRY_IMAGE: ghcr.io/cloudcompile/fastvm
 
 jobs:
   config-and-compose:
@@ -37,6 +37,8 @@ jobs:
 
   base-build:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.pr-base.outputs.image }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -46,11 +48,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
+        id: pr-base
         with:
           context: .
           file: Dockerfile.fastvm-base
           push: true
-          tags: ${{ env.FASTVM_PR_BASE }}
+          tags: ${{ env.REGISTRY_IMAGE }}:pr-base-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
           build-args: |
             BUILD_DATE=${{ github.event.pull_request.updated_at }}
             VERSION=pr-${{ github.event.pull_request.number }}
@@ -89,7 +92,7 @@ jobs:
             VERSION=pr-${{ github.event.pull_request.number }}
             FASTVM_DE=${{ matrix.desktop }}
             FASTVM_PRESET=${{ matrix.preset }}
-            FASTVM_BASE_IMAGE=${{ env.FASTVM_PR_BASE }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY_IMAGE }}:pr-base-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
 
   single-app-build:
     needs: base-build
@@ -118,7 +121,7 @@ jobs:
             FASTVM_PRESET=none
             FASTVM_SINGLEAPP_CMD=google-chrome-stable --no-sandbox
             FASTVM_SINGLEAPP_SCRIPT=browser-only.sh
-            FASTVM_BASE_IMAGE=${{ env.FASTVM_PR_BASE }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY_IMAGE }}:pr-base-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
 
   vulnerability-scan:
     runs-on: ubuntu-latest
@@ -143,7 +146,7 @@ jobs:
           tags: fastvm:scan
           build-args: |
             FASTVM_DE=xfce4
-            FASTVM_BASE_IMAGE=${{ env.FASTVM_PR_BASE }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY_IMAGE }}:pr-base-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
       - uses: aquasecurity/trivy-action@master
         with:
           image-ref: fastvm:scan

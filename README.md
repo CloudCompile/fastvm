@@ -1,8 +1,7 @@
 # FastVM
 
-FastVM runs a full Linux desktop in a browser using Docker and KasmVNC. Choose
-from published desktop images, app presets, single-app variants, or distro
-flavors.
+FastVM runs a Linux desktop in a browser using Docker and KasmVNC. Choose from
+published desktop/preset images, single-app images, or the FastVM OS appliance.
 
 [![CI builds](https://img.shields.io/github/actions/workflow/status/CloudCompile/fastvm/build-images.yml?branch=main&logo=github-actions)](https://github.com/CloudCompile/fastvm/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -40,6 +39,7 @@ cp config.env.example config.env
 | Headless Node.js server | [`docs/nodejs.md`](docs/nodejs.md) |
 | Pterodactyl or a constrained VPS | [`docs/pterodactyl.md`](docs/pterodactyl.md) |
 | Image and tag catalog | [`docs/image-catalog.md`](docs/image-catalog.md) |
+| Benchmark results | [`docs/benchmarks.md`](docs/benchmarks.md) |
 
 ## What is included
 

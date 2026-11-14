@@ -25,6 +25,22 @@ supported desktop in the regular desktop/preset matrix instead.
 | Single-app | 4 | browser, discord, vscode, terminal |
 | FastVM appliance | 1 | fastvm-os |
 
+## Tags by category
+
+Tags are immutable only when version-pinned (`<tag>-vX.Y.Z`); `latest` is a
+moving tag updated by the image workflow on `main`.
+
+| Category | Tag pattern | Published variants | Examples |
+| --- | --- | ---: | --- |
+| Desktop + preset | `<desktop>-<preset>-latest` | 198 | `xfce4-none-latest`, `kde-gaming-latest` |
+| Single app | `<app>-latest` | 4 | `browser-latest`, `terminal-latest` |
+| FastVM appliance | `fastvm-os-latest` | 1 | `fastvm-os-latest` |
+
+There are no separate Kali, Parrot, NixOS, pearOS, Pop!_OS, Linux Mint, or
+Ubuntu-flavor OS images in the supported matrix. To select KDE, for example,
+use `kde-none-latest`; it is a FastVM image on the Ubuntu/KasmVNC base, not an
+upstream Kubuntu image.
+
 Exact package contents are defined by `presets/*.preset` and
 `installable-apps/*.sh`; update this document when the workflow matrix changes.
 

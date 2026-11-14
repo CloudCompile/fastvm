@@ -15,7 +15,10 @@ docker run -d \
 
 Port `3000` serves the KasmVNC desktop. Port `3001` maps to the dashboard's
 internal port `8099`. The dashboard token is stored in
-`data/dashboard.token`.
+`data/dashboard.token`. Do not expose the dashboard port directly to the
+internet; use an authenticated HTTPS reverse proxy. Apply the same rule to the
+headless Node.js app port—see [nodejs.md](nodejs.md) for loopback binding and
+proxy examples.
 
 Image names follow these patterns:
 
