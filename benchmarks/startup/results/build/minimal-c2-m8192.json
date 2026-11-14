@@ -2,9 +2,9 @@
   "mode": "build",
   "preset": "minimal",
   "image": "fastvm:bench-xfce4-minimal",
-  "image_size_bytes": 3276584758,
-  "idle_stats": "184.9MiB / 7.771GiB 3.18%",
-  "logs_tail": "8: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfsettingsd:435): libupower-glib-WARNING **: 23:59:55.872: Couldn't connect to proxy: Could not connect: No such file or directory  (xfce4-panel:438): dbind-WARNING **: 23:59:55.968: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "image_size_bytes": 3276594545,
+  "idle_stats": "185.1MiB / 7.771GiB 3.39%",
+  "logs_tail": "op.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfdesktop:448): dbind-WARNING **: 00:41:54.090: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  ** (xfdesktop:448): WARNING **: 00:41:54.221: Thumbnailer failed calling GetFlavors  ** (xfdesktop:448): WARNING **: 00:41:54.243: Failed to get system bus: Could not connect: No such file or directory ",
   "host": {
     "cpu_count": 2,
     "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
@@ -14,12 +14,12 @@
     "docker_version": "Docker version 27.5.1, build 9f9e405"
   },
   "pull": "missing",
-  "build": 123.4,
-  "create": 0.03,
-  "start_cold": 1.1,
-  "dash_cold": 1.1,
-  "start_stopped": 1.06,
-  "restart": 1.08,
+  "build": 114.18,
+  "create": 0.06,
+  "start_cold": 1.14,
+  "dash_cold": 1.13,
+  "start_stopped": 1.07,
+  "restart": 1.07,
   "complete": true,
-  "wall_seconds": 183.0
+  "wall_seconds": 152.9
 }
