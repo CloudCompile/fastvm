@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "gaming",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 4, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 1982, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\n2ca38b4beb2d: Waiting\n3541d221ca62: Waiting\nc0f8eff906b8: Downloading\n7fb42501696e: Verifying Checksum\n7fb42501696e: Download complete\n9aabe2543c47: Verifying Checksum\n9aabe2543c47: Download complete\nc82954c7d21b: Verifying Checksum\nc82954c7d21b: Download complete\n2ca38b4beb2d: Downloading\n20a88ec49198: Verifying Checksum\n20a88ec49198: Download complete\nb51575755f81: Verifying Checksum\nb51575755f81: Download complete\n53c2fbd7cbcb: Verifying Checksum\n53c2fbd7cbcb: Download complete\n38a37bd14474: Downloading\n3541d221ca62: Verifying Checksum\n3541d221ca62: Download complete\ntoomanyrequests: retry-after: 92.148\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 32.3
+  "image": "fastvm:bench-xfce4-gaming",
+  "image_size_bytes": 2978447464,
+  "idle_stats": "199.6MiB / 1.936GiB 4.03%",
+  "logs_tail": "0:15:26.750: Failed to get system bus: Could not connect: No such file or directory  (wrapper-2.0:595): dbind-WARNING **: 00:15:26.809: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (wrapper-2.0:596): dbind-WARNING **: 00:15:26.824: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 1982,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 138.54,
+  "create": 0.03,
+  "start_cold": 2.43,
+  "dash_cold": 1.92,
+  "start_stopped": 1.57,
+  "restart": 1.56,
+  "complete": true,
+  "wall_seconds": 182.8
 }

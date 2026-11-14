@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "content-creation",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 4, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 7957, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\nDEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            Install the buildx component to build images with BuildKit:\n            https://docs.docker.com/go/buildx/\n\nSending build context to Docker daemon  843.3kB\r\r\nStep 1/74 : FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy\ntoomanyrequests: retry-after: 513.195\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 32.8
+  "image": "fastvm:bench-xfce4-content-creation",
+  "image_size_bytes": 3281035505,
+  "idle_stats": "186.7MiB / 7.77GiB 4.12%",
+  "logs_tail": "4-session:285): xfce4-session-WARNING **: 00:23:10.703: failed to run script: Failed to execute child process \u201c/usr/bin/pm-is-supported\u201d (No such file or directory)  (wrapper-2.0:493): Gtk-WARNING **: 00:23:10.713: Negative content width -1 (allocation 1, extents 1x1) while allocating gadget (node button, owner XfceArrowButton)  (wrapper-2.0:486): Gtk-WARNING **: 00:23:10.721: Negative content width -3 (allocation 1, extents 2x2) while allocating gadget (node button, owner PulseaudioButton) ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 7957,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 145.71,
+  "create": 0.03,
+  "start_cold": 2.15,
+  "dash_cold": 1.64,
+  "start_stopped": 1.55,
+  "restart": 1.57,
+  "complete": true,
+  "wall_seconds": 182.8
 }

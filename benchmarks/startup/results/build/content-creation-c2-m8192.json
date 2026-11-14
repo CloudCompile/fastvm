@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "content-creation",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 2, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 7957, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\nDEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            Install the buildx component to build images with BuildKit:\n            https://docs.docker.com/go/buildx/\n\nSending build context to Docker daemon  843.3kB\r\r\nStep 1/74 : FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy\ntoomanyrequests: retry-after: 938.296\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 32.8
+  "image": "fastvm:bench-xfce4-content-creation",
+  "image_size_bytes": 3281035505,
+  "idle_stats": "184.7MiB / 7.771GiB 4.29%",
+  "logs_tail": "nalytics tracking enabled  (xfce4-session:284): dbind-WARNING **: 00:22:38.976: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files _IceTransmkdir: Owner of /tmp/.ICE-unix should be set to root  (xfwm4:418): dbind-WARNING **: 00:22:39.071: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 7957,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 146.46,
+  "create": 0.06,
+  "start_cold": 1.66,
+  "dash_cold": 1.64,
+  "start_stopped": 1.05,
+  "restart": 1.05,
+  "complete": true,
+  "wall_seconds": 182.9
 }

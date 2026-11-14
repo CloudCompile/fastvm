@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "office",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 4, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 3931, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\n9aabe2543c47: Pulling fs layer\nc82954c7d21b: Pulling fs layer\n2ca38b4beb2d: Pulling fs layer\n20a88ec49198: Pulling fs layer\nb51575755f81: Pulling fs layer\n58f2321534b6: Pulling fs layer\n38a37bd14474: Pulling fs layer\n3541d221ca62: Pulling fs layer\n9aabe2543c47: Waiting\nc82954c7d21b: Waiting\n2ca38b4beb2d: Waiting\n20a88ec49198: Waiting\nb51575755f81: Waiting\n58f2321534b6: Waiting\n38a37bd14474: Waiting\n3541d221ca62: Waiting\nc0f8eff906b8: Downloading\n7fb42501696e: Downloading\nc82954c7d21b: Downloading\ntoomanyrequests: retry-after: 645.22\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 32.2
+  "image": "fastvm:bench-xfce4-office",
+  "image_size_bytes": 3276584772,
+  "idle_stats": "190.3MiB / 3.839GiB 5.77%",
+  "logs_tail": "op.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (Thunar:462): dbind-WARNING **: 00:20:30.840: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfdesktop:471): dbind-WARNING **: 00:20:30.935: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 198.14,
+  "create": 0.08,
+  "start_cold": 2.77,
+  "dash_cold": 2.23,
+  "start_stopped": 1.6,
+  "restart": 1.6,
+  "complete": true,
+  "wall_seconds": 244.4
 }

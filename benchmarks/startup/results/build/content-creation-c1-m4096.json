@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "content-creation",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 1, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 3931, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\n9aabe2543c47: Downloading\nc82954c7d21b: Downloading\n53c2fbd7cbcb: Verifying Checksum\n53c2fbd7cbcb: Download complete\n20a88ec49198: Verifying Checksum\n20a88ec49198: Download complete\nb51575755f81: Verifying Checksum\nb51575755f81: Download complete\n2ca38b4beb2d: Verifying Checksum\n2ca38b4beb2d: Download complete\n3541d221ca62: Verifying Checksum\n3541d221ca62: Download complete\n58f2321534b6: Verifying Checksum\n58f2321534b6: Download complete\n53c2fbd7cbcb: Pull complete\nc0f8eff906b8: Pull complete\n7fb42501696e: Pull complete\n38a37bd14474: Verifying Checksum\n38a37bd14474: Download complete\ntoomanyrequests: retry-after: 884.771\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 32.5
+  "image": "fastvm:bench-xfce4-content-creation",
+  "image_size_bytes": 2975570448,
+  "idle_stats": "193.5MiB / 3.839GiB 4.16%",
+  "logs_tail": "*: 00:21:28.960: Couldn't connect to proxy: Could not connect: No such file or directory  (xfce4-panel:433): dbind-WARNING **: 00:21:29.127: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (Thunar:437): dbind-WARNING **: 00:21:29.224: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 1,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 131.85,
+  "create": 0.03,
+  "start_cold": 3.54,
+  "dash_cold": 3.0,
+  "start_stopped": 2.77,
+  "restart": 2.19,
+  "complete": true,
+  "wall_seconds": 182.7
 }

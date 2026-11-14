@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "content-creation",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 1, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 1983, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\nDEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            Install the buildx component to build images with BuildKit:\n            https://docs.docker.com/go/buildx/\n\nSending build context to Docker daemon  843.3kB\r\r\nStep 1/74 : FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy\ntoomanyrequests: retry-after: 341.057\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 32.4
+  "image": "fastvm:bench-xfce4-content-creation",
+  "image_size_bytes": 2975570448,
+  "idle_stats": "196.5MiB / 1.937GiB 3.26%",
+  "logs_tail": "[ls.io-init] done. [dashboard] starting on :8099 [mi] mieq: warning: overriding existing handler (nil) with 0x55e66f016f50 for event 2 [mi] mieq: warning: overriding existing handler (nil) with 0x55e66f016f50 for event 3 19 [analytics] session started: session-1794615684959-oxp9yijvd (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled /usr/bin/startxfce4: X server already running on display :1 ",
+  "host": {
+    "cpu_count": 1,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 1983,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 131.52,
+  "create": 0.05,
+  "start_cold": 3.2,
+  "dash_cold": 2.63,
+  "start_stopped": 1.63,
+  "restart": 2.2,
+  "complete": true,
+  "wall_seconds": 183.0
 }

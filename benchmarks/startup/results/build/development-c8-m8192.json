@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "development",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 8, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 7956, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\nDEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            Install the buildx component to build images with BuildKit:\n            https://docs.docker.com/go/buildx/\n\nSending build context to Docker daemon  843.3kB\r\r\nStep 1/74 : FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy\nubuntujammy: Pulling from linuxserver/baseimage-kasmvnc\ntoomanyrequests: retry-after: 552.237\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 32.1
+  "image": "fastvm:bench-xfce4-development",
+  "image_size_bytes": 3276588062,
+  "idle_stats": "189.3MiB / 7.769GiB 4.03%",
+  "logs_tail": "299): xfce4-session-WARNING **: 00:12:19.211: failed to run script: Failed to execute child process \u201c/usr/bin/pm-is-supported\u201d (No such file or directory)  (xfce4-session:299): xfce4-session-WARNING **: 00:12:19.214: failed to run script: Failed to execute child process \u201c/usr/bin/pm-is-supported\u201d (No such file or directory)  (wrapper-2.0:511): Gtk-WARNING **: 00:12:19.220: Negative content width -3 (allocation 1, extents 2x2) while allocating gadget (node button, owner PulseaudioButton) ",
+  "host": {
+    "cpu_count": 8,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 7956,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 166.5,
+  "create": 0.04,
+  "start_cold": 1.68,
+  "dash_cold": 1.21,
+  "start_stopped": 1.56,
+  "restart": 1.56,
+  "complete": true,
+  "wall_seconds": 212.8
 }

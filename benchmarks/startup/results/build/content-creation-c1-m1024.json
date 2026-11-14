@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "content-creation",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 1, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 977, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\n3541d221ca62: Pulling fs layer\n9aabe2543c47: Waiting\nc82954c7d21b: Waiting\n2ca38b4beb2d: Waiting\n20a88ec49198: Waiting\nb51575755f81: Waiting\n58f2321534b6: Waiting\n38a37bd14474: Waiting\n3541d221ca62: Waiting\nc0f8eff906b8: Verifying Checksum\nc0f8eff906b8: Download complete\n7fb42501696e: Verifying Checksum\n7fb42501696e: Download complete\n53c2fbd7cbcb: Verifying Checksum\n53c2fbd7cbcb: Download complete\n9aabe2543c47: Downloading\nc82954c7d21b: Verifying Checksum\nc82954c7d21b: Download complete\nb51575755f81: Downloading\ntoomanyrequests: retry-after: 142.037\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 32.7
+  "image": "fastvm:bench-xfce4-content-creation",
+  "image_size_bytes": 2975570448,
+  "idle_stats": "224.8MiB / 976.5MiB 3.99%",
+  "logs_tail": "99 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled /usr/bin/startxfce4: X server already running on display :1 ATTENTION: default value of option vblank_mode overridden by environment.  (xfce4-session:310): dbind-WARNING **: 00:23:04.248: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files _IceTransmkdir: Owner of /tmp/.ICE-unix should be set to root ",
+  "host": {
+    "cpu_count": 1,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 977,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 257.51,
+  "create": 0.05,
+  "start_cold": 3.54,
+  "dash_cold": 3.52,
+  "start_stopped": 2.18,
+  "restart": 1.65,
+  "complete": true,
+  "wall_seconds": 304.0
 }

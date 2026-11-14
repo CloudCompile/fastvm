@@ -1,7 +1,25 @@
 {
   "mode": "build",
   "preset": "development",
-  "complete": false,
-  "error": "[bench] host: {\"cpu_count\": 2, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 1983, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\nDEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            Install the buildx component to build images with BuildKit:\n            https://docs.docker.com/go/buildx/\n\nSending build context to Docker daemon  843.3kB\r\r\nStep 1/74 : FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy\ntoomanyrequests: retry-after: 92.089\u00b5s, allowed: 44000/minute\n",
-  "wall_seconds": 33.9
+  "image": "fastvm:bench-xfce4-development",
+  "image_size_bytes": 3276588062,
+  "idle_stats": "198MiB / 1.936GiB 3.79%",
+  "logs_tail": "*: 00:11:51.103: Couldn't connect to proxy: Could not connect: No such file or directory  (xfce4-panel:549): dbind-WARNING **: 00:11:51.174: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (Thunar:554): dbind-WARNING **: 00:11:51.220: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 1983,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 137.66,
+  "create": 0.03,
+  "start_cold": 2.48,
+  "dash_cold": 1.97,
+  "start_stopped": 1.06,
+  "restart": 1.06,
+  "complete": true,
+  "wall_seconds": 183.3
 }
