@@ -24,7 +24,7 @@ Upload these files to your Pterodactyl server:
 - `requirements.txt` — Python dependencies
 - `config.env` — Configuration (with `FASTVM_PRESET=none`)
 - `docker-compose.yml` — Container orchestration
-- All other FastVM files (Dockerfile.optimized, scripts, presets, etc.)
+- All other FastVM files (Dockerfile.fastvm-base, Dockerfile.fastvm-preset, scripts, presets, etc.)
 
 Keep `app.py`, `config.env`, and `docker-compose.yml` in the same directory.
 The Compose file references the Docker build context, so upload the complete

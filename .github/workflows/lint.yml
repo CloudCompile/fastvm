@@ -21,11 +21,17 @@ jobs:
   hadolint:
     name: Hadolint
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile:
+          - Dockerfile.fastvm-base
+          - Dockerfile.fastvm-preset
+          - Dockerfile.optimized
     steps:
       - uses: actions/checkout@v4
       - uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: Dockerfile.optimized
+          dockerfile: ${{ matrix.dockerfile }}
           ignore: DL3008,DL3003,SC2015
           failure-threshold: error
 

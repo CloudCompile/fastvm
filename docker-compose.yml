@@ -2,10 +2,11 @@ services:
   fastvm:
     build:
       context: .
-      dockerfile: Dockerfile.optimized
+      dockerfile: Dockerfile.fastvm-preset
       args:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
+        - FASTVM_BASE_IMAGE=${FASTVM_BASE_IMAGE:-ghcr.io/cloudcompile/fastvm:base-latest}
         - FASTVM_DE=${FASTVM_DE:-XFCE4}
         - FASTVM_PRESET=${FASTVM_PRESET:-none}
         - FASTVM_APP_BUNDLE=${FASTVM_APP_BUNDLE:-}

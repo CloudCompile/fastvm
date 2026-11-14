@@ -35,9 +35,10 @@ scripts/validate-config.sh
 docker compose up -d --build
 ```
 
-The main Compose file builds `Dockerfile.optimized` unless `FASTVM_IMAGE` is
-set to a published image. Runtime data is stored in `data/`, `backups/`,
-`recordings/`, and `logs/`.
+The main Compose file builds `Dockerfile.fastvm-preset` (the shared
+`fastvm-base` image is pulled from GHCR and only the preset layer is built)
+unless `FASTVM_IMAGE` is set to a published image. Runtime data is stored in
+`data/`, `backups/`, `recordings/`, and `logs/`.
 
 Use the installer when you want the repository's build, image-selection, and
 startup flow:
@@ -52,12 +53,20 @@ startup flow:
 ## Build directly
 
 ```bash
-docker build -f Dockerfile.optimized \
+docker build -f Dockerfile.fastvm-preset \
+  --build-arg FASTVM_BASE_IMAGE=ghcr.io/cloudcompile/fastvm:base-latest \
   --build-arg FASTVM_DE=XFCE4 \
   --build-arg FASTVM_PRESET=development \
   -t fastvm:local .
 
 docker run -d -p 3000:3000 -p 3001:8099 fastvm:local
+```
+
+Building the shared base yourself instead of pulling it:
+
+```bash
+docker build -f Dockerfile.fastvm-base -t fastvm-base:local .
+# then add --build-arg FASTVM_BASE_IMAGE=fastvm-base:local to the preset build
 ```
 
 ## GPU and distro flavors
