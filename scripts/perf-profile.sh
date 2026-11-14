@@ -151,7 +151,8 @@ raster_threads() {
 
 # Software-encode threads for the recorder: leave a core for the desktop.
 encode_threads() {
-    local cpus="$1" t=$(( cpus - 1 ))
+    local cpus="$1"
+    local t=$(( cpus - 1 ))
     (( t < 1 )) && t=1
     echo "$t"
 }

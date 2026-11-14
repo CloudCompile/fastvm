@@ -302,11 +302,9 @@ jobs:
         run: bash -n scripts/gpu-detect.sh scripts/gpu-self-test.sh scripts/gpu-session-env.sh scripts/screen-recorder.sh
       - name: Validate GPU compose overlays
         run: |
-          python3 - <<'PY'
-          import yaml
-          for f in ("docker-compose.gpu.yml", "docker-compose.gpu-nvidia.yml"):
-              yaml.safe_load(open(f))
-          PY
+          docker compose -f docker-compose.yml -f docker-compose.gpu.yml config --quiet
+          docker compose -f docker-compose.yml -f docker-compose.gpu-nvidia.yml config --quiet
+          docker compose -f docker-compose.yml -f docker-compose.gpu.yml -f docker-compose.gpu-nvidia.yml config --quiet
       - name: Check GPU config surface is documented
         run: |
           set -euo pipefail
