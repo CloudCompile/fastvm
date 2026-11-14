@@ -123,14 +123,13 @@ jobs:
           grep -q '^GALLIUM_DRIVER=llvmpipe$' <<<"$env_out"
           grep -q '^LP_NUM_THREADS=2$' <<<"$env_out"
           grep -q '^FASTVM_PERF_ENCODE_THREADS=1$' <<<"$env_out"
-          # A bigger host leaves llvmpipe unconstrained; recorder budget remains emitted.
-          big="$(FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=8 FASTVM_PERF_FORCE_MEM_MB=32768 \
+          # An explicitly forced performance profile leaves the env empty.
+          big_json="$(FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=8 FASTVM_PERF_FORCE_MEM_MB=32768 \
             FASTVM_PERF_FORCE_PROFILE=performance FASTVM_PERF_FORCE_GPU_KIND=graphics \
-            bash scripts/perf-profile.sh env)"
-          ! grep -q '^LIBGL_ALWAYS_SOFTWARE=' <<<"$big"
-          ! grep -q '^LP_NUM_THREADS=' <<<"$big"
-          ! grep -q '^GALLIUM_DRIVER=' <<<"$big"
-          [[ -z "$big" ]] || { echo "expected no overrides on a performance-profile host; got: $big"; exit 1; }
+            bash scripts/perf-profile.sh json)"
+          echo "$big_json"
+          grep -q '"profile":"performance"' <<<"$big_json"
+          grep -q '"env":{}' <<<"$big_json"
       - name: A graphics GPU is never forced onto the software path
         run: |
           set -euo pipefail

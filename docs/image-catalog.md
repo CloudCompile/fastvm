@@ -36,6 +36,19 @@ moving tag updated by the image workflow on `main`.
 | Single app | `<app>-latest` | 4 | `browser-latest`, `terminal-latest` |
 | FastVM appliance | `fastvm-os-latest` | 1 | `fastvm-os-latest` |
 
+For each of the 33 supported desktop names and six presets, the workflow builds
+`<desktop>-<preset>-latest` on `main`, plus
+`<desktop>-<preset>-<version>` when a `v*` release tag is pushed. The four
+single-app tags are `browser-latest`, `discord-latest`, `vscode-latest`, and
+`terminal-latest`; the appliance tag is `fastvm-os-latest`. The shared build
+base is published as `base-latest` and `base-<commit-sha>` and is an internal
+build input, not a user-facing desktop variant. GPU has `gpu-latest` and
+`gpu-<commit-sha>` tags.
+
+The workflow currently publishes Linux `amd64` images (no multi-architecture
+manifest is configured). Check the tag's registry manifest before assuming
+support for another architecture.
+
 There are no separate Kali, Parrot, NixOS, pearOS, Pop!_OS, Linux Mint, or
 Ubuntu-flavor OS images in the supported matrix. To select KDE, for example,
 use `kde-none-latest`; it is a FastVM image on the Ubuntu/KasmVNC base, not an

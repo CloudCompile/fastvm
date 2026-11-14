@@ -52,7 +52,9 @@ cp config.env.example config.env
 
 The default image is intended for interactive desktop sessions. For a server
 that should start without KasmVNC or any GUI, use the separate headless stack
-documented in [`docs/nodejs.md`](docs/nodejs.md).
+documented in [`docs/nodejs.md`](docs/nodejs.md). Its published host port binds
+to loopback by default; use the documented authenticated HTTPS proxy examples
+before exposing an app publicly.
 
 ## Configuration and security
 

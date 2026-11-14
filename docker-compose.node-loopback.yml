@@ -1,7 +1,3 @@
-# Bind the headless Node.js service only to host loopback, so an HTTPS/auth
-# reverse proxy on the same Docker host is the only network-facing entry point.
-# Use with docker-compose.node.yml; requires Docker Compose v2.24.4+ for !override.
-services:
-  node-server:
-    ports: !override
-      - "127.0.0.1:${FASTVM_NODE_SERVER_HOST_PORT:-3002}:${FASTVM_NODE_SERVER_PORT:-3002}"
+# Deprecated compatibility helper: docker-compose.node.yml now defaults to
+# loopback via FASTVM_NODE_SERVER_BIND_IP=127.0.0.1; no overlay is needed.
+services: {}

@@ -61,13 +61,14 @@ public internet.** Terminate HTTPS and require authentication at a reverse
 proxy. These examples assume Caddy or Nginx runs on the Docker host and proxies
 to `127.0.0.1:3002`.
 
-Bind the host port to loopback with the included
-`docker-compose.node-loopback.yml` override. It replaces (rather than appends
-to) the default port mapping. This requires Docker Compose v2.24.4 or newer
-(the same `!override` support used by the GPU overlays).
+The standalone headless Compose service binds the **host side** to loopback by
+default (`FASTVM_NODE_SERVER_BIND_IP=127.0.0.1`), while the app itself binds to
+`0.0.0.0` inside the container so Docker can reach it. You do not need a port
+override. Only set `FASTVM_NODE_SERVER_BIND_IP=0.0.0.0` if you intentionally
+want direct network access and have a firewall/security layer in place.
 
 ```bash
-docker compose -f docker-compose.node.yml -f docker-compose.node-loopback.yml up -d
+docker compose -f docker-compose.node.yml up -d
 ```
 
 This binds the published host port to loopback, so it is not directly reachable
