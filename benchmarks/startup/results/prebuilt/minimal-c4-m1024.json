@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "minimal",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:08d9c93d827c4d0ace928525472c015a8c0a3308773878879560373827451764",
+  "image_size_bytes": 3280184681,
+  "idle_stats": "245.4MiB / 975.9MiB 4.91%",
+  "logs_tail": "94614005979-vin8ji0gi (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled /usr/bin/startxfce4: X server already running on display :1 ATTENTION: default value of option vblank_mode overridden by environment.  (xfce4-session:322): dbind-WARNING **: 23:53:26.103: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 976,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 85.8,
+  "build": "missing",
+  "create": 0.1,
+  "start_cold": 2.63,
+  "dash_cold": 2.12,
+  "start_stopped": 1.57,
+  "restart": 1.05,
+  "complete": true,
+  "wall_seconds": 122.2
+}

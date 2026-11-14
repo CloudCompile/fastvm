@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "development",
+  "image": "fastvm:bench-xfce4-development",
+  "image_size_bytes": 3276588062,
+  "idle_stats": "219.9MiB / 976.3MiB 4.76%",
+  "logs_tail": "[mi] mieq: warning: overriding existing handler (nil) with 0x55fc205adf50 for event 2 [mi] mieq: warning: overriding existing handler (nil) with 0x55fc205adf50 for event 3 19 [ls.io-init] done. [dashboard] starting on :8099 [analytics] session started: session-1794615184343-lcxwiom15 (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled /usr/bin/startxfce4: X server already running on display :1 ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 976,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 209.87,
+  "create": 0.03,
+  "start_cold": 2.55,
+  "dash_cold": 1.52,
+  "start_stopped": 1.61,
+  "restart": 1.05,
+  "complete": true,
+  "wall_seconds": 273.6
+}

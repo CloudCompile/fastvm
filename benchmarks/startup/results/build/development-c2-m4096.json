@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "development",
+  "image": "fastvm:bench-xfce4-development",
+  "image_size_bytes": 3276588062,
+  "idle_stats": "194.1MiB / 3.839GiB 5.56%",
+  "logs_tail": "one. [dashboard] starting on :8099 /usr/bin/startxfce4: X server already running on display :1 [analytics] session started: session-1794615192990-dq413hahs (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled  (xfce4-session:283): dbind-WARNING **: 00:13:13.133: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 217.33,
+  "create": 0.09,
+  "start_cold": 3.58,
+  "dash_cold": 3.09,
+  "start_stopped": 1.62,
+  "restart": 1.07,
+  "complete": true,
+  "wall_seconds": 273.7
+}

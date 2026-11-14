@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "none",
+  "image": "fastvm:bench-xfce4-none",
+  "image_size_bytes": 3276584774,
+  "idle_stats": "195.1MiB / 3.839GiB 4.25%",
+  "logs_tail": "ccessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files _IceTransmkdir: Owner of /tmp/.ICE-unix should be set to root  (xfwm4:418): dbind-WARNING **: 00:00:10.126: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfwm4:418): xfwm4-WARNING **: 00:00:10.234: Unsupported GL renderer (llvmpipe (LLVM 15.0.7, 256 bits)). ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 134.87,
+  "create": 0.05,
+  "start_cold": 2.42,
+  "dash_cold": 1.93,
+  "start_stopped": 1.09,
+  "restart": 1.08,
+  "complete": true,
+  "wall_seconds": 183.8
+}

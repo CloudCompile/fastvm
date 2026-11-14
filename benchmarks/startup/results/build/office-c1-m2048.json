@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "office",
+  "image": "fastvm:bench-xfce4-office",
+  "image_size_bytes": 3276584772,
+  "idle_stats": "197.5MiB / 1.937GiB 3.94%",
+  "logs_tail": " [mi] mieq: warning: overriding existing handler (nil) with 0x564a3f166f50 for event 2 [mi] mieq: warning: overriding existing handler (nil) with 0x564a3f166f50 for event 3 [ls.io-init] done. [dashboard] starting on :8099 19 [analytics] session started: session-1794615592188-dlwc4ahwd (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled ",
+  "host": {
+    "cpu_count": 1,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 1983,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 250.32,
+  "create": 0.04,
+  "start_cold": 2.67,
+  "dash_cold": 2.61,
+  "start_stopped": 1.63,
+  "restart": 1.64,
+  "complete": true,
+  "wall_seconds": 304.4
+}

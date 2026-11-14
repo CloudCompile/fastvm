@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "office",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:4239954a1df7ccfee9ac795b747c358356305df9fed4961d3b6b9f82aea227d4",
+  "image_size_bytes": 3280184697,
+  "idle_stats": "186.3MiB / 7.77GiB 3.82%",
+  "logs_tail": ".DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  ** (xfdesktop:467): WARNING **: 23:53:34.592: Thumbnailer failed calling GetFlavors  (xfsettingsd:475): dbind-WARNING **: 23:53:34.605: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  ** (xfdesktop:467): WARNING **: 23:53:34.624: Failed to get system bus: Could not connect: No such file or directory ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 7957,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 96.38,
+  "build": "missing",
+  "create": 0.13,
+  "start_cold": 1.62,
+  "dash_cold": 1.11,
+  "start_stopped": 1.05,
+  "restart": 1.56,
+  "complete": true,
+  "wall_seconds": 151.9
+}

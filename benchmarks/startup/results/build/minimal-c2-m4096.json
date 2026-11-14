@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "minimal",
+  "image": "fastvm:bench-xfce4-minimal",
+  "image_size_bytes": 3276584758,
+  "idle_stats": "194.1MiB / 3.839GiB 5.73%",
+  "logs_tail": "nalytics tracking enabled  (xfce4-session:280): dbind-WARNING **: 00:01:42.052: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files _IceTransmkdir: Owner of /tmp/.ICE-unix should be set to root  (xfwm4:422): dbind-WARNING **: 00:01:42.133: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 223.56,
+  "create": 0.08,
+  "start_cold": 3.14,
+  "dash_cold": 2.67,
+  "start_stopped": 2.22,
+  "restart": 1.62,
+  "complete": true,
+  "wall_seconds": 274.3
+}

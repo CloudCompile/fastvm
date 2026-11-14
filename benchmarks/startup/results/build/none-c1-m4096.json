@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "none",
+  "image": "fastvm:bench-xfce4-none",
+  "image_size_bytes": 3276584774,
+  "idle_stats": "195MiB / 3.839GiB 6.08%",
+  "logs_tail": " org.a11y.Bus was not provided by any .service files  (xfwm4:418): xfwm4-WARNING **: 00:02:00.152: Unsupported GL renderer (llvmpipe (LLVM 15.0.7, 256 bits)).  (xfsettingsd:431): dbind-WARNING **: 00:02:00.175: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfsettingsd:431): libupower-glib-WARNING **: 00:02:00.199: Couldn't connect to proxy: Could not connect: No such file or directory ",
+  "host": {
+    "cpu_count": 1,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 239.08,
+  "create": 0.06,
+  "start_cold": 4.28,
+  "dash_cold": 3.66,
+  "start_stopped": 2.19,
+  "restart": 2.83,
+  "complete": true,
+  "wall_seconds": 304.5
+}

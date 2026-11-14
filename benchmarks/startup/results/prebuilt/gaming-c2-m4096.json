@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "gaming",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:a8c7567320bffe345f02a8e240e1aa758fd51c9824429b2569df0558adf6be2d",
+  "image_size_bytes": 2987293396,
+  "idle_stats": "185.4MiB / 3.839GiB 3.47%",
+  "logs_tail": " org.a11y.Bus was not provided by any .service files  (xfwm4:419): xfwm4-WARNING **: 23:53:07.550: Unsupported GL renderer (llvmpipe (LLVM 15.0.7, 256 bits)).  (xfsettingsd:436): dbind-WARNING **: 23:53:07.575: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfsettingsd:436): libupower-glib-WARNING **: 23:53:07.588: Couldn't connect to proxy: Could not connect: No such file or directory ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 69.12,
+  "build": "missing",
+  "create": 0.17,
+  "start_cold": 1.99,
+  "dash_cold": 2.01,
+  "start_stopped": 1.05,
+  "restart": 1.06,
+  "complete": true,
+  "wall_seconds": 121.9
+}

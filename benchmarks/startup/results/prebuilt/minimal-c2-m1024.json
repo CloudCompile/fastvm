@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "minimal",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:08d9c93d827c4d0ace928525472c015a8c0a3308773878879560373827451764",
+  "image_size_bytes": 3280184681,
+  "idle_stats": "239.7MiB / 976.3MiB 3.38%",
+  "logs_tail": "7: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfsettingsd:543): dbind-WARNING **: 23:53:02.899: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfsettingsd:543): libupower-glib-WARNING **: 23:53:02.904: Couldn't connect to proxy: Could not connect: No such file or directory ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 976,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 64.69,
+  "build": "missing",
+  "create": 0.09,
+  "start_cold": 2.05,
+  "dash_cold": 1.53,
+  "start_stopped": 1.04,
+  "restart": 1.06,
+  "complete": true,
+  "wall_seconds": 122.1
+}

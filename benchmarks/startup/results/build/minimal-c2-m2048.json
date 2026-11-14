@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "minimal",
+  "image": "fastvm:bench-xfce4-minimal",
+  "image_size_bytes": 3276584758,
+  "idle_stats": "197.4MiB / 1.936GiB 4.61%",
+  "logs_tail": "2: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (xfsettingsd:548): libupower-glib-WARNING **: 00:03:35.339: Couldn't connect to proxy: Could not connect: No such file or directory  (xfce4-panel:551): dbind-WARNING **: 00:03:35.464: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 1983,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 337.98,
+  "create": 0.07,
+  "start_cold": 3.45,
+  "dash_cold": 2.91,
+  "start_stopped": 1.59,
+  "restart": 1.62,
+  "complete": true,
+  "wall_seconds": 394.3
+}

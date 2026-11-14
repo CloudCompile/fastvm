@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "content-creation",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:7e46cfd87c6d99de4d8f32bb7323e346a38525a8a662d9acf8cccbbe44cc7eb4",
+  "image_size_bytes": 2979170701,
+  "idle_stats": "182.3MiB / 3.839GiB 4.64%",
+  "logs_tail": "s was not provided by any .service files _IceTransmkdir: Owner of /tmp/.ICE-unix should be set to root [analytics] session started: session-1794613996838-embwx1gsd (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled  (xfwm4:418): dbind-WARNING **: 23:53:16.875: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 78.67,
+  "build": "missing",
+  "create": 0.08,
+  "start_cold": 1.37,
+  "dash_cold": 1.39,
+  "start_stopped": 1.57,
+  "restart": 1.07,
+  "complete": true,
+  "wall_seconds": 121.8
+}

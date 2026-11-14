@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "minimal",
+  "image": "fastvm:bench-xfce4-minimal",
+  "image_size_bytes": 3276584758,
+  "idle_stats": "229MiB / 975.9MiB 4.97%",
+  "logs_tail": ".DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  ** (xfdesktop:575): WARNING **: 00:02:55.908: Thumbnailer failed calling GetFlavors  (xfsettingsd:584): dbind-WARNING **: 00:02:55.928: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  ** (xfdesktop:575): WARNING **: 00:02:55.944: Failed to get system bus: Could not connect: No such file or directory ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 976,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 297.94,
+  "create": 0.06,
+  "start_cold": 3.08,
+  "dash_cold": 2.53,
+  "start_stopped": 2.09,
+  "restart": 2.1,
+  "complete": true,
+  "wall_seconds": 364.1
+}

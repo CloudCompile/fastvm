@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "content-creation",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:7e46cfd87c6d99de4d8f32bb7323e346a38525a8a662d9acf8cccbbe44cc7eb4",
+  "image_size_bytes": 2979170701,
+  "idle_stats": "238.5MiB / 976.3MiB 6.60%",
+  "logs_tail": "[mi] mieq: warning: overriding existing handler (nil) with 0x5598491e6f50 for event 2 [mi] mieq: warning: overriding existing handler (nil) with 0x5598491e6f50 for event 3 19 [dashboard] starting on :8099 [ls.io-init] done. [analytics] session started: session-1794614018624-n3mu3stsg (active: 1) [dashboard] listening on :8099 [dashboard] token stored at /config/dashboard.token [dashboard] analytics tracking enabled /usr/bin/startxfce4: X server already running on display :1 ",
+  "host": {
+    "cpu_count": 2,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 976,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 94.01,
+  "build": "missing",
+  "create": 0.17,
+  "start_cold": 3.98,
+  "dash_cold": 3.5,
+  "start_stopped": 2.71,
+  "restart": 2.18,
+  "complete": true,
+  "wall_seconds": 152.2
+}

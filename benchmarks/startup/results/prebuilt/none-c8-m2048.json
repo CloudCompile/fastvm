@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "none",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:41ec8000b2a18cd5b3850b056c170852b41e74667fa85034dcb5a47b98d6a4e4",
+  "image_size_bytes": 3280184695,
+  "idle_stats": "230.8MiB / 1.935GiB 5.53%",
+  "logs_tail": ".Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (wrapper-2.0:611): dbind-WARNING **: 23:53:08.814: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (wrapper-2.0:616): dbind-WARNING **: 23:53:08.891: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 8,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 1982,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 66.47,
+  "build": "missing",
+  "create": 0.17,
+  "start_cold": 5.4,
+  "dash_cold": 4.85,
+  "start_stopped": 1.55,
+  "restart": 1.55,
+  "complete": true,
+  "wall_seconds": 122.0
+}

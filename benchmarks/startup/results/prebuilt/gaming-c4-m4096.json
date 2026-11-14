@@ -1,0 +1,25 @@
+{
+  "mode": "prebuilt",
+  "preset": "gaming",
+  "image": "ghcr.io/cloudcompile/fastvm@sha256:a8c7567320bffe345f02a8e240e1aa758fd51c9824429b2569df0558adf6be2d",
+  "image_size_bytes": 2987293396,
+  "idle_stats": "186.7MiB / 3.839GiB 4.59%",
+  "logs_tail": ".DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  ** (xfdesktop:468): WARNING **: 23:53:13.019: Thumbnailer failed calling GetFlavors  (xfsettingsd:476): dbind-WARNING **: 23:53:13.033: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  ** (xfdesktop:468): WARNING **: 23:53:13.075: Failed to get system bus: Could not connect: No such file or directory ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 3931,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": 73.63,
+  "build": "missing",
+  "create": 0.17,
+  "start_cold": 1.85,
+  "dash_cold": 1.34,
+  "start_stopped": 1.57,
+  "restart": 1.66,
+  "complete": true,
+  "wall_seconds": 122.5
+}

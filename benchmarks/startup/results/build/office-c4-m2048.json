@@ -1,0 +1,25 @@
+{
+  "mode": "build",
+  "preset": "office",
+  "image": "fastvm:bench-xfce4-office",
+  "image_size_bytes": 3276584772,
+  "idle_stats": "202.6MiB / 1.936GiB 4.07%",
+  "logs_tail": ".Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (wrapper-2.0:596): dbind-WARNING **: 00:18:53.928: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files  (wrapper-2.0:601): dbind-WARNING **: 00:18:54.038: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files ",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+    "ram_mb": 1982,
+    "disk_free_gb": 21,
+    "kernel": "6.1.189+",
+    "docker_version": "Docker version 27.5.1, build 9f9e405"
+  },
+  "pull": "missing",
+  "build": 132.96,
+  "create": 0.03,
+  "start_cold": 1.93,
+  "dash_cold": 1.42,
+  "start_stopped": 1.56,
+  "restart": 1.56,
+  "complete": true,
+  "wall_seconds": 183.1
+}
