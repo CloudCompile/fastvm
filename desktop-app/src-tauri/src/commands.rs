@@ -450,6 +450,8 @@ mod tests {
         assert!(is_known_tag("xfce4-none-latest"));
         assert!(is_known_tag("kde-gaming-latest"));
         assert!(is_known_tag("browser-latest"));
+        assert!(!is_known_tag("kali-latest"));
+        assert!(!is_known_tag("pearos-latest"));
     }
 
     #[test]
