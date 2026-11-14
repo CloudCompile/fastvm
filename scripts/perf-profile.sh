@@ -26,7 +26,8 @@
 #     perf-profile.sh bench    # time a software encode at the derived threads
 #
 # Test hooks (used by CI, no small host required):
-#   FASTVM_PERF_FORCE_CPUS, FASTVM_PERF_FORCE_MEM_MB, FASTVM_PERF_FORCE_SHM_MB
+#   FASTVM_PERF_FORCE_CPUS, FASTVM_PERF_FORCE_MEM_MB, FASTVM_PERF_FORCE_SHM_MB,
+#   FASTVM_PERF_FORCE_PROFILE (overrides config.env for deterministic CI tests)
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -324,7 +325,7 @@ main() {
     mem_mb="$(detect_mem_mb)"
     shm="$(shm_mb)"
     kind="$(gpu_kind)"
-    profile="${FASTVM_PERF_PROFILE:-auto}"
+    profile="${FASTVM_PERF_FORCE_PROFILE:-${FASTVM_PERF_PROFILE:-auto}}"
     [[ "$profile" == "auto" || -z "$profile" ]] && profile="$(classify "$cpus" "$mem_mb")"
 
     case "$mode" in

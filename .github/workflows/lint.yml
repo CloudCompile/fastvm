@@ -125,7 +125,7 @@ jobs:
           grep -q '^FASTVM_PERF_ENCODE_THREADS=1$' <<<"$env_out"
           # A bigger host leaves llvmpipe unconstrained; recorder budget remains emitted.
           big="$(FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=8 FASTVM_PERF_FORCE_MEM_MB=32768 \
-            FASTVM_PERF_PROFILE=performance FASTVM_PERF_FORCE_GPU_KIND=graphics \
+            FASTVM_PERF_FORCE_PROFILE=performance FASTVM_PERF_FORCE_GPU_KIND=graphics \
             bash scripts/perf-profile.sh env)"
           ! grep -q '^LIBGL_ALWAYS_SOFTWARE=' <<<"$big"
           ! grep -q '^LP_NUM_THREADS=' <<<"$big"
