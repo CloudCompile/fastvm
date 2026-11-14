@@ -39,7 +39,7 @@ def main():
     rows.sort(key=lambda d: (d["mode"], d["preset"], d["host"]["cpu_count"], d["host"]["ram_mb"]))
 
     print("| Mode | Preset | vCPU | RAM | " + " | ".join(METRIC_LABELS[m] for m in METRICS) + " | Idle (RAM/CPU) | Complete |")
-    print("|" * 2 + " --- |" * 2 + " --- |" * (len(METRICS) + 1) + " --- | --- |")
+    print("| --- | --- | --- | --- | " + " --- |" * (len(METRICS) + 1))
 
     for d in rows:
         h = d.get("host", {})
