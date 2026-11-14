@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 env:
-  FASTVM_PR_BASE: ghcr.io/${{ github.repository_owner }}/fastvm:pr-base-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  FASTVM_PR_BASE: ghcr.io/cloudcompile/fastvm:pr-base-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
 
 jobs:
   config-and-compose:
