@@ -56,6 +56,74 @@ you do not need a browser desktop.
 
 ## Security
 
-The application port is published directly. Put it behind an authenticated
-HTTPS reverse proxy before exposing it outside a trusted network. Do not mount
-the Docker socket into the application container.
+The app listens on a published port. **Do not expose that port directly to the
+public internet.** Terminate HTTPS and require authentication at a reverse
+proxy. These examples assume Caddy or Nginx runs on the Docker host and proxies
+to `127.0.0.1:3002`.
+
+The standalone headless Compose service binds the **host side** to loopback by
+default (`FASTVM_NODE_SERVER_BIND_IP=127.0.0.1`), while the app itself binds to
+`0.0.0.0` inside the container so Docker can reach it. You do not need a port
+override. Only set `FASTVM_NODE_SERVER_BIND_IP=0.0.0.0` if you intentionally
+want direct network access and have a firewall/security layer in place.
+
+```bash
+docker compose -f docker-compose.node.yml up -d
+```
+
+This binds the published host port to loopback, so it is not directly reachable
+from other machines. Keep the firewall closed for port `3002` as an additional
+safeguard.
+
+### Caddy (automatic HTTPS + Basic Auth)
+
+Create a password hash with `caddy hash-password`, then configure a site:
+
+```caddyfile
+node.example.com {
+    basic_auth {
+        {$FASTVM_PROXY_USER} {$FASTVM_PROXY_PASSWORD_HASH}
+    }
+    reverse_proxy 127.0.0.1:3002
+}
+```
+
+Set `FASTVM_PROXY_USER` and `FASTVM_PROXY_PASSWORD_HASH` in the Caddy service's
+environment (use the generated hash, not a plaintext password). Point the
+domain's DNS at the host and allow inbound ports `80` and `443` for Caddy's
+automatic certificate management.
+
+### Nginx (TLS + Basic Auth)
+
+Create the password file with `sudo htpasswd -c /etc/nginx/fastvm.htpasswd USER`
+and configure the TLS server. Replace the certificate paths with certificates
+managed by your ACME client:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name node.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/node.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/node.example.com/privkey.pem;
+
+    auth_basic "FastVM Node app";
+    auth_basic_user_file /etc/nginx/fastvm.htpasswd;
+
+    location / {
+        proxy_pass http://127.0.0.1:3002;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+Redirect HTTP to HTTPS and allow inbound `443` (and `80` only if needed for
+ACME/redirects). Keep the app's published port loopback-only. Do not mount the
+Docker socket into the application container. Authentication at the proxy is
+an example; use your organization's identity-aware proxy if available.

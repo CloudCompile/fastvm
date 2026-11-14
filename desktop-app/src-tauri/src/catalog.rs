@@ -23,8 +23,8 @@ pub const DESKTOPS: &[&str] = &[
     "xfce4", "kde", "gnome", "cinnamon", "lxqt", "i3", "budgie", "mate", "lxde",
     "fluxbox", "unity", "enlightenment", "icewm", "awesome", "ukui", "bspwm",
     "gnome-flashback", "wmaker", "herbstluftwm", "jwm", "fvwm", "xmonad", "sugar",
-    "dwm", "ratpoison", "blackbox", "pop-os", "pekwm", "spectrwm", "sawfish",
-    "openbox", "afterstep", "ctwm", "twm", "nixos", "pearos",
+    "dwm", "ratpoison", "blackbox", "pekwm", "spectrwm", "sawfish",
+    "openbox", "afterstep", "ctwm", "twm",
 ];
 
 /// Every published preset overlay.
@@ -35,12 +35,8 @@ pub const PRESETS: &[&str] = &[
 /// Ultra-minimal single-application images.
 pub const SINGLE_APPS: &[&str] = &["browser", "discord", "vscode", "terminal"];
 
-/// Distro-flavor images (each publishes a single `<flavor>-latest` tag).
-pub const FLAVORS: &[&str] = &[
-    "fastvm-os", "ubuntu-studio", "ubuntu-kylin", "ubuntu-budgie",
-    "ubuntu-edubuntu", "xubuntu", "lubuntu", "kubuntu", "ubuntu-mate",
-    "ubuntu-unity", "pop-os", "linuxmint", "kali", "parrot", "nixos", "pearos",
-];
+/// FastVM-specific appliance images (each publishes a `<flavor>-latest` tag).
+pub const FLAVORS: &[&str] = &["fastvm-os"];
 
 /// `<desktop>-<preset>-latest`.
 pub fn desktop_tag(desktop: &str, preset: &str) -> Result<String, String> {
@@ -98,7 +94,6 @@ pub fn desktop_label(desktop: &str) -> String {
         "dwm" => "dwm",
         "ratpoison" => "Ratpoison",
         "blackbox" => "Blackbox",
-        "pop-os" => "Pop!_OS",
         "pekwm" => "PekWM",
         "spectrwm" => "spectrwm",
         "sawfish" => "Sawfish",
@@ -106,8 +101,6 @@ pub fn desktop_label(desktop: &str) -> String {
         "afterstep" => "AfterStep",
         "ctwm" => "CTWM",
         "twm" => "twm",
-        "nixos" => "NixOS",
-        "pearos" => "pearOS",
         other => other,
     }
     .to_string()
@@ -127,25 +120,10 @@ pub fn preset_label(preset: &str) -> String {
     .to_string()
 }
 
-/// Human label for a distro flavor token (`ubuntu-studio` -> `Ubuntu Studio`).
+/// Human label for a FastVM appliance flavor token.
 pub fn flavor_label(flavor: &str) -> String {
     match flavor {
         "fastvm-os" => "FastVM OS",
-        "ubuntu-studio" => "Ubuntu Studio",
-        "ubuntu-kylin" => "Ubuntu Kylin",
-        "ubuntu-budgie" => "Ubuntu Budgie",
-        "ubuntu-edubuntu" => "Ubuntu Edubuntu",
-        "xubuntu" => "Xubuntu",
-        "lubuntu" => "Lubuntu",
-        "kubuntu" => "Kubuntu",
-        "ubuntu-mate" => "Ubuntu MATE",
-        "ubuntu-unity" => "Ubuntu Unity",
-        "pop-os" => "Pop!_OS",
-        "linuxmint" => "Linux Mint",
-        "kali" => "Kali Linux",
-        "parrot" => "Parrot Security OS",
-        "nixos" => "NixOS",
-        "pearos" => "pearOS",
         other => other,
     }
     .to_string()
@@ -192,8 +170,7 @@ pub const FEATURED_TAGS: &[&str] = &[
     "kde-gaming-latest",
     "xfce4-development-latest",
     "kde-content-creation-latest",
-    "kali-latest",
-    "pearos-latest",
+    "fastvm-os-latest",
 ];
 
 
@@ -238,7 +215,7 @@ pub fn desktop_app(desktop: &str, preset: &str) -> App {
     }
 }
 
-/// Build a listing for a distro-flavor image.
+/// Build a listing for a FastVM appliance image.
 pub fn flavor_app(flavor: &str) -> App {
     let tag = flavor_tag(flavor).unwrap_or_default();
     App {
@@ -276,7 +253,7 @@ pub fn single_app(name: &str) -> App {
     }
 }
 
-/// Every published variant (236): desktop x preset + flavors + single apps.
+/// Every published variant: desktop x preset + FastVM appliance + single apps.
 pub fn all_variants() -> Vec<App> {
     let mut out = Vec::with_capacity(variant_count());
     for d in DESKTOPS {
@@ -302,7 +279,7 @@ pub fn find_app(tag: &str) -> Option<App> {
 /// A marketplace listing.
 #[derive(Clone, Debug, Serialize)]
 pub struct App {
-    /// Image tag, e.g. `pearos-none-latest`.
+    /// Image tag, e.g. `xfce4-none-latest`.
     pub id: String,
     pub name: String,
     pub tagline: String,
@@ -517,22 +494,6 @@ pub fn curated() -> Vec<App> {
         preset(desktop(app("kde-content-creation-latest", "Creator Studio", "KDE with creative tooling", "Content Creation", "preset", "3 GB", false, true), "kde"), "content-creation"),
         preset(desktop(app("xfce4-office-latest", "Office Suite", "XFCE4 with document and productivity apps", "Office", "preset", "2 GB", false, false), "xfce4"), "office"),
 
-        flavor(app("kali-latest", "Kali Linux", "Security tooling on an XFCE4 base", "Security", "flavor", "2 GB", false, true), "kali"),
-        flavor(app("parrot-latest", "Parrot Security OS", "Security and privacy toolkit, MATE", "Security", "flavor", "2 GB", false, false), "parrot"),
-
-        flavor(app("pearos-latest", "pearOS", "A macOS-inspired KDE Plasma desktop", "Distros", "flavor", "1.5 GB", false, true), "pearos"),
-        flavor(app("pop-os-latest", "Pop!_OS", "System76's GNOME experience", "Distros", "flavor", "2 GB", false, false), "pop-os"),
-        flavor(app("nixos-latest", "NixOS", "Openbox shell with the Nix package manager", "Distros", "flavor", "256 MB", false, false), "nixos"),
-        flavor(app("linuxmint-latest", "Linux Mint", "Cinnamon with the Mint feel", "Distros", "flavor", "1 GB", false, false), "linuxmint"),
-        flavor(app("ubuntu-studio-latest", "Ubuntu Studio", "KDE with creative tooling", "Content Creation", "flavor", "3 GB", false, false), "ubuntu-studio"),
-        flavor(app("kubuntu-latest", "Kubuntu", "Ubuntu with KDE Plasma", "Distros", "flavor", "1.5 GB", false, false), "kubuntu"),
-        flavor(app("xubuntu-latest", "Xubuntu", "Ubuntu with XFCE4", "Distros", "flavor", "512 MB", false, false), "xubuntu"),
-        flavor(app("lubuntu-latest", "Lubuntu", "Ubuntu with the light LXQt desktop", "Distros", "flavor", "256 MB", false, false), "lubuntu"),
-        flavor(app("ubuntu-mate-latest", "Ubuntu MATE", "Ubuntu with the MATE desktop", "Distros", "flavor", "512 MB", false, false), "ubuntu-mate"),
-        flavor(app("ubuntu-budgie-latest", "Ubuntu Budgie", "Ubuntu with the Budgie desktop", "Distros", "flavor", "1 GB", false, false), "ubuntu-budgie"),
-        flavor(app("ubuntu-kylin-latest", "Ubuntu Kylin", "Ubuntu with the UKUI desktop", "Distros", "flavor", "1 GB", false, false), "ubuntu-kylin"),
-        flavor(app("ubuntu-unity-latest", "Ubuntu Unity", "The classic Unity shell", "Distros", "flavor", "1 GB", false, false), "ubuntu-unity"),
-        flavor(app("ubuntu-edubuntu-latest", "Ubuntu Edubuntu", "GNOME tuned for education", "Distros", "flavor", "2 GB", false, false), "ubuntu-edubuntu"),
         flavor(app("fastvm-os-latest", "FastVM OS", "The FastVM appliance shell", "Distros", "flavor", "1 GB", false, false), "fastvm-os"),
 
         app("browser-latest", "Browser only", "Just a browser, no desktop", "Minimal", "single", "256 MB", false, false),
@@ -565,21 +526,22 @@ mod tests {
 
     #[test]
     fn catalog_sizes() {
-        assert_eq!(DESKTOPS.len(), 36);
+        assert_eq!(DESKTOPS.len(), 33);
         assert_eq!(PRESETS.len(), 6);
-        assert_eq!(FLAVORS.len(), 16);
+        assert_eq!(FLAVORS.len(), 1);
         assert_eq!(SINGLE_APPS.len(), 4);
     }
 
     #[test]
     fn variant_count_matches_readme() {
-        assert_eq!(variant_count(), 236);
+        assert_eq!(variant_count(), 203);
     }
 
     #[test]
     fn tags_build_and_validate() {
-        assert_eq!(desktop_tag("pearos", "gaming").unwrap(), "pearos-gaming-latest");
-        assert_eq!(flavor_tag("kali").unwrap(), "kali-latest");
+        assert_eq!(flavor_tag("fastvm-os").unwrap(), "fastvm-os-latest");
+        assert!(flavor_tag("kali").is_err());
+        assert!(flavor_tag("nixos").is_err());
         assert_eq!(single_app_tag("browser").unwrap(), "browser-latest");
         assert!(desktop_tag("nope", "none").is_err());
         assert!(desktop_tag("xfce4", "nope").is_err());
@@ -598,10 +560,10 @@ mod tests {
     #[test]
     fn full_run_args() {
         let spec = RunSpec {
-            image: "x:pearos-latest".into(),
+            image: "x:fastvm-os-latest".into(),
             host_port: 3000,
             dashboard_port: 3001,
-            name: Some("FastVM-pearOS".into()),
+            name: Some("FastVM-OS".into()),
             shm_size: Some("4gb".into()),
             gpu: true,
             env: vec!["TZ=Etc/UTC".into()],
@@ -610,10 +572,10 @@ mod tests {
         assert_eq!(
             build_run_args(&spec).unwrap(),
             vec![
-                "run", "-d", "--name", "FastVM-pearOS", "-p", "3000:3000", "-p", "3001:8099",
+                "run", "-d", "--name", "FastVM-OS", "-p", "3000:3000", "-p", "3001:8099",
                 "--shm-size", "4gb", "--device", "/dev/dri",
                 "-e", "FASTVM_GPU_HW=true", "-e", "FASTVM_RECORDING_ENCODER=vaapi",
-                "-e", "TZ=Etc/UTC", "x:pearos-latest"
+                "-e", "TZ=Etc/UTC", "x:fastvm-os-latest"
             ]
         );
     }
@@ -645,7 +607,7 @@ mod tests {
     #[test]
     fn compose_uses_the_right_gpu_stanza_per_mode() {
         let base = |mode| RunSpec {
-            image: "x:pearos-latest".into(),
+            image: "x:fastvm-os-latest".into(),
             gpu_mode: mode,
             ..Default::default()
         };
@@ -670,7 +632,7 @@ mod tests {
     #[test]
     fn compose_renders_env_and_volumes() {
         let spec = RunSpec {
-            image: "x:pearos-latest".into(),
+            image: "x:fastvm-os-latest".into(),
             env: vec!["TZ=Etc/UTC".into()],
             volumes: vec!["/tmp/work:/work".into()],
             memory: Some("4g".into()),
@@ -692,7 +654,7 @@ mod tests {
     #[test]
     fn gpu_modes_add_the_right_flags() {
         let base = |mode| RunSpec {
-            image: "x:pearos-latest".into(),
+            image: "x:fastvm-os-latest".into(),
             gpu_mode: mode,
             ..Default::default()
         };
@@ -701,7 +663,7 @@ mod tests {
             vec![
                 "run", "-d", "-p", "3000:3000", "--gpus", "all",
                 "-e", "NVIDIA_DRIVER_CAPABILITIES=compute,video,utility", "-e", "FASTVM_RECORDING_ENCODER=nvenc",
-                "x:pearos-latest"
+                "x:fastvm-os-latest"
             ]
         );
         assert_eq!(
@@ -710,7 +672,7 @@ mod tests {
                 "run", "-d", "-p", "3000:3000", "--device", "/dev/dri", "--device", "/dev/kfd",
                 "--group-add", "keep-groups",
                 "-e", "DISABLE_DRI=1", "-e", "FASTVM_GPU_HW=false", "-e", "FASTVM_RECORDING_ENCODER=software",
-                "x:pearos-latest"
+                "x:fastvm-os-latest"
             ]
         );
         assert_eq!(
@@ -718,12 +680,12 @@ mod tests {
             vec![
                 "run", "-d", "-p", "3000:3000", "--device", "/dev/dri",
                 "-e", "FASTVM_GPU_HW=true", "-e", "FASTVM_RECORDING_ENCODER=vaapi",
-                "x:pearos-latest"
+                "x:fastvm-os-latest"
             ]
         );
         assert_eq!(
             build_run_args(&base(GpuMode::Off)).unwrap(),
-            vec!["run", "-d", "-p", "3000:3000", "x:pearos-latest"]
+            vec!["run", "-d", "-p", "3000:3000", "x:fastvm-os-latest"]
         );
     }
 
@@ -732,7 +694,7 @@ mod tests {
         // Mode env comes first; the user's own `-e` is appended after, so Docker
         // (last value wins) honours the user.
         let spec = RunSpec {
-            image: "x:pearos-latest".into(),
+            image: "x:fastvm-os-latest".into(),
             gpu_mode: GpuMode::Drm,
             env: vec!["FASTVM_RECORDING_ENCODER=qsv".into()],
             ..Default::default()
@@ -746,7 +708,7 @@ mod tests {
     #[test]
     fn explicit_gpu_mode_wins_over_legacy_bool() {
         let spec = RunSpec {
-            image: "x:pearos-latest".into(),
+            image: "x:fastvm-os-latest".into(),
             gpu: true,
             gpu_mode: GpuMode::Nvidia,
             ..Default::default()
@@ -759,8 +721,8 @@ mod tests {
     #[test]
     fn marketplace_is_populated_and_consistent() {
         let apps = marketplace();
-        assert!(apps.len() >= 25, "marketplace should list at least 25 apps");
-        assert!(apps.iter().any(|a| a.id == "pearos-latest"));
+        assert!(apps.len() >= 10, "marketplace should list desktop and preset variants");
+        assert!(apps.iter().any(|a| a.id == "fastvm-os-latest"));
         assert!(apps.iter().any(|a| a.featured));
         // Every listed image must be a real, validated tag.
         for a in &apps {
@@ -801,8 +763,8 @@ mod tests {
         let gaming = apps.iter().find(|a| a.id == "kde-gaming-latest").unwrap();
         assert_eq!(gaming.name, "Gaming Rig");
         assert!(gaming.gpu);
-        let pear = apps.iter().find(|a| a.id == "pearos-latest").unwrap();
-        assert_eq!(pear.name, "pearOS");
+        let appliance = apps.iter().find(|a| a.id == "fastvm-os-latest").unwrap();
+        assert_eq!(appliance.name, "FastVM OS");
         // A generated variant keeps its composed name.
         let plain = apps.iter().find(|a| a.id == "spectrwm-none-latest").unwrap();
         assert_eq!(plain.name, "spectrwm");
@@ -813,17 +775,17 @@ mod tests {
     #[test]
     fn find_app_resolves_generated_and_flavor_tags() {
         assert!(find_app("spectrwm-office-latest").is_some());
-        assert!(find_app("kali-latest").is_some());
+        assert!(find_app("fastvm-os-latest").is_some());
+        assert!(find_app("kali-latest").is_none());
         assert!(find_app("nope-latest").is_none());
     }
 
     #[test]
     fn labels_read_well() {
-        assert_eq!(desktop_label("pearos"), "pearOS");
         assert_eq!(desktop_label("gnome-flashback"), "GNOME Flashback");
         assert_eq!(preset_label("content-creation"), "Content Creation");
         assert_eq!(preset_label("none"), "");
-        assert_eq!(flavor_label("ubuntu-studio"), "Ubuntu Studio");
+        assert_eq!(flavor_label("fastvm-os"), "FastVM OS");
         assert_eq!(single_app_label("vscode"), "VSCodium only");
     }
 }

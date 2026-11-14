@@ -109,7 +109,6 @@ DE_LINES = [
     "dwm (Tiling)",
     "Ratpoison (Tiling)",
     "Blackbox (Minimal WM)",
-    "Pop!_OS (GNOME)",
     "PekWM (Lightweight)",
     "spectrwm (Tiling)",
     "Sawfish (Scriptable)",

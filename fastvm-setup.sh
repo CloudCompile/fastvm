@@ -466,21 +466,6 @@ case "$DE_UPPER" in
         cp /startwm-blackbox.sh /defaults/startwm.sh
         ;;
 
-    "POP-OS"|"POP OS"|"POPOS"|"POP!_OS"|"POP OS (GNOME)")
-        log_info "Installing the Pop!_OS (System76) GNOME desktop..."
-        # Pop!_OS is a GNOME Shell distribution; reuse the GNOME stack with the
-        # Pop GTK/icon themes and the pop-os session launcher.
-        install_packages \
-            gnome-shell \
-            gnome-session \
-            gnome-terminal \
-            dbus-x11 \
-            pop-gtk-theme \
-            pop-icon-theme \
-            firefox
-        cp /startwm-pop-os.sh /defaults/startwm.sh
-        ;;
-
     "PEKWM"|"PEKWM (VERY LIGHTWEIGHT)"|"PEKWM (LIGHTWEIGHT)")
         log_info "Installing PekWM..."
         install_packages \
@@ -564,47 +549,6 @@ case "$DE_UPPER" in
         cp /startwm-twm.sh /defaults/startwm.sh
         ;;
 
-    "NIXOS"|"NIX"|"NIXOS (OPENBOX)")
-        log_info "Installing the NixOS flavor desktop..."
-        # Additive distro flavor: the Ubuntu 22.04 base and KasmVNC stack are
-        # unchanged. This installs the Nix package manager (Ubuntu's nix-bin)
-        # plus a minimal Openbox shell, and pairs with FASTVM_OS_FLAVOR=nixos.
-        install_packages \
-            openbox \
-            obconf \
-            tint2 \
-            rofi \
-            xterm \
-            x11-xserver-utils \
-            nix-bin \
-            firefox
-        # Enable the Nix daemon profile path without requiring nix-daemon.
-        if command -v nix >/dev/null 2>&1; then
-            mkdir -p /nix/var/nix/profiles/default/etc/profile.d
-            ln -sf /etc/profile.d/nix.sh \
-                /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh 2>/dev/null || true
-        fi
-        cp /startwm-nixos.sh /defaults/startwm.sh
-        ;;
-
-    "PEAROS"|"PEAR OS"|"PEAR-OS"|"PEAROS (KDE)")
-        log_info "Installing the pearOS (macOS-inspired KDE Plasma) desktop..."
-        # pearOS is an Arch-based distribution that customises KDE Plasma to look
-        # like macOS. Its own packages are not in the Ubuntu 22.04 archive, so
-        # this reuses the available KDE Plasma stack plus macOS-like theming and
-        # pairs with FASTVM_OS_FLAVOR=pearos.
-        install_packages \
-            plasma-desktop \
-            plasma-workspace \
-            kwin-x11 \
-            systemsettings \
-            kde-config-gtk-style \
-            kde-style-breeze \
-            papirus-icon-theme \
-            firefox
-        cp /startwm-pearos.sh /defaults/startwm.sh
-        ;;
-
     *)
         log_error "Unknown desktop environment: $DE_SELECTION (normalised: $DE_UPPER)"
         log_info "Falling back to XFCE4"
@@ -644,11 +588,9 @@ rm -f /startwm-kde.sh /startwm-i3.sh /startwm-xfce.sh /startwm-gnome.sh \
       /startwm-gnome-flashback.sh /startwm-wmaker.sh \
       /startwm-xmonad.sh /startwm-sugar.sh \
       /startwm-dwm.sh /startwm-ratpoison.sh /startwm-blackbox.sh \
-      /startwm-pop-os.sh \
       /startwm-pekwm.sh /startwm-spectrwm.sh /startwm-sawfish.sh \
       /startwm-openbox.sh /startwm-afterstep.sh \
-      /startwm-ctwm.sh /startwm-twm.sh /startwm-nixos.sh \
-      /startwm-pearos.sh \
+      /startwm-ctwm.sh /startwm-twm.sh \
       2>/dev/null || true
 
 log_info "Desktop Environment setup complete!"
