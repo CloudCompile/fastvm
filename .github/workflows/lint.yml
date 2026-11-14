@@ -105,7 +105,7 @@ jobs:
         run: |
           set -euo pipefail
           tmp="$(mktemp -d)"
-          export FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=2 FASTVM_PERF_FORCE_MEM_MB=8192
+          export FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=2 FASTVM_PERF_FORCE_MEM_MB=8192 FASTVM_PERF_FORCE_GPU_KIND=none
           json="$(bash scripts/perf-profile.sh json)"
           echo "$json"
           grep -q '"profile":"constrained"' <<<"$json"
