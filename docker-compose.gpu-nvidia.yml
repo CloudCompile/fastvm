@@ -24,7 +24,10 @@ services:
       - FASTVM_GPU_HW=${FASTVM_GPU_HW:-true}
       - FASTVM_GPU_KEEP_COMPOSITING=${FASTVM_GPU_KEEP_COMPOSITING:-false}
       - DRINODE=${DRINODE:-/dev/dri/renderD128}
-    group_add:
+    # !override: when stacked on docker-compose.gpu.yml (see header above),
+    # Compose would otherwise concatenate both group_add lists and fail
+    # validation with duplicate entries.
+    group_add: !override
       - video
       - render
     deploy:
