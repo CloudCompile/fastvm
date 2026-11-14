@@ -33,6 +33,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib-common.sh
 source "${SCRIPT_DIR}/lib-common.sh"
+if [[ -n "${FASTVM_PERF_FORCE_PROFILE:-}" ]]; then
+    FASTVM_PERF_PROFILE="$FASTVM_PERF_FORCE_PROFILE"
+fi
 
 STATE_DIR="${FASTVM_DATA_ROOT:-/config}/.fastvm"
 PROFILE_JSON="${STATE_DIR}/perf-profile.json"
