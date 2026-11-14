@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy AS build
 
 ARG BUILD_DATE
 ARG VERSION=alpha
@@ -41,8 +41,61 @@ RUN set -eu && \
     apt-get autoclean && apt-get autoremove -y && \
     rm -rf /config/.cache /var/lib/apt/lists/* /var/tmp/* /tmp/* /var/log/* \
       /usr/share/doc/* /usr/share/man/* && \
+    # ---- OS library trim (no runtime impact) ------------------------------
+    # Keep only English locales + C/POSIX: the locale archive alone was ~394 MB
+    # with 620 locales compiled in. Regenerate a minimal archive.
+    localedef --list-archive 2>/dev/null | grep -Ev '^(en|C)\.' | \
+      xargs -r localedef --delete-from-archive && \
+    rm -rf /usr/share/locale && mkdir -p /usr/share/locale/en \
+      /usr/share/locale/en_US/LC_MESSAGES && \
+    # C headers are build-time only.
+    rm -rf /usr/include/* && \
+    # Static archives are link-time only.
+    find /usr/lib /usr/local/lib -name '*.a' -type f -delete 2>/dev/null || true && \
+    # ---------------------------------------------------------------------------
     mkdir -p /var/log/fastvm /config /config/backups /config/recordings \
       /config/.fastvm /var/log/nginx && \
     chown -R 1000:1000 /config && chown -R www-data:www-data /var/log/nginx && \
     chmod +x /etc/cont-init.d/99-fastvm-init \
       /etc/services.d/fastvm-dashboard/run 2>/dev/null || true
+
+# =============================================================================
+# Flatten: repackage the trimmed filesystem into a single layer. Without this,
+# deletions above cannot shrink the image (the upstream layers still carry the
+# data, e.g. the ~394 MB locale archive). Metadata below mirrors the upstream
+# baseimage exactly.
+# =============================================================================
+FROM scratch
+ARG BUILD_DATE
+ARG VERSION=alpha
+
+COPY --from=build / /
+
+LABEL org.opencontainers.image.title="FastVM shared base" \
+      org.opencontainers.image.description="Desktop-neutral shared FastVM runtime base, trimmed single-layer" \
+      org.opencontainers.image.source="https://github.com/CloudCompile/fastvm" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}"
+
+# Mirrors ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy config.
+ENV PATH=/lsiopy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    HOME=/config \
+    LANGUAGE=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    TERM=xterm \
+    S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0 \
+    S6_VERBOSITY=1 \
+    S6_STAGE2_HOOK=/docker-mods \
+    VIRTUAL_ENV=/lsiopy \
+    DISPLAY=:1 \
+    PERL5LIB=/usr/local/bin \
+    OMP_WAIT_POLICY=PASSIVE \
+    GOMP_SPINCOUNT=0 \
+    START_DOCKER=true \
+    PULSE_RUNTIME_PATH=/defaults \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NODE_ENV=production
+EXPOSE 3000 3001
+VOLUME /config
+WORKDIR /
+ENTRYPOINT ["/init"]
