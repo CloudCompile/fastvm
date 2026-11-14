@@ -1,39 +1,29 @@
 # FastVM Image Catalog
 
-FastVM publishes 216 desktop/preset combinations and 4 single-app variants.
+FastVM publishes 198 desktop/preset combinations and 4 single-app variants.
 Tags follow `<desktop>-<preset>-latest` or `<name>-latest`; release tags add
 `-vX.Y.Z`. The supported desktop values are `xfce4`, `kde`, `gnome`,
 `cinnamon`, `lxqt`, `i3`, `budgie`, `mate`, `lxde`, `fluxbox`, `unity`,
 `enlightenment`, `icewm`, `awesome`, `ukui`, `bspwm`, `herbstluftwm`, `jwm`,
 `fvwm`, `gnome-flashback`, `wmaker`, `xmonad`, `sugar`, `dwm`, `ratpoison`,
 `blackbox`, `pekwm`, `spectrwm`, `sawfish`, `openbox`, `afterstep`, `ctwm`,
-`twm`, `nixos`, `pearos`, and `pop-os`.
+and `twm`.
 Presets are `none`, `minimal`, `gaming`, `development`, `office`, and
 `content-creation`.
 
-Sixteen additive distro-flavor images are published separately and do not
-replace any desktop/preset tag: `fastvm-os-latest` (Openbox/Tint2 appliance
-shell), `ubuntu-studio-latest` (KDE Plasma with the Ubuntu Studio 22.04 identity
-layer), `ubuntu-kylin-latest` (UKUI with the Ubuntu Kylin 22.04 identity layer),
-`ubuntu-budgie-latest` (Budgie with the Ubuntu Budgie 22.04 identity layer),
-`ubuntu-edubuntu-latest` (GNOME with the Ubuntu Edubuntu 22.04 identity layer),
-`xubuntu-latest` (XFCE with the Xubuntu 22.04 identity layer),
-`lubuntu-latest` (LXQt with the Lubuntu 22.04 identity layer),
-`kubuntu-latest` (KDE Plasma with the Kubuntu 22.04 identity layer),
-`ubuntu-mate-latest` (MATE with the Ubuntu MATE 22.04 identity layer),
-`ubuntu-unity-latest` (Unity with the Ubuntu Unity 22.04 identity layer),
-`pop-os-latest` (Pop!_OS GNOME with the Pop GTK/icon themes),
-`linuxmint-latest` (Cinnamon with the Linux Mint identity layer),
-`kali-latest` (XFCE with the Kali Linux security-focused identity layer),
-`parrot-latest` (MATE with the Parrot Security OS identity layer),
-`nixos-latest` (NixOS identity + Nix package manager on the Openbox shell), and
-`pearos-latest` (pearOS macOS-inspired KDE Plasma identity layer).
+One FastVM-specific appliance flavor is published separately:
+`fastvm-os-latest` (the Openbox/Tint2 FastVM appliance shell). FastVM desktop
+environments are Ubuntu/KasmVNC-based desktop images, not independent Linux
+distributions. The former distro-branded tags were identity/desktop overlays on
+the same Ubuntu base and have been removed to avoid implying upstream OS support.
+Choose `kde`, `xfce4`, `cinnamon`, `mate`, `gnome`, `ukui`, `unity`, or another
+supported desktop in the regular desktop/preset matrix instead.
 
 | Category | Variants | Notes |
 | --- | ---: | --- |
-| Desktop + preset | 216 | Built from the workflow matrix |
+| Desktop + preset | 198 | Built from the workflow matrix |
 | Single-app | 4 | browser, discord, vscode, terminal |
-| Distro flavor | 16 | fastvm-os, ubuntu-studio, ubuntu-kylin, ubuntu-budgie, ubuntu-edubuntu, xubuntu, lubuntu, kubuntu, ubuntu-mate, ubuntu-unity, pop-os, linuxmint, kali, parrot, nixos, pearos |
+| FastVM appliance | 1 | fastvm-os |
 
 Exact package contents are defined by `presets/*.preset` and
 `installable-apps/*.sh`; update this document when the workflow matrix changes.

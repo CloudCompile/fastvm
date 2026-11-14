@@ -167,7 +167,7 @@ pub fn list_instances() -> Result<Vec<Instance>, String> {
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DeployRequest {
-    /// Image tag, e.g. `pearos-latest`.
+    /// Image tag, e.g. `fastvm-os-latest`.
     pub tag: String,
     /// Optional explicit host port; when absent a free port is chosen.
     pub host_port: Option<u16>,
@@ -379,11 +379,11 @@ mod tests {
     #[test]
     fn preview_accepts_a_fully_qualified_image() {
         let got = preview_run_args(PreviewRequest {
-            tag: "ghcr.io/cloudcompile/fastvm:pearos-latest".into(),
+            tag: "ghcr.io/cloudcompile/fastvm:fastvm-os-latest".into(),
             ..Default::default()
         })
         .unwrap();
-        assert!(got.ends_with("ghcr.io/cloudcompile/fastvm:pearos-latest"));
+        assert!(got.ends_with("ghcr.io/cloudcompile/fastvm:fastvm-os-latest"));
     }
 
     #[test]
@@ -446,7 +446,7 @@ mod tests {
 
     #[test]
     fn accepts_real_tags() {
-        assert!(is_known_tag("pearos-latest"));
+        assert!(is_known_tag("fastvm-os-latest"));
         assert!(is_known_tag("xfce4-none-latest"));
         assert!(is_known_tag("kde-gaming-latest"));
         assert!(is_known_tag("browser-latest"));

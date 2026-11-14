@@ -50,7 +50,7 @@ function extractRustList(text, constName) {
 
 /** Every `FASTVM_OS_FLAVOR=<value>` build-arg in the workflow. */
 function extractFlavorArgs(text) {
-  return [...text.matchAll(/FASTVM_OS_FLAVOR=([a-z0-9-]+)/g)].map((m) => m[1]);
+  return [...new Set([...text.matchAll(/FASTVM_OS_FLAVOR=([a-z0-9-]+)/g)].map((m) => m[1]))];
 }
 
 /** `- name: <value>` entries inside the build-specials `matrix.include` block. */

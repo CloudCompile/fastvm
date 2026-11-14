@@ -21,7 +21,7 @@ milestones; they are targets, not promises.
 The repository as it ships today. See the
 [release notes](https://github.com/CloudCompile/fastvm/releases/tag/v1.0.0)
 for the full feature list: browser desktop, dashboard, headless Node.js mode,
-distro flavors, GPU stacks, Pterodactyl deployment.
+FastVM OS appliance, GPU stacks, Pterodactyl deployment.
 
 ## v1.1.0 — Node & headless hardening
 
