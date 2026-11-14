@@ -180,7 +180,11 @@ def run_one(mode, preset, cpu, ram, template_id):
     tag = f"{preset}-c{cpu}-m{ram}"
     out_path = RESULTS_DIR / mode / f"{tag}.json"
     if out_path.exists():
-        return  # already done (resumable)
+        try:
+            if json.loads(out_path.read_text()).get("complete"):
+                return  # already done (resumable; partials rerun)
+        except Exception:
+            pass  # unreadable file — rerun
     sbx = None
     started = time.time()
     try:

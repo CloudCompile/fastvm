@@ -99,10 +99,22 @@ poll_ready() {
 declare -A T   # timings
 
 # ------------------------------------------------------------------- image
+retry() {  # retry <attempts> <sleep-s> <cmd...> — transient registry/429 errors
+  local attempts="$1" delay="$2"; shift 2
+  local i
+  for ((i = 1; i <= attempts; i++)); do
+    if "$@"; then return 0; fi
+    log "attempt $i/$attempts failed: $* — retrying in ${delay}s"
+    sleep "$delay"
+    delay=$((delay * 2))
+  done
+  return 1
+}
+
 if [[ "$MODE" == "prebuilt" ]]; then
   IMAGE="ghcr.io/cloudcompile/fastvm:xfce4-${PRESET}-latest"
   t0="$(now)"
-  if ! docker pull -q "$IMAGE" > /tmp/pull.log 2>&1; then
+  if ! retry 5 20 docker pull -q "$IMAGE" > /tmp/pull.log 2>&1; then
     log "PULL FAILED"; tail -5 /tmp/pull.log; exit 1
   fi
   T[pull]="$(python3 -c "print(round($(now) - $t0, 2))")"
@@ -111,14 +123,14 @@ else
   cd "$REPO" || exit 1
   IMAGE="fastvm:bench-xfce4-${PRESET}"
   t0="$(now)"
-  if ! docker build -f Dockerfile.optimized -t "$IMAGE" \
+  if ! retry 4 30 docker build -f Dockerfile.optimized -t "$IMAGE" \
       --network host \
       --build-arg "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
       --build-arg "VERSION=bench" \
       --build-arg "FASTVM_DE=xfce4" \
       --build-arg "FASTVM_PRESET=${PRESET}" \
-      . > /tmp/build.log 2>&1; then
-    log "BUILD FAILED"; tail -20 /tmp/build.log; exit 1
+      . ; then
+    log "BUILD FAILED"; tail -30 /tmp/bench.log; exit 1
   fi
   T[build]="$(python3 -c "print(round($(now) - $t0, 2))")"
   log "build: ${T[build]}s"

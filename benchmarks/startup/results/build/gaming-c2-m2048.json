@@ -1,0 +1,7 @@
+{
+  "mode": "build",
+  "preset": "gaming",
+  "complete": false,
+  "error": "[bench] host: {\"cpu_count\": 2, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 1983, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\n3541d221ca62: Pulling fs layer\n9aabe2543c47: Waiting\nc82954c7d21b: Waiting\n2ca38b4beb2d: Waiting\n20a88ec49198: Waiting\nb51575755f81: Waiting\n58f2321534b6: Waiting\n38a37bd14474: Waiting\n3541d221ca62: Waiting\n7fb42501696e: Verifying Checksum\n7fb42501696e: Download complete\nc0f8eff906b8: Downloading\n53c2fbd7cbcb: Downloading\nc82954c7d21b: Downloading\n9aabe2543c47: Verifying Checksum\n9aabe2543c47: Download complete\n20a88ec49198: Verifying Checksum\n20a88ec49198: Download complete\n58f2321534b6: Downloading\ntoomanyrequests: retry-after: 415.802\u00b5s, allowed: 44000/minute\n",
+  "wall_seconds": 32.8
+}

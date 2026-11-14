@@ -1,0 +1,7 @@
+{
+  "mode": "build",
+  "preset": "content-creation",
+  "complete": false,
+  "error": "[bench] host: {\"cpu_count\": 8, \"cpu_model\": \"Intel(R) Xeon(R) Processor @ 2.60GHz\", \"ram_mb\": 1982, \"disk_free_gb\": 21, \"kernel\": \"6.1.189+\", \"docker_version\": \"Docker version 27.5.1, build 9f9e405\"}\n[bench] dockerd ready: 27.5.1\n[bench] BUILD FAILED\n53c2fbd7cbcb: Verifying Checksum\n53c2fbd7cbcb: Download complete\nc82954c7d21b: Downloading\nb51575755f81: Verifying Checksum\nb51575755f81: Download complete\n20a88ec49198: Verifying Checksum\n20a88ec49198: Download complete\n2ca38b4beb2d: Verifying Checksum\n2ca38b4beb2d: Download complete\n3541d221ca62: Verifying Checksum\n3541d221ca62: Download complete\n58f2321534b6: Verifying Checksum\n58f2321534b6: Download complete\n53c2fbd7cbcb: Pull complete\nc0f8eff906b8: Pull complete\n7fb42501696e: Pull complete\n9aabe2543c47: Pull complete\n38a37bd14474: Verifying Checksum\n38a37bd14474: Download complete\ntoomanyrequests: retry-after: 427.126\u00b5s, allowed: 44000/minute\n",
+  "wall_seconds": 32.5
+}
