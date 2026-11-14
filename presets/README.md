@@ -23,7 +23,6 @@ The gaming preset is intentionally tuned for launcher-based game access, browser
 | `development`     | VSCodium + Java + Docker tools            |
 | `office`          | LibreOffice + Firefox + productivity      |
 | `content-creation`| GIMP + Audacity + screen recording        |
-| `hidencloud-free-vps` | Free non-root VPS (2 vCPU / 3 GB RAM), Cloudflare fronting |
 
 ## File format
 

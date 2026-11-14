@@ -33,7 +33,7 @@ All runtime settings live in `config.env`. Changes require `docker-compose down 
 
 Key settings:
 - `FASTVM_DE` — desktop environment (XFCE4 default; options: KDE, GNOME, Cinnamon, LXQT, I3, Budgie, MATE, LXDE, Fluxbox, Unity, UbuntuStudio, Enlightenment, IceWM, awesome, UKUI, fastvm-os)
-- `FASTVM_PRESET` — overlays app/resource defaults (none, minimal, gaming, development, office, content-creation, hidencloud-free-vps)
+- `FASTVM_PRESET` — overlays app/resource defaults (none, minimal, gaming, development, office, content-creation)
 - `FASTVM_APP_BUNDLE` — curated app set baked into the image: precedence `FASTVM_APP_BUNDLE` > preset > desktop default. Options: (empty=auto), none, browser, essentials, communication, gaming, development, office, content-creation. See `docs/app-bundles.md`
 - `FASTVM_APP_*` / `FASTVM_PROG_*` — toggle individual app installs (additive on top of the bundle)
 - `FASTVM_DASHBOARD_PORT` — internal port the Node.js dashboard listens on (default 8099 inside container, mapped to host 3001)

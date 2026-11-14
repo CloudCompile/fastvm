@@ -74,7 +74,6 @@ PRESET_BUNDLE = {
     "development": "development",
     "office": "office",
     "content-creation": "content-creation",
-    "hidencloud-free-vps": "essentials",
 }
 
 # Desktops that ship almost nothing by nature get the bare browser bundle; every

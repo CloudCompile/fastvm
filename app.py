@@ -10,7 +10,7 @@ Constraints:
   - Uses prebuilt images from ghcr.io
 
 Configuration:
-  - Set FASTVM_PRESET=hidencloud-free-vps in config.env
+  - Set FASTVM_PRESET=none in config.env (or a constrained preset of your choice)
   - FASTVM_PORT defaults to 3000 (web desktop)
   - FASTVM_DASHBOARD_HOST_PORT defaults to 3001 (API dashboard)
 """
