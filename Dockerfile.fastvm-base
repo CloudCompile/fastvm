@@ -42,10 +42,12 @@ RUN set -eu && \
     rm -rf /config/.cache /var/lib/apt/lists/* /var/tmp/* /tmp/* /var/log/* \
       /usr/share/doc/* /usr/share/man/* && \
     # ---- OS library trim (no runtime impact) ------------------------------
-    # Keep only en_US.UTF-8 (+ glibc's built-in C/POSIX/C.UTF-8): the locale
-    # archive alone was ~394 MB with 620 locales compiled in.
+    # Keep only en_US.UTF-8 (+ glibc's built-in C/POSIX/C.UTF-8): the upstream
+    # image ships a ~394 MB locale archive plus ~500 compiled locale dirs.
     rm -f /usr/lib/locale/locale-archive && \
     localedef -i en_US -f UTF-8 en_US.UTF-8 && \
+    find /usr/lib/locale -mindepth 1 -maxdepth 1 -type d ! -name 'en_US*' \
+      -exec rm -rf {} + && \
     rm -rf /usr/share/locale && mkdir -p /usr/share/locale/en \
       /usr/share/locale/en_US/LC_MESSAGES && \
     # C headers are build-time only.
