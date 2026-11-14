@@ -117,6 +117,7 @@ jobs:
           set -euo pipefail
           tmp="$(mktemp -d)"
           env_out="$(FASTVM_DATA_ROOT="$tmp" FASTVM_PERF_FORCE_CPUS=2 FASTVM_PERF_FORCE_MEM_MB=8192 \
+            FASTVM_PERF_FORCE_GPU_KIND=none \
             bash scripts/perf-profile.sh env)"
           echo "$env_out"
           grep -q '^LIBGL_ALWAYS_SOFTWARE=1$' <<<"$env_out"
