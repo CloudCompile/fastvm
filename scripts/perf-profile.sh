@@ -167,6 +167,11 @@ encode_threads() {
 # never forced onto the software path.
 profile_env() {
     local profile="$1" kind="$2" cpus="$3"
+    # CI may pin a profile; config.env's FASTVM_PERF_PROFILE=auto must not
+    # override that deterministic test input.
+    if [[ -n "${FASTVM_PERF_FORCE_PROFILE:-}" ]]; then
+        profile="$FASTVM_PERF_FORCE_PROFILE"
+    fi
     local raster; raster="$(raster_threads "$cpus")"
     local enc; enc="$(encode_threads "$cpus")"
 
