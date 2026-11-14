@@ -12,7 +12,49 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  build-base:
+    name: Build shared FastVM base
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.base.outputs.image }}
+    steps:
+      - name: Set lowercase image name
+        id: image
+        run: echo "name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push shared base
+        id: base
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.fastvm-base
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-latest
+          labels: |
+            org.opencontainers.image.title=FastVM shared base
+            org.opencontainers.image.description=Desktop-neutral shared FastVM runtime base
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:buildcache-base
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:buildcache-base,mode=max
+          build-args: |
+            BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+            VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
+
   build:
+    needs: build-base
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -107,7 +149,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
           labels: |
@@ -122,10 +164,12 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=${{ matrix.desktop }}
             FASTVM_PRESET=${{ matrix.preset }}
 
   build-specials:
+    needs: build-base
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -186,7 +230,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
           labels: |
@@ -199,6 +243,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=singleapp
             FASTVM_PRESET=none
             FASTVM_SINGLEAPP_CMD=${{ matrix.autostart_cmd }}
@@ -206,6 +251,7 @@ jobs:
 
   build-fastvm-os:
     name: Build FastVM OS appliance
+    needs: build-base
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -227,7 +273,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:fastvm-os-latest
@@ -235,6 +281,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=fastvm-os
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=fastvm-os
@@ -246,6 +293,7 @@ jobs:
   build-gpu:
     name: Build GPU-enabled image
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -266,7 +314,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:gpu-latest
@@ -276,6 +324,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=xfce4
             FASTVM_PRESET=gaming
             FASTVM_ENABLE_GPU_DRIVERS=true
@@ -283,6 +332,7 @@ jobs:
   build-ubuntu-studio:
     name: Build Ubuntu Studio distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -303,7 +353,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:ubuntu-studio-latest
@@ -311,6 +361,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=ubuntu-studio
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=ubuntu-studio
@@ -320,6 +371,7 @@ jobs:
   build-ubuntu-kylin:
     name: Build Ubuntu Kylin distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -340,7 +392,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:ubuntu-kylin-latest
@@ -348,6 +400,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=ukui
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=ubuntu-kylin
@@ -357,6 +410,7 @@ jobs:
   build-ubuntu-budgie:
     name: Build Ubuntu Budgie distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -377,7 +431,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:ubuntu-budgie-latest
@@ -385,6 +439,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=budgie
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=ubuntu-budgie
@@ -394,6 +449,7 @@ jobs:
   build-ubuntu-edubuntu:
     name: Build Ubuntu Edubuntu distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -414,7 +470,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:ubuntu-edubuntu-latest
@@ -422,6 +478,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=gnome
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=ubuntu-edubuntu
@@ -431,6 +488,7 @@ jobs:
   build-ubuntu-xfce:
     name: Build Xubuntu distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -451,7 +509,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:xubuntu-latest
@@ -459,6 +517,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=xfce4
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=xubuntu
@@ -468,6 +527,7 @@ jobs:
   build-ubuntu-lubuntu:
     name: Build Lubuntu distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -488,7 +548,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:lubuntu-latest
@@ -496,6 +556,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=lxqt
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=lubuntu
@@ -505,6 +566,7 @@ jobs:
   build-kubuntu:
     name: Build Kubuntu distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -525,7 +587,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:kubuntu-latest
@@ -533,6 +595,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=kde
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=kubuntu
@@ -542,6 +605,7 @@ jobs:
   build-ubuntu-mate:
     name: Build Ubuntu MATE distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -562,7 +626,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:ubuntu-mate-latest
@@ -570,6 +634,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=mate
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=ubuntu-mate
@@ -579,6 +644,7 @@ jobs:
   build-ubuntu-unity:
     name: Build Ubuntu Unity distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -599,7 +665,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:ubuntu-unity-latest
@@ -607,6 +673,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=unity
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=ubuntu-unity
@@ -616,6 +683,7 @@ jobs:
   build-pop-os:
     name: Build Pop!_OS distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -636,7 +704,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:pop-os-latest
@@ -644,6 +712,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=pop-os
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=pop-os
@@ -653,6 +722,7 @@ jobs:
   build-linuxmint:
     name: Build Linux Mint distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -673,7 +743,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:linuxmint-latest
@@ -681,6 +751,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=cinnamon
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=linuxmint
@@ -690,6 +761,7 @@ jobs:
   build-kali:
     name: Build Kali Linux distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -710,7 +782,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:kali-latest
@@ -718,6 +790,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=xfce4
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=kali
@@ -727,6 +800,7 @@ jobs:
   build-parrot:
     name: Build Parrot Security OS distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -747,7 +821,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:parrot-latest
@@ -755,6 +829,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=mate
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=parrot
@@ -764,6 +839,7 @@ jobs:
   build-nixos:
     name: Build NixOS distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -784,7 +860,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:nixos-latest
@@ -792,6 +868,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=nixos
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=nixos
@@ -801,6 +878,7 @@ jobs:
   build-pearos:
     name: Build pearOS distro flavor
     runs-on: ubuntu-latest
+    needs: build-base
     permissions:
       contents: read
       packages: write
@@ -821,7 +899,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.optimized
+          file: Dockerfile.fastvm-preset
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:pearos-latest
@@ -829,6 +907,7 @@ jobs:
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VERSION=${{ github.ref_name }}
+            FASTVM_BASE_IMAGE=${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:base-${{ github.sha }}
             FASTVM_DE=pearos
             FASTVM_PRESET=development
             FASTVM_OS_FLAVOR=pearos
@@ -837,6 +916,7 @@ jobs:
 
   build-summary:
     runs-on: ubuntu-latest
+    needs: build-base
     needs: [build, build-specials, build-fastvm-os, build-ubuntu-studio, build-ubuntu-kylin, build-ubuntu-budgie, build-ubuntu-edubuntu, build-ubuntu-xfce, build-ubuntu-lubuntu, build-kubuntu, build-ubuntu-mate, build-ubuntu-unity, build-pop-os, build-linuxmint, build-kali, build-parrot, build-nixos, build-pearos]
     if: always()
     steps:

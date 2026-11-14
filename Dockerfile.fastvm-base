@@ -1,0 +1,48 @@
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
+
+ARG BUILD_DATE
+ARG VERSION=alpha
+ARG DEBIAN_FRONTEND=noninteractive
+
+LABEL org.opencontainers.image.title="FastVM shared base (alpha)" \
+      org.opencontainers.image.description="Shared XFCE4/FastVM runtime base for alpha preset images" \
+      org.opencontainers.image.source="https://github.com/CloudCompile/fastvm" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}"
+
+ENV NODE_ENV=production
+
+# Runtime files and scripts are shared by every preset image. The scripts are
+# copied before fastvm-setup.sh because setup uses gpu-session-env.sh when it
+# patches the desktop startup script.
+COPY root/ /
+COPY scripts/ /fastvm-scripts/
+RUN chmod +x /fastvm-scripts/*.sh
+
+# Shared system dependencies. Keep application bundles out of this image.
+RUN set -eu && \
+    rm -f /etc/apt/sources.list.d/nodesource.list || true && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y universe multiverse && \
+    add-apt-repository -y ppa:mozillateam/ppa && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      jq wget curl ca-certificates apt-transport-https \
+      pulseaudio pulseaudio-utils libpulse0 ffmpeg x11-utils \
+      xclip xsel cron zstd procps net-tools && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY dashboard/ /opt/fastvm-dashboard/
+WORKDIR /opt/fastvm-dashboard
+RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
+
+RUN set -eu && \
+    apt-get autoclean && apt-get autoremove -y && \
+    rm -rf /config/.cache /var/lib/apt/lists/* /var/tmp/* /tmp/* /var/log/* \
+      /usr/share/doc/* /usr/share/man/* && \
+    mkdir -p /var/log/fastvm /config /config/backups /config/recordings \
+      /config/.fastvm /var/log/nginx && \
+    chown -R 1000:1000 /config && chown -R www-data:www-data /var/log/nginx && \
+    chmod +x /etc/cont-init.d/99-fastvm-init \
+      /etc/services.d/fastvm-dashboard/run 2>/dev/null || true
