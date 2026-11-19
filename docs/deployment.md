@@ -15,13 +15,16 @@ docker run -d \
 
 Port `3000` serves the KasmVNC desktop. Port `3001` maps to the dashboard's
 internal port `8099`. The dashboard token is stored in
-`data/dashboard.token`.
+`data/dashboard.token`. Do not expose the dashboard port directly to the
+internet; use an authenticated HTTPS reverse proxy. Apply the same rule to the
+headless Node.js app port—see [nodejs.md](nodejs.md) for loopback binding and
+proxy examples.
 
 Image names follow these patterns:
 
 - `<desktop>-<preset>-latest`
 - `<single-app>-latest`
-- `<distro-flavor>-latest`
+- `fastvm-os-latest` (FastVM appliance flavor)
 
 See the [image catalog](image-catalog.md) for supported values.
 
@@ -69,7 +72,7 @@ docker build -f Dockerfile.fastvm-base -t fastvm-base:local .
 # then add --build-arg FASTVM_BASE_IMAGE=fastvm-base:local to the preset build
 ```
 
-## GPU and distro flavors
+## GPU and FastVM OS appliance
 
 Use the documented Compose overlay for GPU access:
 
@@ -78,9 +81,10 @@ FASTVM_GPU=amd ./fastvm-install.sh
 FASTVM_GPU=nvidia ./fastvm-install.sh
 ```
 
-Distro flavors are additive overlays such as `kali`, `ubuntu-studio`, and
-`fastvm-os`. The corresponding published tags and desktop pairings are listed
-in [image-catalog.md](image-catalog.md).
+FastVM publishes one product-specific appliance flavor, `fastvm-os`. Desktop
+environments such as XFCE, KDE, Cinnamon, and GNOME are available as ordinary
+FastVM image variants; they are not separate upstream Linux distributions.
+See [image-catalog.md](image-catalog.md).
 
 ## Port reference
 

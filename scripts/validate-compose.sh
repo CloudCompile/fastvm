@@ -48,6 +48,10 @@ done
 
 for overlay in docker-compose*.yml; do
   [[ -f "$overlay" ]] || continue
+  if [[ "$overlay" == "docker-compose.node-loopback.yml" ]]; then
+    check "node + $overlay" -f docker-compose.node.yml -f "$overlay"
+    continue
+  fi
   for stack in "${FULL_STACKS[@]}"; do
     if [[ "$overlay" == "$stack" ]]; then
       continue 2

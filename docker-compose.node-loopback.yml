@@ -1,0 +1,3 @@
+# Deprecated compatibility helper: docker-compose.node.yml now defaults to
+# loopback via FASTVM_NODE_SERVER_BIND_IP=127.0.0.1; no overlay is needed.
+services: {}

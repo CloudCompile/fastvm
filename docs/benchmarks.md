@@ -28,7 +28,7 @@ using the `FASTVM_PERF_FORCE_*` test hooks, with no small host required.
 ## Measured startup matrix (alpha, 2026-11-13)
 
 Measured on e2b sandboxes (Intel Xeon 2.60 GHz, kernel 6.1.189, Docker 27.5.1)
-across all six XFCE4 presets × vCPU {1, 2, 4, 8} × RAM {1, 2, 4, 8 GB} —
+across the six supported XFCE4 presets × vCPU {1, 2, 4, 8} × RAM {1, 2, 4, 8 GB} —
 192 runs: 96 from the published GHCR image, 96 built from source. Raw JSON:
 [`benchmarks/startup/results/`](../benchmarks/startup/results/), full table:
 [`results/SUMMARY.md`](../benchmarks/startup/results/SUMMARY.md).

@@ -269,7 +269,7 @@ mod tests {
 
     #[test]
     fn parses_ps_line() {
-        let line = r#"{"ID":"abc123","Names":"FastVM","Image":"ghcr.io/cloudcompile/fastvm:pearos-latest","State":"running","Status":"Up 3 minutes","Ports":"0.0.0.0:3000->3000/tcp, 0.0.0.0:3001->8099/tcp"}"#;
+        let line = r#"{"ID":"abc123","Names":"FastVM","Image":"ghcr.io/cloudcompile/fastvm:fastvm-os-latest","State":"running","Status":"Up 3 minutes","Ports":"0.0.0.0:3000->3000/tcp, 0.0.0.0:3001->8099/tcp"}"#;
         let inst = parse_ps_line(line).unwrap();
         assert_eq!(inst.id, "abc123");
         assert_eq!(inst.name, "FastVM");

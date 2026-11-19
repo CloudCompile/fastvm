@@ -14,14 +14,14 @@ terminal required. Runs on Linux, Windows, and macOS.
 │ │ [Deploy]     │ │ [Deploy]     │   │ port 3000  [⚡ Deploy] │ │
 │ └──────────────┘ └──────────────┘   └───────────────────────┘ │
 │ Running instances · 1                                          │
-│ pearOS  running   ghcr.io/…:pearos-latest  [Open][Logs][Stop] │
+│ FastVM OS  running   ghcr.io/…:fastvm-os-latest  [Open][Logs][Stop] │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ## Features
 
-- **Full catalog** — every published variant (36 desktops × 6 presets, 16 distro
-  flavors, and 4 single-app images: 236 images), grouped by category and
+- **Full catalog** — every published variant (33 desktops × 6 presets, one
+  FastVM OS appliance, and 4 single-app images: 221 images), grouped by category and
   searchable. A curated set carries hand-written names and taglines.
 - **One-click deploy** — pick an app, tweak ports / name / shared memory / GPU,
   and launch it. The container starts and the desktop opens in your browser.

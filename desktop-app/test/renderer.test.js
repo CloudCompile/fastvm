@@ -31,7 +31,7 @@ const APPS = [
   { id: 'xfce4-minimal-latest', name: 'XFCE4 Minimal', tagline: 'Fast and light', category: 'Desktops', kind: 'desktop', ram: '512 MB', gpu: false, featured: true, image: 'ghcr.io/cloudcompile/fastvm:xfce4-minimal-latest' },
   { id: 'kde-gaming-latest', name: 'Gaming Rig', tagline: 'Steam and Wine', category: 'Gaming', kind: 'preset', ram: '4 GB', gpu: true, featured: true, image: 'ghcr.io/cloudcompile/fastvm:kde-gaming-latest' },
   { id: 'gnome-none-latest', name: 'GNOME', tagline: 'The sleek desktop', category: 'Desktops', kind: 'desktop', ram: '2 GB', gpu: false, featured: false, image: 'ghcr.io/cloudcompile/fastvm:gnome-none-latest' },
-  { id: 'pearos-latest', name: 'pearOS', tagline: 'macOS-inspired', category: 'Distros', kind: 'flavor', ram: '1.5 GB', gpu: false, featured: true, image: 'ghcr.io/cloudcompile/fastvm:pearos-latest' },
+  { id: 'fastvm-os-latest', name: 'FastVM OS', tagline: 'FastVM appliance shell', category: 'Distros', kind: 'flavor', ram: '1 GB', gpu: false, featured: true, image: 'ghcr.io/cloudcompile/fastvm:fastvm-os-latest' },
   { id: 'terminal-latest', name: 'Terminal only', tagline: 'A bare terminal', category: 'Minimal', kind: 'single', ram: '128 MB', gpu: false, featured: false, image: 'ghcr.io/cloudcompile/fastvm:terminal-latest' },
 ];
 
@@ -61,7 +61,7 @@ async function boot({
   gpu = AMD_GPU,
   docker = { available: true, version: '27.3.1' },
   dockerHost = { kind: 'local', target: '', label: 'local' },
-  instances = [{ id: 'abc', name: 'FastVM-pearOS', image: 'ghcr.io/cloudcompile/fastvm:pearos-latest', state: 'running', status: 'Up 2 minutes', desktop_port: 3000, dashboard_port: 3001 }],
+  instances = [{ id: 'abc', name: 'FastVM-OS', image: 'ghcr.io/cloudcompile/fastvm:fastvm-os-latest', state: 'running', status: 'Up 2 minutes', desktop_port: 3000, dashboard_port: 3001 }],
   stats = [{ id: 'abc', cpu: '1.24%', mem: '256MiB / 8GiB' }],
 } = {}) {
   const html = fs.readFileSync(path.join(SRC, 'index.html'), 'utf8');
@@ -82,7 +82,7 @@ async function boot({
         calls.push({ cmd, args });
         switch (cmd) {
           case 'marketplace':
-            return { apps: APPS, variant_count: 236, docker_available: docker.available, docker_version: docker.available ? docker.version : null, docker_host: dockerHost, gpu };
+            return { apps: APPS, variant_count: 203, docker_available: docker.available, docker_version: docker.available ? docker.version : null, docker_host: dockerHost, gpu };
           case 'preview_run_args': {
             const r = args.req;
             const out = ['docker', 'run', '-d'];
@@ -172,7 +172,7 @@ test('category tabs filter the grid', async () => {
   const { window, doc } = await boot();
   const tab = $$(doc, '.tab').find((t) => t.textContent === 'Distros');
   tab.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  assert.deepEqual(titles(doc), ['pearOS']);
+  assert.deepEqual(titles(doc), ['FastVM OS']);
 });
 
 test('sorting by name reorders the grid', async () => {
@@ -197,8 +197,8 @@ test('starring a favorite persists and reorders featured', async () => {
 
 test('selecting an app renders details and a backend command preview', async () => {
   const { window, doc, calls } = await boot();
-  clickCard(window, doc, 'pearOS');
-  assert.match(doc.getElementById('deploy').textContent, /Deploy pearOS/);
+  clickCard(window, doc, 'FastVM OS');
+  assert.match(doc.getElementById('deploy').textContent, /Deploy FastVM OS/);
   await new Promise((r) => setTimeout(r, 200));
   assert.ok(calls.some((c) => c.cmd === 'preview_run_args'), 'preview_run_args invoked');
   assert.match(doc.getElementById('preview').textContent, /docker run -d -p 3000:3000/);
@@ -236,7 +236,7 @@ test('choosing an NVIDIA mode previews --gpus all', async () => {
 
 test('advanced options flow into the preview', async () => {
   const { window, doc } = await boot();
-  clickCard(window, doc, 'pearOS');
+  clickCard(window, doc, 'FastVM OS');
   await new Promise((r) => setTimeout(r, 200));
   doc.getElementById('memory').value = '4g';
   doc.getElementById('memory').dispatchEvent(new window.Event('input'));
@@ -289,13 +289,13 @@ test('the verify button opens a modal with backend steps', async () => {
 
 test('switching to compose preview calls preview_compose', async () => {
   const { window, doc, calls } = await boot();
-  clickCard(window, doc, 'pearOS');
+  clickCard(window, doc, 'FastVM OS');
   await new Promise((r) => setTimeout(r, 200));
   doc.getElementById('fmt-compose').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise((r) => setTimeout(r, 200));
   assert.ok(calls.some((c) => c.cmd === 'preview_compose'), 'preview_compose invoked');
   assert.match(doc.getElementById('preview').textContent, /services:/);
-  assert.match(doc.getElementById('preview').textContent, /image: ghcr\.io\/cloudcompile\/fastvm:pearos-latest/);
+  assert.match(doc.getElementById('preview').textContent, /image: ghcr\.io\/cloudcompile\/fastvm:fastvm-os-latest/);
   // And back to the docker run form.
   doc.getElementById('fmt-run').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise((r) => setTimeout(r, 200));
@@ -323,7 +323,7 @@ test('logs modal opens and fetches logs', async () => {
   logsBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await tick();
   assert.equal(doc.getElementById('modal').classList.contains('hidden'), false);
-  assert.match(doc.getElementById('modal-title').textContent, /FastVM-pearOS/);
+  assert.match(doc.getElementById('modal-title').textContent, /FastVM-OS/);
   assert.match(doc.getElementById('modal-body').textContent, /ready/);
   assert.ok(calls.some((c) => c.cmd === 'instance_logs'));
 });
@@ -362,7 +362,7 @@ test('the header reports a remote Docker host', async () => {
 
 test('saving and applying a deploy profile round-trips the fields', async () => {
   const { window, doc } = await boot();
-  clickCard(window, doc, 'pearOS');
+  clickCard(window, doc, 'FastVM OS');
   await new Promise((r) => setTimeout(r, 200));
   doc.getElementById('memory').value = '4g';
   doc.getElementById('env').value = 'TZ=Etc/UTC';

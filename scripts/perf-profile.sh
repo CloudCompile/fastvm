@@ -26,12 +26,16 @@
 #     perf-profile.sh bench    # time a software encode at the derived threads
 #
 # Test hooks (used by CI, no small host required):
-#   FASTVM_PERF_FORCE_CPUS, FASTVM_PERF_FORCE_MEM_MB, FASTVM_PERF_FORCE_SHM_MB
+#   FASTVM_PERF_FORCE_CPUS, FASTVM_PERF_FORCE_MEM_MB, FASTVM_PERF_FORCE_SHM_MB,
+#   FASTVM_PERF_FORCE_PROFILE (overrides config.env for deterministic CI tests)
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib-common.sh
 source "${SCRIPT_DIR}/lib-common.sh"
+if [[ -n "${FASTVM_PERF_FORCE_PROFILE:-}" ]]; then
+    FASTVM_PERF_PROFILE="$FASTVM_PERF_FORCE_PROFILE"
+fi
 
 STATE_DIR="${FASTVM_DATA_ROOT:-/config}/.fastvm"
 PROFILE_JSON="${STATE_DIR}/perf-profile.json"
@@ -151,7 +155,8 @@ raster_threads() {
 
 # Software-encode threads for the recorder: leave a core for the desktop.
 encode_threads() {
-    local cpus="$1" t=$(( cpus - 1 ))
+    local cpus="$1"
+    local t=$(( cpus - 1 ))
     (( t < 1 )) && t=1
     echo "$t"
 }
@@ -162,6 +167,11 @@ encode_threads() {
 # never forced onto the software path.
 profile_env() {
     local profile="$1" kind="$2" cpus="$3"
+    # CI may pin a profile; config.env's FASTVM_PERF_PROFILE=auto must not
+    # override that deterministic test input.
+    if [[ -n "${FASTVM_PERF_FORCE_PROFILE:-}" ]]; then
+        profile="$FASTVM_PERF_FORCE_PROFILE"
+    fi
     local raster; raster="$(raster_threads "$cpus")"
     local enc; enc="$(encode_threads "$cpus")"
 
@@ -323,7 +333,7 @@ main() {
     mem_mb="$(detect_mem_mb)"
     shm="$(shm_mb)"
     kind="$(gpu_kind)"
-    profile="${FASTVM_PERF_PROFILE:-auto}"
+    profile="${FASTVM_PERF_FORCE_PROFILE:-${FASTVM_PERF_PROFILE:-auto}}"
     [[ "$profile" == "auto" || -z "$profile" ]] && profile="$(classify "$cpus" "$mem_mb")"
 
     case "$mode" in
